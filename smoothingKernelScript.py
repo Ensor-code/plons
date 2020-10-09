@@ -1,6 +1,6 @@
 import healpy          as hp
 import numpy           as np
-import loadPhantomData as ld
+#import loadPhantomData as ld
 
 from scipy.spatial import cKDTree
 

@@ -49,14 +49,6 @@ def merge_dicts(*dict_args):
 
 
 
-#### ---- CONSTANTS ---- ####
-
-G = 6.674*10**(-11)                 # m^3 kg^-1 s^-1
-AU = 1.496e+11                      # m
-mH = 1.66054*1.007825*10**(-27)     # kg (massa H)
-kB = 1.380649e-23                   # J K^-1 (Boltzmann constant)
-Msun = 1.98847*10**(33)             # gram
-
 
 #### ------------------------------------------------------------------------------- ###
 ####                     Functions to make slices and potential                      ###
@@ -426,3 +418,13 @@ def getRatioRadTan(v_r,v_t):
     for i in range(len(v_r)):
         ratio.append(v_r[i]/v_t[i])
     return np.abs(ratio)
+
+
+#Return the position of all particles in function of radius with the AGB star as centre
+def getRadiusCoordinate(position,AGBcoord):
+    position = position.transpose()
+    x = position[0]
+    y = position[1]
+    z = position[2]
+    r = np.sqrt((x-AGBcoord[0])**2+(y-AGBcoord[1])**2+(z-AGBcoord[2])**2)
+    return r

@@ -16,7 +16,7 @@ Load the data for a general model
         - 'run'     [str]   number of the model 
         - 'loc'     [str]   directory of the output data from PHANTOM
         - 'factor'  [float] factor of the semi-major axis that you can to discard in order to consider the selfsimilar part of the model 
-        - 'bound'   [float] outer boundary you want to consider [AU] if you want the setup outer boundary, use 'None'
+        - 'bound'   [float] outer boundary you want to consider [AU] if you want the setup outer boundary, use None
     * RETURN: four/ different dictionaries for a binary/single model containing:           
         - 'setup'           
         - 'dumpData'        data from the last full dump (last time step of the model)
@@ -36,7 +36,7 @@ def LoadData_cgs(run, loc, factor, bound):
     if single_star == True:
         dumpData, sinkData = LoadData_single_cgs(run, loc, setup)
         
-        return setup, dumpData, sinkData
+        return setup, dumpData, sinkData, None
     
     
 
@@ -74,7 +74,7 @@ def LoadData_binary_cgs(run, loc, factor, bound, setup):
     dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
     dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
     
-    dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']
+    dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
     dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.AU_cm() )
 
 

@@ -214,7 +214,6 @@ def LoadDump_single_cgs(run, loc, setup):
 def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     
 
-   
     
     position = dump['position'].transpose()
     velocity = dump['velocity'].transpose()

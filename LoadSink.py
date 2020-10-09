@@ -43,7 +43,7 @@ def LoadSink_cgs(run, loc, setup):
 
         print('Copying file from STER...')
         
-        os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+runNumber+"/windSink000* /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
+        os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+run+"/windSink000* /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
 
         print('Converting file to ascii...')
         
