@@ -11,9 +11,6 @@ warnings.filterwarnings("ignore")
 
 '''
 # TODO:
-   - zit in txt bestand hoe de eta berekend is
-   - zet in txt bestand Qp
-   - mass in Hill is 0 --> fix
    - index error lijn 90 --> met de twist...
 '''
 
@@ -231,26 +228,35 @@ def getQp(setup, dump, wind_comp):
     z       = dump['position'].transpose()[2]
     mass    = dump['mass']
     rHill   = dump['rHill']
-    sma     = setup['sma_ini']
+    sma     = setup['sma_ini'] * cgs.AU_cm()
+    
+    #print(len(mass))
     
     mass    = mass      [ z <  rHill ]
     r       = dump['r'] [ z <  rHill ]
     z       = z         [ z <  rHill ]
+    #print(len(mass))
     mass    = mass      [ z > -rHill ]
     r       = r         [ z > -rHill ]
     z       = z         [ z > -rHill ]
+    #print(len(mass))
 
     mass    = mass    [ r > sma-rHill ]  
     r       = r       [ r > sma-rHill ]
-    mass    = mass    [ r < sma-rHill ]
-    r       = r       [ r < sma-rHill ]
-
+    #print(len(mass))
+    mass    = mass    [ r < sma+rHill ]
+    r       = r       [ r < sma+rHill ]
+    #print(len(mass))
+    
     massHill  = sum(mass)
+    
+    #print(mass)
+    #print(massHill)
     
     
     wind_comp_mean   = np.mean([wind_comp['min'],wind_comp['max']])     # mean wind speed at the location of the compnion
     
-    v_orb    = np.sqrt( cgs.G() * (dump['massComp']+dump['massAGB'])*cgs.Msun_gram() / (sma) ) 
+    v_orb    = np.sqrt( cgs.G() * (dump['massComp']+dump['massAGB']) / (sma) ) 
     Qp       = ( (dump['massComp'] * v_orb)/(massHill * wind_comp_mean) ) 
         
     return Qp, massHill
@@ -287,14 +293,28 @@ def main_terminalVelocity(setup, dump, outputloc, run):
     title = outputloc+'velocity_eta_Qp/run'+run+'.txt'
     with open (title,'w') as f:
         f.write('Model '+run+'\n')
+        f.write('---------\n')
         f.write('\n')
         #f.write('Wind type:          '+str(data['windtype'])+'\n'  )
-        #if single_star == False:
-            #f.write('Companion type:     '+str(data['comptype'])+'\n'  )
-            #f.write('Orbital separation: '+str(round(orbSep))+' au \n' ) 
-        #if single_star == True:
-            #f.write('Single star model, so no companion information.\n')
-            #f.write('\n')
+        f.write('-  Info about the model:\n')
+        f.write('\n')
+        f.write('Mass AGB star:             '+str(round(setup['massAGB_ini'],2))+' Msun\n'  )
+        f.write('Initial wind velocity:     '+str(round(setup['v_ini'],2))+' km/s\n')
+        f.write('Initial mass loss rate:    '+str(round(setup['Mdot'],2))+' Msun/yr\n')
+        f.write('\n')
+        #f.write('Companion:\n')
+        if single_star == False:    
+            f.write('Companion mass:            '+str(round(setup['massComp_ini'],2))+' Msun\n'  )
+            f.write('Orbital separation:        '+str(round(setup['sma_ini'],2))+' au \n' ) 
+        if single_star == True:
+            f.write('Single star model, so no companion information.\n')
+            f.write('\n')
+        f.write('\n')
+        f.write('\n')
+        #f.write('\n')
+        f.write('-  For the terminal velocity and eta, three different values are given.\n')
+        f.write('   This is due to the spread on the speed of the model, because of the morphology.\n')
+        f.write('   By the method of binning, a minimum, mean and maximum value is computed\n')
         f.write('\n')
         f.write('Terminal velocities [cm/s]:'+'\n'      )
         f.write(str(round(terminal_speed['max' ], 3))+'\n' )
@@ -319,8 +339,12 @@ def main_terminalVelocity(setup, dump, outputloc, run):
             f.write(str(round(eta2['mean'], 2))+'\n')
             f.write(str(round(eta2['max' ], 2))+'\n')
             f.write('\n')
-            f.write('Total mass at r = rcomp (Hill) [Msun]:\n')
-            f.write(str(massHill/cgs.Msun_gram())+' in Hill sphere\n')
+            f.write('Total mass the companion encounters at r = rcomp, within the Hill radius = Mwind [Msun]:\n')
+            f.write(str(massHill/cgs.Msun_gram())+'\n')
+            f.write('\n')
+            f.write('Qp = (Mcomp*v_orb)/(Mwind*v_wind)\n')
+            f.write('   (most of the time given as Q1 = 1e-6*Qp)\n')
+            f.write(str(round(Qp)))
             #f.write(str(m_wind_hill/Msun)+' in bin\n')
         #if single_star == True:
             #f.write('Velocities [cm/s] at the different orbital separations:\n')
