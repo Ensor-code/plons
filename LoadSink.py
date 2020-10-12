@@ -96,21 +96,21 @@ def LoadSink_cgs(run, loc, setup):
     
     # output
     #    "_t" stands for the fact that these values are in function of the evolution time, not from the last dump in function of location
-    data = {'posAGB'      : position1,
-            'velAGB'      : velocity1,
-            'massAGB'     : mass1,
-            'maccrAGB'    : maccr1,
-            'rAGB'        : r1,
+    data = {'posAGB'      : position1,              # [cm]
+            'velAGB'      : velocity1,              # [cm/s]
+            'massAGB'     : mass1,                  # [gram]
+            'maccrAGB'    : maccr1,                 # [gram]
+            'rAGB'        : r1,                     # [cm]
             'posComp'     : position2,
             'velComp'     : velocity2,
             'massComp'    : mass2,
             'maccrComp'   : maccr2,
             'rComp'       : r2,
-            'time'        : t1,
-            'period_t'    : period,
-            'v_orbAGB_t'  : orbitalVel_AGB,
-            'v_orbComp_t' : orbitalVel_comp,
-            'rHill_t'     : rHill
+            'time'        : t1,                     # [yrs]
+            'period_t'    : period,                 # [s]
+            'v_orbAGB_t'  : orbitalVel_AGB,         # [cm/s]
+            'v_orbComp_t' : orbitalVel_comp,        # [cm/s]
+            'rHill_t'     : rHill                   # [cm]
             }
 
 

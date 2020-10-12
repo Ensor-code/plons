@@ -23,6 +23,8 @@ Test load data
 #print('Binary star')
 #print('')
 #print('data from model '+run+' is loading.')
+print('Load data')
+print('')
 setup, dump, sink, outer = ld.LoadData_cgs(run,loc, 5, 200)
 #print('loading model complete.')
 #print('')
@@ -59,3 +61,4 @@ Test terminal velocities
 '''
 
 tmv.main_terminalVelocity(setup, dump, outputloc, run)
+

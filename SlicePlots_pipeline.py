@@ -28,7 +28,7 @@ warnings.filterwarnings("ignore")
 #Load the smoothing kernel data
 def smoothData(dumpData,setup):
     #Uncomment the ones you need, takes long to run, so don't run if not nescessary
-    print('     Calculating the smoothing kernels, this may take a while, please wait...')
+    print('     Calculating the smoothing kernels. This may take a while, please wait...')
     #zoom = 1
     results_sph_sl_z,x1,y1,z1 = sk.getSmoothingKernelledPix(400,20,dumpData,['rho','temp','speed'], 'comp','z',setup['bound']*cgs.AU_cm())
     results_sph_sl_y,x2,y2,z2 = sk.getSmoothingKernelledPix(400,20,dumpData,['rho','temp','speed'], 'comp','y',setup['bound']*cgs.AU_cm())
@@ -104,7 +104,7 @@ def allPlots(modelname, smooth, zoom, rhoMin, rhoMax, vmax, bound, dumpData, set
     onePlot(ax5,smooth['sph_sl_z']['speed']*1e-5,'$|v|$[km/s]', cm_v, 0, vmax, smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
     onePlot(ax6,smooth['sph_sl_y']['speed']*1e-5,'$|v|$[km/s]', cm_v, 0, vmax, smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
     fig.savefig(loc+'2DSliceplots/'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
-    print('         Slice plots (zoom factor = )'+str(zoom)+' model '+str(run)+' ready and saved!')
+    print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 # Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). Takes 'zoom'factor as input
 def densityPlot(modelname,smooth, zoom,rhoMin,rhoMax,vmax,bound,dumpData, setup,run, loc):
@@ -134,7 +134,7 @@ def densityPlot(modelname,smooth, zoom,rhoMin,rhoMax,vmax,bound,dumpData, setup,
     ax.tick_params(labelsize=14)
 
     fig.savefig(loc+'2DSliceplots/1Plot_'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
-    print('         Density slice plot (zoom factor = )'+str(zoom)+' model '+str(run)+' ready and saved!')
+    print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 
 def SlicePlots(run,loc, dumpData, setup):
