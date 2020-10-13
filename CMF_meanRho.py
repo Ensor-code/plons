@@ -395,7 +395,6 @@ def CMF_meanRho(run,loc, data, setup):
         if setup['single_star'] == False:
             names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
             f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
-
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 15 character width
             f.write('\n')
             for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm'],infoForPlotL['massFraction'][:-1],infoForPlotL['meanRhoSm'], infoForPlotR['massFraction'][:-1], infoForPlotR['meanRhoSm']):
@@ -403,6 +402,7 @@ def CMF_meanRho(run,loc, data, setup):
         else:
             names = ['x array, to plot', 'Mass fraction', 'MeanRhoSm']
             f.write("{: <34} {: <34} {: <34} ".format(*names))
+            col_format = "{:<35}" * 3 + "\n"   # 7 left-justfied columns with 15 character width
             f.write('\n')
             for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm']):
                 f.write(col_format.format(*i))
