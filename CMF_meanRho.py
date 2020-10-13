@@ -392,7 +392,7 @@ def CMF_meanRho(run,loc, data, setup):
             f.write('                              Per:  '+str(infoForPlotR['rho75'])+'\n')    
         f.write('\n')
 
-        if single_star == False:
+        if setup['single_star'] == False:
             names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
             f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
 
@@ -407,31 +407,6 @@ def CMF_meanRho(run,loc, data, setup):
             for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm']):
                 f.write(col_format.format(*i))
         
-        # f.write('\n')
-        # f.write('x array, to plot: '+'\n')
-        # f.write(str(infoForPlot['x'])+'\n')
-        
-        # f.write('\n')
-        # f.write('Full - mass fraction array: '+'\n')
-        # f.write(str(infoForPlot['massFraction'][:-1])+'\n')
-        # f.write('\n')
-        # f.write('Full - meanRhoSm array: '+'\n')
-        # f.write(str(infoForPlot['meanRhoSm'])+'\n')
-        # if setup['single_star'] == False:
-        #     f.write('\n')
-        #     f.write('Apastron - mass fraction array: '+'\n')
-        #     f.write(str(infoForPlotL['massFraction'][:-1])+'\n')
-        #     f.write('\n')
-        #     f.write('Apastron - meanRhoSm array: '+'\n')
-        #     f.write(str(infoForPlotL['meanRhoSm'])+'\n')   
-            
-        #     f.write('\n')
-        #     f.write('Periastron - mass fraction array: '+'\n')
-        #     f.write(str(infoForPlotR['massFraction'][:-1])+'\n')
-        #     f.write('\n')
-        #     f.write('Perastron - meanRhoSm array: '+'\n')
-        #     f.write(str(infoForPlotR['meanRhoSm'])+'\n')
-
 
 
 

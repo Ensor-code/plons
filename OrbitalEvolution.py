@@ -165,8 +165,6 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     delta_e              = ((toPlot[0]-toPlot[0][0] - (toPlot[1]-toPlot[1][0]) )/(2*setup['sma_ini']*cgs.AU_cm() + 2*delta_a) )[-1]
     ratio_delta_e_per_yr = (delta_e/setup['ecc'] ) /t_total
 
-    # print('delta_e/e= ', str(ratio_delta_e_per_yr), '/yr')
-    # print('delta_a/a= ', str(ratio_delta_a_per_yr), '/yr')
 
 
     ax.plot(sma_t,toPlot[0]-toPlot[0][0],color = c, marker = '$a$', linestyle = 'dashed', markersize = 10)
@@ -205,14 +203,6 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
         for i in zip(sma_t, toPlot[0], toPlot[1],sma):
             f.write(col_format.format(*i))
         f.write('\n')
-        # f.write('Times of periastron passage, to plot on x axis [yrs]: '+ '\n')
-        # f.write(str(sma_t)+'\n' )
-        # f.write('Orbital separation at apastron passages [cm] : '+ '\n')
-        # f.write(str(toPlot[0])+ '\n')
-        # f.write('Orbital separation at periastron passages [cm]: '+ '\n')
-        # f.write(str(toPlot[1])+ '\n')
-        # f.write('Semi major axis at times of periastron passage [cm]: '+ '\n')
-        # f.write(str(sma)+ ' \n')
 
 
 def plotMassAccr(sinkData, run, loc):
@@ -281,14 +271,6 @@ def plotOrbVelEcc(sinkData, run, loc):
           
     plt.legend()
     plt.savefig(loc+'orbEvolution/model'+str(run)+'/orbVel_'+str(run))
-    # #Write text file with usefull info
-    # title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
-    # with open (title,'a') as f:
-    #     f.write('\n')
-    #     f.write('Orbital velocity companion (t) [cm/s]: '+ '\n')
-    #     f.write(str(sinkData['v_orbComp_t']) +'\n')
-    #     f.write('Orbital velocity AGB star  (t) [cm/s]: '+ '\n')
-    #     f.write(str(sinkData['v_orbAGB_t']) +'\n')
 
 
 
@@ -308,31 +290,13 @@ def plotOrbEvEcc(sinkData, run, loc):
     plt.savefig(loc+'orbEvolution/model'+str(run)+'/rc,rA,orbSep_'+str(run))
 
 
-# def plotOrbEvNoEcc(sinkData, run, loc):
-#     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
-
-#     ax.plot(sinkData['time'], sinkData['rComp'], label= 'r comp')
-#     ax.set_ylabel('$r$[cm]', fontsize = 12)
-#     ax.set_title('r comp, r AGB, orb sep (model'+str(run)+')', fontsize = 15)
-       
-#     ax.plot(sinkData['time'], sinkData['rAGB'], label ='r AGB')
-#     ax.plot(sinkData['time'], sinkData['rAGB']+sinkData['rComp'], label = 'Orb sep')
-#     ax.set_xlabel('time[yrs]', fontsize = 14)
-#     ax.tick_params(labelsize=10)
-
-#     plt.legend()
-#     plt.savefig(loc+'orbEvolution/model'+str(run)+'/rc,rA,orbSep_'+str(run))
-    
-
-
 def orbEv_main(run,loc, sinkData, setup):
+    print('')
+    print('(6)  Start calculations for orbital evolution...')
     if setup['single_star'] == True:
         print('A single model has no orbit, and thereby no orbital evolution.')
-        print('The orbital evolution part is therefore skipped.')
+        print('The orbital evolution part is skipped.')
     else:
-        print('')
-        print('(6)  Start calculations for orbital evolution...')
-
         try:
             os.mkdir(loc+'orbEvolution/')
         except OSError:
@@ -390,10 +354,6 @@ def orbEv_main(run,loc, sinkData, setup):
             plotOrbEvEcc(sinkData, run, loc)
 
 
-        # if setup['ecc'] == 0:
-            # Plot of orbital evolution of non eccentric models 
-            # plotOrbEvNoEcc(sinkData, run, loc)
-
         #Write text file with usefull info
         title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
         with open (title,'a') as f:
@@ -408,22 +368,6 @@ def orbEv_main(run,loc, sinkData, setup):
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 15 character width
             for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'],sinkData['v_orbAGB_t'] ):
                     f.write(col_format.format(*i))
-
-            # f.write('Time on x-axis [yrs] : '+ '\n')
-            # f.write(str(sinkData['time']) +'\n')
-            # f.write('\n')
-            # f.write('Total accreted mass by companion (t) [g]: '+ '\n')
-            # f.write(str(sinkData['maccrComp']) +'\n')
-            # f.write('Radius of comp star [cm]: '+ '\n')
-            # f.write(str(sinkData['rComp']) +'\n')
-            # f.write('Radius of AGB star [cm]: '+ '\n')
-            # f.write(str(sinkData['rAGB']) +'\n')
-            # f.write('Orbital separation [cm]:' + '\n')
-            # f.write(str(sinkData['rComp']+sinkData['rAGB']) + '\n')
-            # f.write('Orbital velocity companion (t) [cm/s]: '+ '\n')
-            # f.write(str(sinkData['v_orbComp_t']) +'\n')
-            # f.write('Orbital velocity AGB star  (t) [cm/s]: '+ '\n')
-            # f.write(str(sinkData['v_orbAGB_t']) +'\n')
                   
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
 
