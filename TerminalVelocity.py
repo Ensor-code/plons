@@ -24,7 +24,8 @@ terminal velocity are obtained (min, mean, max).
 def getTerminalVelocity(setup, dump):
     
     single_star = setup['single_star']
-    sma         = setup['sma_ini'    ]
+    if single_star == False:
+        sma         = setup['sma_ini'    ]
     outerBound  = int(round( setup['bound']  ))  
     r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.AU_cm()  # radius [AU] from AGB, not barycentre!
     
