@@ -71,19 +71,25 @@ def onePlot(ax,par,name,colormap,mi,ma,x,y,xlabel,ylabel,lim,dumpData,setup,ax1,
  
     ax.axis('equal')
     ax.set_facecolor('k')
-    axPlot = ax.scatter(x/cgs.AU_cm(), y/cgs.AU_cm(), s=11, c=par, cmap=colormap, vmin=mi, vmax = ma)
+    axPlot = ax.scatter(x/cgs.AU_cm(), y/cgs.AU_cm(), s=5, c=par, cmap=colormap, vmin=mi, vmax = ma)
+    
+    # plot the position of the AGB star and comp in the edge-on plane & make colorbar 
     if ax == ax2 or ax == ax4 or ax == ax6:
-        ax.plot(xAGB,zAGB, 'bo', markersize = 4,label = 'AGB')
-        if setup['single_star']== False:
-            ax.plot(xcomp,zcomp, 'ro', markersize = 3,label = 'comp')  
+        ax.plot(xAGB, zAGB, 'ko', markersize = 4,label = 'AGB')
+        if setup['single_star'] == False:
+            ax.plot(xcomp, zcomp, 'ro', markersize = 2.5,label = 'comp')  
         cbar = plt.colorbar(axPlot, ax = ax)
         cbar.set_label(name, fontsize = 18)
+        
     if ax == ax5 or ax == ax6:
         ax.set_xlabel(xlabel)
+    
+    # plot the position of the AGB star and comp in the face-on plane
     if ax == ax1 or ax == ax3 or ax == ax5:
-        ax.plot(xAGB,yAGB, 'bo', markersize = 4,label = 'AGB')
-        if setup['single_star']== False:
-            ax.plot(xcomp,ycomp, 'ro', markersize = 3,label = 'comp')  
+        ax.plot(xAGB,yAGB, 'ko', markersize = 4,label = 'AGB')
+        if setup['single_star'] == False:
+            ax.plot(xcomp,ycomp, 'ro', markersize = 2.5,label = 'comp')  
+            
     ax.axis([-lim,lim,-lim,lim])
     ax.set_ylabel(ylabel)
 
@@ -101,14 +107,14 @@ def allPlots(modelname, smooth, zoom, rhoMin, rhoMax, vmax, bound, dumpData, set
     lim = bound/zoom  
           
     # the temperature colorbar limits may have to be changed...
-    onePlot(ax1,np.log10(smooth['sph_sl_z']['rho' ])     ,'log($\\rho[$g/cm$^3]$)', cm_rho, rhoMin, rhoMax, smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax2,np.log10(smooth['sph_sl_y']['rho' ])     ,'log($\\rho[$g/cm$^3]$)', cm_rho, rhoMin, rhoMax, smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax3,np.log10(smooth['sph_sl_z']['temp'])     ,'log$(T$[K])'           , cm_T  , 1.7   , 5.2   , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax4,np.log10(smooth['sph_sl_y']['temp'])     ,'log$(T$[K])'           , cm_T  , 1.7   , 5.2   , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax5,         smooth['sph_sl_z']['speed']*1e-5,'$|v|$ [km/s]'          , cm_v  , 0     , vmax  , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax6,         smooth['sph_sl_y']['speed']*1e-5,'$|v|$ [km/s]'          , cm_v  , 0     , vmax  , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax1,np.log10(smooth['sph_sl_z']['rho' ])              , 'log density [cm/g$^3$]', cm_rho, rhoMin, rhoMax, smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax2,np.log10(smooth['sph_sl_y']['rho' ])              , 'log density [cm/g$^3$]', cm_rho, rhoMin, rhoMax, smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax5,np.log10(smooth['sph_sl_z']['temp'])              , 'log temperature [K]'   , cm_T  , 1.7   , 5.2   , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax6,np.log10(smooth['sph_sl_y']['temp'])              , 'log temperature [K]'   , cm_T  , 1.7   , 5.2   , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax3,         smooth['sph_sl_z']['speed']*cgs.cms_kms(), 'speed [km/s]'          , cm_v  , 0     , vmax  , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax4,         smooth['sph_sl_y']['speed']*cgs.cms_kms(), 'speed [km/s]'          , cm_v  , 0     , vmax  , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
     
-    fig.savefig(loc+'2DslicePlots/'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc+'2DslicePlots/'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
@@ -125,24 +131,24 @@ def densityPlot(modelname,smooth, zoom,rhoMin,rhoMax,vmax,bound,dumpData, setup,
     ax.set_facecolor('k')
     axPlot = ax.scatter(smooth['xz']/cgs.AU_cm(),smooth['yz']/cgs.AU_cm(),s=11,c=np.log10(smooth['sph_sl_z']['rho']),cmap=cm_rho,vmin=rhoMin, vmax = rhoMax)
     if setup['single_star']== False:
-        xAGB = dumpData['posAGB'][0]/cgs.AU_cm()
-        yAGB = dumpData['posAGB'][1]/cgs.AU_cm()
-        xcomp = dumpData['posComp'][0]/cgs.AU_cm()
-        ycomp = dumpData['posComp'][1]/cgs.AU_cm()
-        ax.plot(xAGB,yAGB, 'bo', markersize = 5,label = 'AGB')
-        ax.plot(xcomp,ycomp, 'ro', markersize = 5,label = 'comp')   
+        xAGB  = dumpData['posAGB' ][0] / cgs.AU_cm()
+        yAGB  = dumpData['posAGB' ][1] / cgs.AU_cm()
+        xcomp = dumpData['posComp'][0] / cgs.AU_cm()
+        ycomp = dumpData['posComp'][1] / cgs.AU_cm()
+        ax.plot(xAGB ,yAGB , 'ko', markersize = 5  ,label = 'AGB')
+        ax.plot(xcomp,ycomp, 'ro', markersize = 3.5,label = 'comp')   
 
     cbar = plt.colorbar(axPlot, ax = ax)
-    cbar.set_label('log($\\rho$[g/cm$^3]$)', fontsize = 25)
+    cbar.set_label('log density [cm/g$^3$]', fontsize = 25)
     cbar.ax.tick_params(labelsize=14)
-    ax.set_xlabel('x[AU]', fontsize = 18)
-    ax.set_ylabel('y[AU]', fontsize = 18)
+    ax.set_xlabel('x [AU]', fontsize = 18)
+    ax.set_ylabel('y [AU]', fontsize = 18)
     lim = bound/zoom  
     ax.axis([-lim,lim,-lim,lim])
     ax.tick_params(labelsize=14)
 
     fig.tight_layout()
-    fig.savefig(loc+'2DslicePlots/1Plot_'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc+'2DslicePlots/1Plot_'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
     
     print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 

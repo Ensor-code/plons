@@ -23,12 +23,14 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+
+
       
 def getParamsLine(results_line,rR, minT):
     indicesToKeep = np.where(np.log10(results_line['temp']) > minT)
     R     = rR[indicesToKeep]
     temp  = (results_line['temp' ][indicesToKeep])
-    speed = (results_line['speed'][indicesToKeep]) * cgs.cms_kms()
+    speed =         (results_line['speed'][indicesToKeep]) * cgs.cms_kms()
     rho   = (results_line['rho'  ][indicesToKeep])
     
     return(rho,speed,temp,R)
@@ -42,19 +44,20 @@ def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMa
     axis.plot((Y/cgs.AU_cm()),parY, color = 'firebrick', label = 'y-axis', markersize = 0.5, lw = 0.6)
     axis.plot((Z/cgs.AU_cm()),parZ, color = 'goldenrod', label = 'z-axis', markersize = 0.5, lw = 0.6)
 
+    #CHANGE TO OUTER BOUNDARY
     axis.set_xlim(-bound,bound)
-    axis.set_ylim(parMin,parMax)
-    # axis.vlines(xcomp, parMin, parMax ,'k', linestyle = 'dashed' ,linewidth = 1)
-    # axis.vlines(xAGB, parMin, parMax,'k', linestyle = 'solid', linewidth = 1)
+    #axis.vlines(xcomp, parMin, parMax,'k', linestyle = 'dashed', linewidth = 0.6)
+    #axis.vlines(xAGB , parMin, parMax,'k', linestyle = 'solid' , linewidth = 0.6)
+
     axis.set_ylabel(parName, fontsize = 16)
     axis.tick_params(labelsize=12)
 
 
-def radialStructPlots(run,loc, dumpData, setup):
+def radialStructPlots(run,directory, dumpData, setup):
     print('')
     print('(2)  Start calculations for the radial structure plots.')
     try:
-        os.mkdir(loc+'1DradialStructurePlots/')
+        os.mkdir(directory+'1DradialStructurePlots/')
     except OSError:
         print('')
 
@@ -126,17 +129,19 @@ def radialStructPlots(run,loc, dumpData, setup):
         rhoMin = 10**(-23)
         rhoMax = 10**(-12)
 
-    vmin = 0
-    vmax = 35
+    vmin = -3
+    vmax = 60
     Tmin = 1e1
     Tmax = 1e6
 
+
+    #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
     
-    # Plots of the density [0], speed [1] and temperature[2] on the x, y and z axis
+    # Plots
     oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'density [cm/g$^3$]', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
     oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, 'speed [km/s]'      , ax2, vmin  , vmax  , xcomp, xAGB, setup['bound'])
     oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'temperature [K]'   , ax3, Tmin  , Tmax  , xcomp, xAGB, setup['bound'])
-
+    
     # Plot make up
     ax1.legend(handles = handl, fontsize = 12, loc = 'upper right')
     ax1.set_yscale('log')
@@ -148,20 +153,7 @@ def radialStructPlots(run,loc, dumpData, setup):
     
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.005,hspace = 0.01)
-    fig.savefig(loc+'1DradialStructurePlots/1D_'+str(run)+'.png')
-
-    #Make text file with info to make plots
-    title = loc+'1DradialStructurePlots/1D_'+str(run)+'.txt'
-    with open (title,'w') as f:
-        f.write('Model '+str(run)+'\n')
-        f.write('Data to make radial structure plots yourself:')
-        f.write('\n')
-        names = ['X [cm]', 'Y[cm]', 'Z[cm]', 'Rho(x) [cm/g$^3$]', 'Rho(y) [cm/g$^3$]', 'Rho(z) [cm/g$^3$]', '|v|(x) [km/s]', '|v|(y) [km/s]', '|v|(z) [km/s]', 'T(x) [K]', 'T(y) [K]', 'T(z) [K]']
-        f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
-        col_format = "{:<35}" * 12 + "\n"   # 7 left-justfied columns with 15 character width
-        f.write('\n')
-        for i in zip(X,Y,Z,parX[0],parY[0],parZ[0],parX[1],parY[1],parZ[1],parX[2],parY[2],parZ[2]):
-            f.write(col_format.format(*i))
+    fig.savefig(directory+'1DradialStructurePlots/1D_'+str(run)+'.png')
     
     print('     Radial structure plot model '+str(run)+' ready and saved!')
 
