@@ -12,8 +12,6 @@ rc('text', usetex=True)
 
 # own scripts
 import ConversionFactors_cgs    as cgs
-
-
     
 
 '''
@@ -196,17 +194,25 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
         f.write('The change in eccentricity, delta_e/e=         '+ str(round(ratio_delta_e_per_yr,9))+ '/yr'+'\n')
         f.write('The change in sma,          delta_a/a=         '+ str(round(ratio_delta_a_per_yr,9))+ '/yr'+'\n')
         f.write('\n')
+
         f.write('To plot the change in eccentricity and change in sma, use the following: '+ '\n')
         f.write('\n')
-        f.write('Times of periastron passage, to plot on x axis [yrs]: '+ '\n')
-        f.write(str(sma_t)+'\n' )
-        f.write('Orbital separation at apastron passages [cm] : '+ '\n')
-        f.write(str(toPlot[0])+ '\n')
-        f.write('Orbital separation at periastron passages [cm]: '+ '\n')
-        f.write(str(toPlot[1])+ '\n')
-        f.write('Semi major axis at times of periastron passage [cm]: '+ '\n')
-        f.write(str(sma)+ ' \n')
+        names = ['Periastron passages [yrs]','Orb Sep Apa [cm]','Orb Sep Per [cm]','sma Per [cm]']
+        f.write("{: <34} {: <34} {: <34} {: <34}".format(*names))
+        f.write('\n')
+        col_format = "{:<35}" * 4 + "\n"   # 7 left-justfied columns with 15 character width
 
+        for i in zip(sma_t, toPlot[0], toPlot[1],sma):
+            f.write(col_format.format(*i))
+        f.write('\n')
+        # f.write('Times of periastron passage, to plot on x axis [yrs]: '+ '\n')
+        # f.write(str(sma_t)+'\n' )
+        # f.write('Orbital separation at apastron passages [cm] : '+ '\n')
+        # f.write(str(toPlot[0])+ '\n')
+        # f.write('Orbital separation at periastron passages [cm]: '+ '\n')
+        # f.write(str(toPlot[1])+ '\n')
+        # f.write('Semi major axis at times of periastron passage [cm]: '+ '\n')
+        # f.write(str(sma)+ ' \n')
 
 
 def plotMassAccr(sinkData, run, loc):
@@ -390,21 +396,30 @@ def orbEv_main(run,loc, sinkData, setup):
         f.write('\n')
         f.write('To plot mass accretion, orbital velocities and orbital radii: '+ '\n')
         f.write('\n')
-        f.write('Time on x-axis [yrs] : '+ '\n')
-        f.write(str(sinkData['time']) +'\n')
+
+        names = ['Time on x-axis [yrs]', 'Total accr mass comp [g]', 'Orbital Radius comp [cm]','Orbital Radius AGB [cm]', 'Orbital separation [cm]', 'Orbital vel comp [cm/s]', 'Orbital vel AGB [cm/s]']
+        f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
         f.write('\n')
-        f.write('Total accreted mass by companion (t) [g]: '+ '\n')
-        f.write(str(sinkData['maccrComp']) +'\n')
-        f.write('Radius of comp star [cm]: '+ '\n')
-        f.write(str(sinkData['rComp']) +'\n')
-        f.write('Radius of AGB star [cm]: '+ '\n')
-        f.write(str(sinkData['rAGB']) +'\n')
-        f.write('Orbital separation [cm]:' + '\n')
-        f.write(str(sinkData['rComp']+sinkData['rAGB']) + '\n')
-        f.write('Orbital velocity companion (t) [cm/s]: '+ '\n')
-        f.write(str(sinkData['v_orbComp_t']) +'\n')
-        f.write('Orbital velocity AGB star  (t) [cm/s]: '+ '\n')
-        f.write(str(sinkData['v_orbAGB_t']) +'\n')
+
+        col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 15 character width
+        for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'],sinkData['v_orbAGB_t'] ):
+                f.write(col_format.format(*i))
+
+        # f.write('Time on x-axis [yrs] : '+ '\n')
+        # f.write(str(sinkData['time']) +'\n')
+        # f.write('\n')
+        # f.write('Total accreted mass by companion (t) [g]: '+ '\n')
+        # f.write(str(sinkData['maccrComp']) +'\n')
+        # f.write('Radius of comp star [cm]: '+ '\n')
+        # f.write(str(sinkData['rComp']) +'\n')
+        # f.write('Radius of AGB star [cm]: '+ '\n')
+        # f.write(str(sinkData['rAGB']) +'\n')
+        # f.write('Orbital separation [cm]:' + '\n')
+        # f.write(str(sinkData['rComp']+sinkData['rAGB']) + '\n')
+        # f.write('Orbital velocity companion (t) [cm/s]: '+ '\n')
+        # f.write(str(sinkData['v_orbComp_t']) +'\n')
+        # f.write('Orbital velocity AGB star  (t) [cm/s]: '+ '\n')
+        # f.write(str(sinkData['v_orbAGB_t']) +'\n')
               
     print('     Orbital evolution plots of model '+ run +' ready and saved!')
 

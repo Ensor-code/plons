@@ -348,11 +348,11 @@ def CMF_meanRho(run,loc, data, setup):
         f.write('Description parameters:'+'\n')
         f.write('\n')
         f.write('theta50 / theta75: Angle wrt orbital plane at which 50 / 75 percent of total mass is acumulated'+'\n')
-        f.write('rho50 / rho75: Mean density corresponding to angle theta50 / theta 75'+'\n')
-        f.write('Mass fraction: Array with cumulative mass fraction for increasing angle with the orbital plane.'+'\n')
-        f.write('               Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
-        f.write('meanRhoSm:     Smoothened array of mean rho. Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
-        f.write('x:             Array going from 0 to 1/2. Corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
+        f.write('rho50 / rho75:     Mean density corresponding to angle theta50 / theta 75'+'\n')
+        f.write('Mass fraction:     Array with cumulative mass fraction for increasing angle with the orbital plane.'+'\n')
+        f.write('                   Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
+        f.write('meanRhoSm:         Smoothened array of mean rho. Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
+        f.write('x:                 Array going from 0 to 1/2. Corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
         f.write('Apastron side / Periastron side / Full :  gives which part of the data is used: x<0 / x>0 / all.'+'\n')
         f.write('\n')
         f.write('\n')
@@ -362,59 +362,75 @@ def CMF_meanRho(run,loc, data, setup):
         f.write('This is a usefull ratio to measure the EDE!'+'\n')
         f.write('\n')
         f.write('\n')
-        f.write('theta(50),   full =                 '+ str(np.round(infoForPlot['theta50']/np.pi ,3))+'pi'+'\n')
+        f.write('theta(50),                   full = '+ str(np.round(infoForPlot['theta50']/np.pi ,3))+'pi'+'\n')
         if setup['single_star'] == False:
-            f.write('         Apastron =                 '+ str(np.round(infoForPlotL['theta50']/np.pi ,3))+'pi'+'\n')
-            f.write('       Periastron =                 '+ str(np.round(infoForPlotR['theta50']/np.pi ,3))+'pi'+'\n')
+            f.write('                              Apa = '+ str(np.round(infoForPlotL['theta50']/np.pi ,3))+'pi'+'\n')
+            f.write('                              Per = '+ str(np.round(infoForPlotR['theta50']/np.pi ,3))+'pi'+'\n')
 
         f.write('theta(50) to plot on x-axis, full:  '+str(np.round(theta['50x'],3))+'\n')
         if setup['single_star'] == False:
-            f.write('                         Apastron:  '+str(np.round(theta['50xL'],3))+'\n')
-            f.write('                       Periastron:  '+str(np.round(theta['50xR'],3))+'\n')
+            f.write('                              Apa:  '+str(np.round(theta['50xL'],3))+'\n')
+            f.write('                              Per:  '+str(np.round(theta['50xR'],3))+'\n')
 
 
         f.write('rho(50) to plot on y-axis, Full:    '+str(infoForPlot['rho50'])+'\n')
         if setup['single_star'] == False:
-            f.write('                         Apastron:  '+str(infoForPlotL['rho50'])+'\n')
-            f.write('                       Periastron:  '+str(infoForPlotR['rho50'])+'\n')    
+            f.write('                              Apa:  '+str(infoForPlotL['rho50'])+'\n')
+            f.write('                              Per:  '+str(infoForPlotR['rho50'])+'\n')    
         f.write('\n')
-        f.write('theta(75) =                         '+str(np.round(infoForPlot['theta75']/np.pi,3))+'pi'+'\n')
+        f.write('theta(75),                    full = '+str(np.round(infoForPlot['theta75']/np.pi,3))+'pi'+'\n')
         if setup['single_star'] == False:
-            f.write('       Apastron =                   '+ str(np.round(infoForPlotL['theta75']/np.pi ,3))+'pi'+'\n')
-            f.write('     Periastron =                   '+ str(np.round(infoForPlotR['theta75']/np.pi ,3))+'pi'+'\n')
+            f.write('                              Apa = '+ str(np.round(infoForPlotL['theta75']/np.pi ,3))+'pi'+'\n')
+            f.write('                              Per = '+ str(np.round(infoForPlotR['theta75']/np.pi ,3))+'pi'+'\n')
         f.write('theta(75) to plot on x-axis, full:  '+str(np.round(theta['75x'],3))+'\n')
         if setup['single_star'] == False:
-            f.write('                         Apastron:  '+str(np.round(theta['75xL'],3))+'\n')
-            f.write('                       Periastron:  '+str(np.round(theta['75xR'],3))+'\n')
+            f.write('                              Apa:  '+str(np.round(theta['75xL'],3))+'\n')
+            f.write('                              Per:  '+str(np.round(theta['75xR'],3))+'\n')
         f.write('rho(75) to plot on y-axis, Full:    '+str(infoForPlot['rho75'])+'\n')
         if setup['single_star'] == False:
-            f.write('                         Apastron:  '+str(infoForPlotL['rho75'])+'\n')
-            f.write('                       Periastron:  '+str(infoForPlotR['rho75'])+'\n')    
-        
+            f.write('                              Apa:  '+str(infoForPlotL['rho75'])+'\n')
+            f.write('                              Per:  '+str(infoForPlotR['rho75'])+'\n')    
         f.write('\n')
-        f.write('x array, to plot: '+'\n')
-        f.write(str(infoForPlot['x'])+'\n')
-        
-        f.write('\n')
-        f.write('Full - mass fraction array: '+'\n')
-        f.write(str(infoForPlot['massFraction'][:-1])+'\n')
-        f.write('\n')
-        f.write('Full - meanRhoSm array: '+'\n')
-        f.write(str(infoForPlot['meanRhoSm'])+'\n')
-        if setup['single_star'] == False:
+
+        if single_star == False:
+            names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
+            f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
+
+            col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 15 character width
             f.write('\n')
-            f.write('Apastron - mass fraction array: '+'\n')
-            f.write(str(infoForPlotL['massFraction'][:-1])+'\n')
+            for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm'],infoForPlotL['massFraction'][:-1],infoForPlotL['meanRhoSm'], infoForPlotR['massFraction'][:-1], infoForPlotR['meanRhoSm']):
+                f.write(col_format.format(*i))
+        else:
+            names = ['x array, to plot', 'Mass fraction', 'MeanRhoSm']
+            f.write("{: <34} {: <34} {: <34} ".format(*names))
             f.write('\n')
-            f.write('Apastron - meanRhoSm array: '+'\n')
-            f.write(str(infoForPlotL['meanRhoSm'])+'\n')   
+            for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm']):
+                f.write(col_format.format(*i))
+        
+        # f.write('\n')
+        # f.write('x array, to plot: '+'\n')
+        # f.write(str(infoForPlot['x'])+'\n')
+        
+        # f.write('\n')
+        # f.write('Full - mass fraction array: '+'\n')
+        # f.write(str(infoForPlot['massFraction'][:-1])+'\n')
+        # f.write('\n')
+        # f.write('Full - meanRhoSm array: '+'\n')
+        # f.write(str(infoForPlot['meanRhoSm'])+'\n')
+        # if setup['single_star'] == False:
+        #     f.write('\n')
+        #     f.write('Apastron - mass fraction array: '+'\n')
+        #     f.write(str(infoForPlotL['massFraction'][:-1])+'\n')
+        #     f.write('\n')
+        #     f.write('Apastron - meanRhoSm array: '+'\n')
+        #     f.write(str(infoForPlotL['meanRhoSm'])+'\n')   
             
-            f.write('\n')
-            f.write('Periastron - mass fraction array: '+'\n')
-            f.write(str(infoForPlotR['massFraction'][:-1])+'\n')
-            f.write('\n')
-            f.write('Perastron - meanRhoSm array: '+'\n')
-            f.write(str(infoForPlotR['meanRhoSm'])+'\n')
+        #     f.write('\n')
+        #     f.write('Periastron - mass fraction array: '+'\n')
+        #     f.write(str(infoForPlotR['massFraction'][:-1])+'\n')
+        #     f.write('\n')
+        #     f.write('Perastron - meanRhoSm array: '+'\n')
+        #     f.write(str(infoForPlotR['meanRhoSm'])+'\n')
 
 
 
