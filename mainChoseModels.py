@@ -61,7 +61,7 @@ def run_main(part,Numbers):
 
         if part == '3' or part == '4':  
             # (3) and (4) terminal velocity, eta, Qp
-            tmv.main_terminalVelocity(setup, dumpData, outputloc, run)
+            tmv.main_terminalVelocity(setup, dumpData, sinkData, outputloc, run)
             
         if part == '5':
             # (5) cummulative mass fraction

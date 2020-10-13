@@ -25,7 +25,7 @@ def getTerminalVelocity(setup, dump):
     
     single_star = setup['single_star']
     if single_star == False:
-        sma         = setup['sma_ini']
+        sma         = setup['sma_ini'    ]
     outerBound  = int(round( setup['bound']  ))  
     r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.AU_cm()  # radius [AU] from AGB, not barycentre!
     
@@ -131,14 +131,24 @@ for different speeds.
     4) vector sum of the velocity at the semi-major axis of the corresponding single model and the orbital velocity
 '''
 # NOTE Not yet possible to get (3) and (4), see later
-def getEta_binary(setup, dump, terminal_speed, wind_comp):
+def getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp):
     sma = setup['sma_ini']
-    
-    vOrb_AGB  = dump['v_orbAGB' ]
-    vOrb_comp = dump['v_orbComp' ]
-    #print('Orbital velocity [km/s]')
-    #print('AGB: ',vOrb_AGB)
-    #print('comp:',vOrb_comp)
+    if setup['ecc'] == 0:
+        vOrb_AGB  = dump['v_orbAGB' ]
+        vOrb_comp = dump['v_orbComp' ]
+
+    elif setup['ecc'] >0:
+        vOrb_AGB  = [min(sinkData['v_orbAGB_t']), np.mean(sinkData['v_orbAGB_t']), max(sinkData['v_orbAGB_t'])]
+        vOrb_comp = [min(sinkData['v_orbComp_t']), np.mean(sinkData['v_orbComp_t']), max(sinkData['v_orbComp_t'])]
+
+        eta1_min  = terminal_speed['min' ] / vOrb_comp
+        eta1_mean = terminal_speed['mean'] / vOrb_comp
+        eta1_max  = terminal_speed['max' ] / vOrb_comp
+        
+
+    # print('Orbital velocity [cm/s]')
+    # print('AGB: ',vOrb_AGB)
+    # print('comp:',vOrb_comp)
     
     
     '''
@@ -264,7 +274,7 @@ def getQp(setup, dump, wind_comp):
     
     
     
-def main_terminalVelocity(setup, dump, outputloc, run):
+def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     
     single_star = setup['single_star']
     
@@ -276,7 +286,7 @@ def main_terminalVelocity(setup, dump, outputloc, run):
         print('')
         print('(4)  Start calculations for morphological parameters eta and Qp...')
         print('')
-        eta1, eta2 = getEta_binary(setup, dump, terminal_speed, wind_comp)
+        eta1, eta2 = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
         Qp, massHill = getQp(setup, dump, wind_comp)
         
         
@@ -317,28 +327,63 @@ def main_terminalVelocity(setup, dump, outputloc, run):
         f.write('   This is due to the spread on the speed of the model, because of the morphology.\n')
         f.write('   By the method of binning, a minimum, mean and maximum value is computed\n')
         f.write('\n')
-        f.write('Terminal velocities [cm/s]:'+'\n'      )
-        f.write(str(round(terminal_speed['max' ], 3))+'\n' )
-        f.write(str(round(terminal_speed['mean'], 3))+'\n' )
-        f.write(str(round(terminal_speed['min' ], 3))+'\n' )
+        f.write('Terminal velocities [km/s]:'+'\n'      )
+        f.write(str(round(terminal_speed['max' ]*cgs.cms_kms(), 3))+'\n' )
+        f.write(str(round(terminal_speed['mean']*cgs.cms_kms(), 3))+'\n' )
+        f.write(str(round(terminal_speed['min' ]*cgs.cms_kms(), 3))+'\n' )
         f.write('\n')
         if single_star == False:
             #f.write('Orbital velocity [km/s]: AGB: '+str(vOrb_AGB)+'  comp: '+str(vOrb_comp)+'\n')
             f.write('\n')
-            f.write('eta1 = v_term/v_orb'+'\n')
-            f.write(str(round(eta1['min' ], 2))+'\n')
-            f.write(str(round(eta1['mean'], 2))+'\n')
-            f.write(str(round(eta1['max' ], 2))+'\n')
-            f.write('\n')
-            f.write('Wind speed at companion [cm/s]:\n')
-            f.write(str(round(wind_comp['min'] , 2))+'\n')
-            f.write(str(round(wind_comp['mean'], 2))+'\n')
-            f.write(str(round(wind_comp['max'] , 2))+'\n')
-            f.write('\n')
-            f.write('eta2 = v_w(rcomp)/v_orb\n')
-            f.write(str(round(eta2['min' ], 2))+'\n')
-            f.write(str(round(eta2['mean'], 2))+'\n')
-            f.write(str(round(eta2['max' ], 2))+'\n')
+            if setup['ecc'] == 0:
+                f.write('eta1 = v_term/v_orb'+'\n')
+                f.write(str(round(eta1['min' ], 2))+'\n')
+                f.write(str(round(eta1['mean'], 2))+'\n')
+                f.write(str(round(eta1['max' ], 2))+'\n')
+                f.write('\n')
+                f.write('Wind speed at companion [km/s]:\n')
+                f.write(str(round(wind_comp['min']*cgs.cms_kms() , 2))+'\n')
+                f.write(str(round(wind_comp['mean']*cgs.cms_kms(), 2))+'\n')
+                f.write(str(round(wind_comp['max']*cgs.cms_kms() , 2))+'\n')
+                f.write('\n')
+                f.write('eta2 = v_w(rcomp)/v_orb\n')
+                f.write(str(round(eta2['min' ], 2))+'\n')
+                f.write(str(round(eta2['mean'], 2))+'\n')
+                f.write(str(round(eta2['max' ], 2))+'\n')
+            else:
+                f.write('eta1 = v_term/v_orb'+'\n')
+                f.write('Apastron:' +'\n')
+                f.write(str(round(eta1['min' ][0], 2))+'\n')
+                f.write(str(round(eta1['mean'][0], 2))+'\n')
+                f.write(str(round(eta1['max' ][0], 2))+'\n')
+                f.write('mean:' +'\n')
+                f.write(str(round(eta1['min' ][1], 2))+'\n')
+                f.write(str(round(eta1['mean'][1], 2))+'\n')
+                f.write(str(round(eta1['max' ][1], 2))+'\n')
+                f.write('periastron:' +'\n')
+                f.write(str(round(eta1['min' ][2], 2))+'\n')
+                f.write(str(round(eta1['mean'][2], 2))+'\n')
+                f.write(str(round(eta1['max' ][2], 2))+'\n')
+                f.write('\n')
+                f.write('Wind speed at companion [km/s]:\n')
+                f.write(str(round(wind_comp['min']*cgs.cms_kms() , 2))+'\n')
+                f.write(str(round(wind_comp['mean']*cgs.cms_kms(), 2))+'\n')
+                f.write(str(round(wind_comp['max']*cgs.cms_kms() , 2))+'\n')
+                f.write('\n')
+                f.write('eta2 = v_w(rcomp)/v_orb\n')
+                f.write('Apastron:'+'\n')
+                f.write(str(round(eta2['min' ][0], 2))+'\n')
+                f.write(str(round(eta2['mean'][0], 2))+'\n')
+                f.write(str(round(eta2['max' ][0], 2))+'\n')
+                f.write('mean:'+'\n')
+                f.write(str(round(eta2['min' ][1], 2))+'\n')
+                f.write(str(round(eta2['mean'][1], 2))+'\n')
+                f.write(str(round(eta2['max' ][1], 2))+'\n')
+                f.write('Periastron:'+'\n')
+                f.write(str(round(eta2['min' ][2], 2))+'\n')
+                f.write(str(round(eta2['mean'][2], 2))+'\n')
+                f.write(str(round(eta2['max' ][2], 2))+'\n')
+
             f.write('\n')
             f.write('Total mass the companion encounters at r = rcomp, within the Hill radius = Mwind [Msun]:\n')
             f.write(str(massHill/cgs.Msun_gram())+'\n')
