@@ -284,7 +284,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'h'             : h,             # [cm]
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
-            'u'             : u              # [erg/g]
+            'u'             : u,              # [erg/g]
             'temp'          : temp,          # [K]    
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          

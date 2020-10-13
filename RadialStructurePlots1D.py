@@ -39,14 +39,14 @@ definition used in plotParR, plots radial structure of given parameter (log(rho)
 '''
 def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMax, xcomp, xAGB, bound):
 
-    axis.plot((X/cgs.AU_cm()),parX, '.', color = 'royalblue', label = 'x-axis', markersize = 1)
-    axis.plot((Y/cgs.AU_cm()),parY, '.', color = 'firebrick', label = 'y-axis', markersize = 1)
-    axis.plot((Z/cgs.AU_cm()),parZ, '.', color = 'goldenrod', label = 'z-axis', markersize = 1)
+    axis.plot((X/cgs.AU_cm()),parX, '.', color = 'royalblue', label = 'x-axis', markersize = 0.5, lw = 0.61)
+    axis.plot((Y/cgs.AU_cm()),parY, '.', color = 'firebrick', label = 'y-axis', markersize = 0.5, lw = 0.61)
+    axis.plot((Z/cgs.AU_cm()),parZ, '.', color = 'goldenrod', label = 'z-axis', markersize = 0.5, lw = 0.61)
 
     #CHANGE TO OUTER BOUNDARY
     axis.set_xlim(-bound,bound)
-    axis.vlines(xcomp, parMin, parMax ,'k', linestyle = 'dashed' ,linewidth = 1)
-    axis.vlines(xAGB, parMin, parMax,'k', linestyle = 'solid', linewidth = 1)
+    axis.vlines(xcomp, parMin, parMax,'k', linestyle = 'dashed', linewidth = 0.61)
+    axis.vlines(xAGB , parMin, parMax,'k', linestyle = 'solid' , linewidth = 0.61)
 
     axis.set_ylabel(parName, fontsize = 27)
     axis.tick_params(labelsize=20)
@@ -66,8 +66,8 @@ def radialStructPlots(run,directory, dumpData, setup):
     yAxis  = mlines.Line2D([],[], color = 'firebrick', label='y-axis')
     zAxis  = mlines.Line2D([],[], color = 'goldenrod', label='z-axis')
     comp   = mlines.Line2D([],[], color = 'k', linestyle = 'dashed',linewidth = 1, label = 'comp')
-    AGB    = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 1, label='AGB')
-    AGBs   = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 2, label='AGB')
+    AGB    = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 1, label = 'AGB' )
+    AGBs   = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 2, label = 'AGB' )
     handles1 = [xAxis,yAxis,zAxis,comp,AGB]
     handles2 = [xAxis,yAxis,zAxis,AGBs]
 
@@ -110,7 +110,7 @@ def radialStructPlots(run,directory, dumpData, setup):
     Z = parZ[3]
     
     
-    Mdot  = setup['Mdot']
+    Mdot  = setup['Mdot' ]
     vini  = setup['v_ini'] 
     
     #Select limits 
@@ -129,15 +129,21 @@ def radialStructPlots(run,directory, dumpData, setup):
     Tmin = 1.7
     Tmax = 5.7
 
+
+    #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
     
     oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'log($\\rho$[g/cm$^3$])', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
-    ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
     oneRadialStructurePlot(parX[1],parY[1],parZ[1], X, Y, Z, '$|v|$[km/s]', ax2, vmin, vmax,  xcomp, xAGB,setup['bound'])
-    # ax2.set_ylim(0,vmax+5)
-    ax2.legend(handles = handl, loc = 'upper left', fontsize = 20) #only for M18 and M16
-    oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'log($T$[K])', ax3, Tmin, Tmax, xcomp, xAGB, setup['bound'])    
+    oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'log($T$[K])', ax3, Tmin, Tmax, xcomp, xAGB, setup['bound'])
+    ax1.legend(handles = handl, loc = 'upper left', fontsize = 20) #only for M18 and M16
     ax3.set_xlabel('r[AU]', fontsize = 27)
-                   
+    ax1.set_yscale('log')
+    ax2.set_yscale('log')
+    ax1.axes.get_xaxis().set_visible(False)
+    ax3.axes.get_xaxis().set_visible(False)
+    
+    fig.tight_layout()
+    
     fig.savefig(directory+'1DradialStructurePlots/1D_'+str(run)+'.png')
     print('     Radial structure plot model '+str(run)+' ready and saved!')
 

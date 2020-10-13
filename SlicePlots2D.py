@@ -33,7 +33,7 @@ def smoothData(dumpData,setup):
     #zoom = 1
     results_sph_sl_z  ,x1  ,y1   ,z1  = sk.getSmoothingKernelledPix(400,20,dumpData,['rho','temp','speed'], 'comp','z',setup['bound']*cgs.AU_cm())
     results_sph_sl_y  ,x2  ,y2   ,z2  = sk.getSmoothingKernelledPix(400,20,dumpData,['rho','temp','speed'], 'comp','y',setup['bound']*cgs.AU_cm())
-    #zoom =2
+    #zoom = 2
     results_sph_sl_zZ2,x1Z2,y1Z2,z1Z2 = sk.getSmoothingKernelledPix(400,20,dumpData,['rho','temp','speed'], 'comp','z',setup['bound']*cgs.AU_cm()/2)
     results_sph_sl_yZ2,x2Z2,y2Z2,z2Z2 = sk.getSmoothingKernelledPix(400,20,dumpData,['rho','temp','speed'], 'comp','y',setup['bound']*cgs.AU_cm()/2)
     #zoom = 5
@@ -92,21 +92,21 @@ Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), lo
 '''
 def allPlots(modelname, smooth, zoom, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc):
 
-    cm_rho  = plt.cm.get_cmap('inferno')
+    cm_rho  = plt.cm.get_cmap('viridis')
     cm_T    = plt.cm.get_cmap('afmhot')
-    cm_v    = plt.cm.get_cmap('viridis')
+    cm_v    = plt.cm.get_cmap('PuBuGn_r')
 #     fig = plt.figure(figsize=(11, 14))
     fig, ((ax1,ax2),(ax3,ax4),(ax5,ax6))= plt.subplots(3, 2,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [0.8,1]})
     fig.set_size_inches(10, 14)
     lim = bound/zoom  
           
     # the temperature colorbar limits may have to be changed...
-    onePlot(ax1,np.log10(smooth['sph_sl_z']['rho']),'log($\\rho[$g/cm$^3]$)', cm_rho, rhoMin, rhoMax, smooth['xz'],smooth['yz'],'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax2,np.log10(smooth['sph_sl_y']['rho']),'log($\\rho[$g/cm$^3]$)', cm_rho, rhoMin, rhoMax, smooth['xy'],smooth['zy'],'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax3,np.log10(smooth['sph_sl_z']['temp']),'log$(T$[K])', cm_T, 1.7, 5.2,smooth['xz'],smooth['yz'],'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax4,np.log10(smooth['sph_sl_y']['temp']),'log$(T$[K])', cm_T, 1.7, 5.2,smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax5,smooth['sph_sl_z']['speed']*1e-5,'$|v|$[km/s]', cm_v, 0, vmax, smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax6,smooth['sph_sl_y']['speed']*1e-5,'$|v|$[km/s]', cm_v, 0, vmax, smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax1,np.log10(smooth['sph_sl_z']['rho' ])     ,'log($\\rho[$g/cm$^3]$)', cm_rho, rhoMin, rhoMax, smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax2,np.log10(smooth['sph_sl_y']['rho' ])     ,'log($\\rho[$g/cm$^3]$)', cm_rho, rhoMin, rhoMax, smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax3,np.log10(smooth['sph_sl_z']['temp'])     ,'log$(T$[K])'           , cm_T  , 1.7   , 5.2   , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax4,np.log10(smooth['sph_sl_y']['temp'])     ,'log$(T$[K])'           , cm_T  , 1.7   , 5.2   , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax5,         smooth['sph_sl_z']['speed']*1e-5,'$|v|$ [km/s]'          , cm_v  , 0     , vmax  , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax6,         smooth['sph_sl_y']['speed']*1e-5,'$|v|$ [km/s]'          , cm_v  , 0     , vmax  , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
     
     fig.savefig(loc+'2DslicePlots/'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
     
@@ -117,7 +117,7 @@ Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). Takes 'zo
 '''
 def densityPlot(modelname,smooth, zoom,rhoMin,rhoMax,vmax,bound,dumpData, setup,run, loc):
 
-    cm_rho  = plt.cm.get_cmap('inferno')
+    cm_rho  = plt.cm.get_cmap('viridis')
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     fig.set_size_inches(9.8, 8)
         
@@ -141,6 +141,7 @@ def densityPlot(modelname,smooth, zoom,rhoMin,rhoMax,vmax,bound,dumpData, setup,
     ax.axis([-lim,lim,-lim,lim])
     ax.tick_params(labelsize=14)
 
+    fig.tight_layout()
     fig.savefig(loc+'2DslicePlots/1Plot_'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
     
     print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
@@ -176,12 +177,12 @@ def SlicePlots(run,loc, dumpData, setup):
     print('     Start making the slice plot figures, please wait..')
     print('')
     # Make plots
-    densityPlot('M'+str(run),smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    densityPlot('M'+str(run),smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    densityPlot('M'+str(run),smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots('M'+str(run)   ,smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots('M'+str(run)   ,smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots('M'+str(run)   ,smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    densityPlot('M'+str(run), smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    densityPlot('M'+str(run), smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    densityPlot('M'+str(run), smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    allPlots(   'M'+str(run), smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    allPlots(   'M'+str(run), smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    allPlots(   'M'+str(run), smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
 
 '''   
 NOTE: uncomment and change if we add Hill sphere plots
