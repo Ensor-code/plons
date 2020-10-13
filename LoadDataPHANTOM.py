@@ -14,14 +14,14 @@ import LoadSetup                as stp
 Load the data for a general model
     * INPUT
         - 'run'     [str]   number of the model 
-        - 'loc'     [str]   directory of the output data from PHANTOM
+        - 'loc'     [str]   directory of the output data from PHANTOM 
         - 'factor'  [float] factor of the semi-major axis that you can to discard in order to consider the selfsimilar part of the model 
         - 'bound'   [float] outer boundary you want to consider [AU] if you want the setup outer boundary, use None
-    * RETURN: four/ different dictionaries for a binary/single model containing:           
-        - 'setup'           
+    * RETURN: four different dictionaries for a binary/single model containing:           
+        - 'setup'           setup information of the model
         - 'dumpData'        data from the last full dump (last time step of the model)
         - 'sinkData'        data of the two sink particles in function of time
-        - 'outerData'       data from the last dump from a chosen range
+        - 'outerData'       data from the last dump in a chosen range (None for a single model)
 '''
 def LoadData_cgs(run, loc, factor, bound):
     

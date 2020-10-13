@@ -13,7 +13,7 @@ import LoadSetup                as stp
 
 '''
 Load the .ev-files from a phantom model
-      - This file gives the specifics of the objects only present in the model (not of the sph particles)
+      - This file gives the specifics of the sink particles present in the model (AGB star and companion, not of the sph particles)
         in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
       - Only suited for a binary model
       - Units in cgs
@@ -55,7 +55,7 @@ def LoadSink_cgs(run, loc, setup):
 
 
 
-# AGB star
+    # AGB star
 
     t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]                                
     x1     = x1     *  cgs.AU_cm()                     # position coordinates       [cm]
@@ -72,7 +72,7 @@ def LoadSink_cgs(run, loc, setup):
     position1 = np.array((x1, y1, z1 )).transpose()
     velocity1 = np.array((vx1,vy1,vz1)).transpose()
     
-# companion star
+    # companion star
 
     t2     = t2     *  cgs.cu_time()                   # evolution time             [yrs]                                 
     x2     = x2     *  cgs.AU_cm()                     # position coordinates       [cm]
@@ -88,6 +88,9 @@ def LoadSink_cgs(run, loc, setup):
 
     position2 = np.array((x2, y2, z2 )).transpose()
     velocity2 = np.array((vx2,vy2,vz2)).transpose()
+    
+    
+    # orbital information 
     
     period          = pq.getPeriod(mass1, mass2, (r1 + r2) /cgs.AU_cm()  )
     orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.AU_cm()  )
@@ -122,7 +125,13 @@ def LoadSink_cgs(run, loc, setup):
 
 
 
-# Load the .ev-files for a single phantom model
+'''
+Load the .ev-files from a phantom model of a SINGLE star
+      - This file gives the specifics of the sink particle present in the model (AGB star, not of the sph particles)
+        in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
+      - Only suited for a single model
+      - Units in cgs
+'''
 def LoadSink_single_cgs(run, loc, setup):
 
     runName = loc + run
@@ -157,7 +166,7 @@ def LoadSink_single_cgs(run, loc, setup):
 
    
 
-# AGB star
+    # AGB star
 
     t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]                            
     x1     = x1     *  cgs.AU_cm()                     # position coordinates       [cm]
@@ -169,19 +178,19 @@ def LoadSink_single_cgs(run, loc, setup):
     vz1    = vz1    *  cgs.cu_vel()
     maccr1 = maccr1 *  cgs.Msun_gram()                 # accreted mass              [g]
 
-    r1 = gf.calc_r(x1, y1, z1)                            # cm
+    r1 = gf.calc_r(x1, y1, z1)                         # [cm]
 
     position1 = np.array((x1, y1, z1 )).transpose()
     velocity1 = np.array((vx1,vy1,vz1)).transpose()
     
     
     
-    data = {'posAGB'      : position1,
-            'velAGB'      : velocity1,
-            'massAGB'     : mass1,
-            'maccrAGB'    : maccr1,
-            'rAGB'        : r1,
-            'time'        : t1,
+    data = {'posAGB'      : position1,       # [cm]
+            'velAGB'      : velocity1,       # [cm/s]
+            'massAGB'     : mass1,           # [gram]
+            'maccrAGB'    : maccr1,          # [gram]
+            'rAGB'        : r1,              # [cm]
+            'time'        : t1,              # [yrs]
             }
 
 

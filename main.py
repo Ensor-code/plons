@@ -1,16 +1,16 @@
-import datetime                         as dt
-import numpy                            as np
+import datetime                     as dt
+import numpy                        as np
 import os
 import warnings
 warnings.filterwarnings("ignore")
 
 # own scripts
-import radialStructure_pipeline         as rs
-import SlicePlots_pipeline              as sl
-import CMF_meanRho_pipeline             as cmf
-import orbitalEvolution_pipeline        as ov
-import LoadDataPHANTOM                  as d
-import TerminalVelocity                 as tmv
+import RadialStructurePlots1D       as rs
+import SlicePlots2D                 as sl
+import CMF_meanRho                  as cmf
+import OrbitalEvolution             as ov
+import LoadDataPHANTOM              as ld
+import TerminalVelocity             as tmv
 
 
 print('------------------START:', dt.datetime.now(),'---------------------')
@@ -120,7 +120,7 @@ print('---- MODEL '+run+' ----')
 
 print('')
 print('Data is loading...')
-[setup, dumpData, sinkData, outerData] = d.LoadData_cgs(run, loc, factor, bound)
+[setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound)
 print('All data is loaded and ready to use.')
 print('')
 print

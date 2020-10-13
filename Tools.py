@@ -1,6 +1,4 @@
-import os
-import math                 as math
-import numpy                as np
+import numpy                    as np
 import scipy.ndimage.filters
 
 
@@ -32,13 +30,13 @@ def create_bins(lower_bound, width, quantity):
     return bins
 
 
+'''
+bins is a list of tuples, like [(0,20), (20, 40), (40, 60)],
+binning returns the smallest index i of bins so that
+bin[i][0] <= value < bin[i][1]
 
-#""" bins is a list of tuples, like [(0,20), (20, 40), (40, 60)],
-    #binning returns the smallest index i of bins so that
-    #bin[i][0] <= value < bin[i][1]
-#"""
-# searches the bin containing the value
-
+searches the bin containing the value
+'''
 def find_bin(value, bins):
 
     if value < bins[0][0]:
@@ -76,11 +74,67 @@ def bin_data(data,sortData):
     return binned_data, number_of_bins
 
 
-#smoothens values to plot
+'''
+smoothens values to plot
+'''
 def smoothen(values,sigma):
     #Sigma chosen random, since trying to set sigma=standard_deviations did not work
     fit=scipy.ndimage.filters.gaussian_filter(values, sigma)
     return fit
 
+
+'''
+Given any number of dictionaries, shallow copy and merge into a new dict,
+precedence goes to key value pairs in latter dictionaries.
+'''
+def merge_dicts(*dict_args):
+
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result
+
+
+'''
+Function to transform the axis labels to multiples of pi/2,
+giving 'pi' as a label
+'''
+def format_func1(value, tick_number):
+    # find number of multiples of pi/2
+    N = int(np.round(2 * value / np.pi))
+    if N == 0:
+        return "0"
+    elif N == 1:
+        return r"$\pi/2$"
+    elif N == 2:
+        return r"$\pi$"
+    elif N % 2 > 0:
+        return r"${0}\pi/2$".format(N)
+    else:
+        return r"${0}\pi$".format(N // 2)
     
+
+'''
+Function to transform the axis labels to multiples of pi/4,
+giving 'pi' as a label
+'''
+def format_func2(value, tick_number):
+    # find number of multiples of pi/2
+    N = int(np.round(4 * value / np.pi))
+    if N == 0:
+        return "0"
+    elif N == 1:
+        return r"$\pi/4$"
+    elif N == 2:
+        return r"$\pi/2$"
+    elif N == 3:
+        return r"$3\pi/4$"
+    elif N == 4:
+        return r"$\pi$"
+    elif N % 4 > 0:
+        return r"${0}\pi/4$".format(N)
+    else:
+        return r"${0}\pi$".format(N // 4)
+    
+
 

@@ -8,14 +8,12 @@ import ConversionFactors_cgs    as cgs
 
 
 
-
-
-# --- Load phantom data ---
-
-# Only load the wind.in and wind.setup files to get general information about the phantom model
-#       Suited for binary and single model
-#           - 'run' is the number of the run specifically           [str]
-#           - 'loc' is the directory where the model is located     [str]
+'''
+Only load the wind.in and wind.setup files to get general information about the phantom model
+      Suited for binary and single model
+          - 'run' is the number of the run specifically           [str]
+          - 'loc' is the directory where the model is located     [str]
+'''
 def LoadSetup(run, loc):
     
     runName = loc+run

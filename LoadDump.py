@@ -9,11 +9,9 @@ import LoadSetup                as stp
 
 
 '''
-Loads a phantom model, given the number, in cgs-units
-      - loads the wind.setup file
-      - loads the wind.in file
-      - loads the loads the final full dump of the model (converts it to ascii or copies it from the server, if needed)
-  Suited only for binary model
+Loads the final full dump of a phantom model, given the number, in cgs-units 
+(converts it to ascii or copies it from the server, if needed)
+    Suited for binary model only
 '''
 def LoadDump_cgs(run, loc, setup):
     
@@ -31,12 +29,14 @@ def LoadDump_cgs(run, loc, setup):
     
     # load the dump file wind_00xxx
     try:
-    # We don't need the information about the AGB star and companion star (two last rows of the dumps).
-    # To efficiently skips these rows, we load only one parameter, to get the length. All other parameters
-    #   are loaded after without the two last rows.
+        '''
+        We don't need the information about the AGB star and companion star (two last rows of the dumps).
+        To efficiently skips these rows, we load only one parameter, to get the length. All other parameters
+        are loaded after without the two last rows.
+        '''
         x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
     except OSError:
-        try:
+        try: 
             print('Converting file to ascii...')
             
             os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
@@ -92,21 +92,21 @@ def LoadDump_cgs(run, loc, setup):
 
     
     # output
-    data = {'position'      : position,
-            'velocity'      : velocity,
-            'h'             : h,
-            'mass'          : mass,
-            'rho'           : rho,
-            'u'             : u,
-            'temp'          : temp,
-            'speed'         : speed,
-            'mach'          : mach,
+    data = {'position'      : position,         # [cm]
+            'velocity'      : velocity,         # [cm/s]
+            'h'             : h,                # [cm]
+            'mass'          : mass,             # [g]
+            'rho'           : rho,              # [g/cm^3]
+            'u'             : u,                # [erg/g]
+            'temp'          : temp,             # [K]    
+            'speed'         : speed,            # [cm/s]
+            'mach'          : mach,             
             'vtvv'          : vtvv,
             'fileNumber'    : fileNumber,
-            'r'             : r,
+            'r'             : r,                # [cm]
             'phi'           : phi,
             'theta'         : theta,
-            'cs'            : cs
+            'cs'            : cs                # [cm]
             }
     
 
@@ -115,7 +115,9 @@ def LoadDump_cgs(run, loc, setup):
 
 
 '''
-Load a phantom model from a single star
+Loads the final full dump of a phantom model, given the number, in cgs-units 
+(converts it to ascii or copies it from the server, if needed)
+    Suited for single model only
 '''
 def LoadDump_single_cgs(run, loc, setup):
     
@@ -187,30 +189,32 @@ def LoadDump_single_cgs(run, loc, setup):
         
     
     # output
-    data = {'position'      : position,
-            'velocity'      : velocity,
-            'h'             : h,
-            'mass'          : mass,
-            'rho'           : rho,
-            'temp'          : temp,
-            'speed'         : speed,
-            'mach'          : mach,
+    data = {'position'      : position,       # [cm]
+            'velocity'      : velocity,       # [cm/s]
+            'h'             : h,              # [cm]
+            'mass'          : mass,           # [g]
+            'rho'           : rho,            # [g/cm^3]
+            'u'             : u,              # [erg/g]
+            'temp'          : temp,           # [K]    
+            'speed'         : speed,          # [cm/s]
+            'mach'          : mach,           
             'vtvv'          : vtvv,
             'fileNumber'    : fileNumber,
-            'r'             : r,
-            'phi'           : phi,
+            'r'             : r,              # [cm]
+            'phi'           : phi,            
             'theta'         : theta,
-            'cs'            : cs
-            }
+            'cs'            : cs              # [cm]
+            }                                 
 
     
     return data
 
 
 
-
-# Cut out the inner part of the wind, since here the wind is not yet self-similar
-#       Suited only for binary model
+'''
+Cut out the inner part of the wind, since here the wind is not yet self-similar
+      Suited only for binary model
+'''
 def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     
 
@@ -275,21 +279,22 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
  
     
     # output
-    data = {'position'      : position,
-            'velocity'      : velocity,
-            'h'             : h,
-            'mass'          : mass,
-            'rho'           : rho,
-            'temp'          : temp,
-            'speed'         : speed,
-            'mach'          : mach,
+    data = {'position'      : position,      # [cm]
+            'velocity'      : velocity,      # [cm/s]
+            'h'             : h,             # [cm]
+            'mass'          : mass,          # [g]
+            'rho'           : rho,           # [g/cm^3]
+            'u'             : u              # [erg/g]
+            'temp'          : temp,          # [K]    
+            'speed'         : speed,         # [cm/s]
+            'mach'          : mach,          
             'vtvv'          : vtvv,
-            'r'             : r,
-            'phi'           : phi,
-            'theta'         : theta,
-            'cs'            : cs
-            }
-    
+            'r'             : r,             # [cm]
+            'phi'           : phi,           
+            'theta'         : theta,         
+            'cs'            : cs             # [cm]
+            }                                
+                                             
     
 
     
