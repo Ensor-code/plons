@@ -27,9 +27,15 @@ def LoadSetup(run, loc):
                 setup.append(lines[i].split())
     except FileNotFoundError:
         print('')
-        print("ERROR: No wind.setup file found.")
-        print('')
-        exit()
+        
+        try:
+            os.mkdir(loc+run+"/")
+            print(' Make directory ',loc,run,'/' )
+        except OSError:
+            print('') 
+            print('Copying wind.setup file from STER')
+            os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/wind.setup " +loc+run+"/")
+            print('')
 
     try:
         with open(runName+'/wind.in', 'r') as f:
@@ -38,11 +44,15 @@ def LoadSetup(run, loc):
             for i in range(len(lines)):
                 infile.append(lines[i].split())
     except FileNotFoundError:
+        print('Copying wind.in file from STER')
+        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/wind.in " +loc+run+"/")
         print('')
-        print("ERROR: No wind.setup file found.")
-        print('')
-        exit()
-    
+        
+        with open(runName+'/wind.in', 'r') as f:
+            lines = f.readlines()  
+            infile = []
+            for i in range(len(lines)):
+                infile.append(lines[i].split())
     
     # Get specifics about the model
     is_single   = int(setup[6][2])

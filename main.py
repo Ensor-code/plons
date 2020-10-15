@@ -35,44 +35,45 @@ def run_main(part,Numbers):
         [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound)
         print('All data is loaded and ready to use.')
         print('')
+        for part in runParts:
 
-        if part == '0':
-            # (1) 2D slice plots
-            sl.SlicePlots(run, outputloc, dumpData, setup)
-            # (2) 1D line plots
-            rs.radialStructPlots(run, outputloc, dumpData, setup)
-            # (3) and (4) terminal velocity, eta, Qp
-            tmv.main_terminalVelocity(setup, dumpData, sinkData, outputloc, run)
-            # (5) cummulative mass fraction
-            if setup['single_star'] == True:
-                cmf.CMF_meanRho(run, outputloc, dumpData, setup)
-            else:
-                cmf.CMF_meanRho(run, outputloc, outerData, setup)
-            # (6) orbital evolution
-            ov.orbEv_main(run, outputloc, sinkData, setup)
-            
-        if part == '1':
-            # (1) 2D slice plots
-            sl.SlicePlots(run, outputloc, dumpData, setup)
-            
-        if part == '2':
-            # (2) 1D line plots
-            rs.radialStructPlots(run, outputloc, dumpData, setup)
-
-        if part == '3' or part == '4':  
-            # (3) and (4) terminal velocity, eta, Qp
-            tmv.main_terminalVelocity(setup, dumpData, sinkData, outputloc, run)
-            
-        if part == '5':
-            # (5) cummulative mass fraction
-            if setup['single_star'] == True:
-                cmf.CMF_meanRho(run, outputloc, dumpData, setup)
-            else:
-                cmf.CMF_meanRho(run, outputloc, outerData, setup)
+            if part == '0':
+                # (1) 2D slice plots
+                sl.SlicePlots(run, outputloc, dumpData, setup)
+                # (2) 1D line plots
+                rs.radialStructPlots(run, outputloc, dumpData, setup)
+                # (3) and (4) terminal velocity, eta, Qp
+                tmv.main_terminalVelocity(setup, dumpData, sinkData, outputloc, run)
+                # (5) cummulative mass fraction
+                if setup['single_star'] == True:
+                    cmf.CMF_meanRho(run, outputloc, dumpData, setup)
+                else:
+                    cmf.CMF_meanRho(run, outputloc, outerData, setup)
+                # (6) orbital evolution
+                ov.orbEv_main(run, outputloc, sinkData, setup)
                 
-        if part == '6':
-            # (6) orbital evolution
-            ov.orbEv_main(run, outputloc, sinkData, setup)
+            if part == '1':
+                # (1) 2D slice plots
+                sl.SlicePlots(run, outputloc, dumpData, setup)
+                
+            if part == '2':
+                # (2) 1D line plots
+                rs.radialStructPlots(run, outputloc, dumpData, setup)
+
+            if part == '3' or part == '4':  
+                # (3) and (4) terminal velocity, eta, Qp
+                tmv.main_terminalVelocity(setup, dumpData, sinkData, outputloc, run)
+                
+            if part == '5':
+                # (5) cummulative mass fraction
+                if setup['single_star'] == True:
+                    cmf.CMF_meanRho(run, outputloc, dumpData, setup)
+                else:
+                    cmf.CMF_meanRho(run, outputloc, outerData, setup)
+                    
+            if part == '6':
+                # (6) orbital evolution
+                ov.orbEv_main(run, outputloc, sinkData, setup)
         
         
 
@@ -112,8 +113,8 @@ if '3' in runParts and '4' in runParts:
 #print(options[part])
 # # Dit komt nog als inputs
 # run       = 'M16A'
-loc       = '/home/user/Documents/thesis/modellen_pc/'
-outputloc = '/home/user/Documents/phantom pipeline/'
+loc       = '/lhome/jolienm/Documents/thesisModellen/'
+outputloc = '/lhome/jolienm/Documents/phantomPipeline/' 
 factor    = 10   # the without inner, is without r< factor * sma
 bound     = None
     
@@ -133,8 +134,7 @@ except OSError:
 print('')
 
 
-for i in range(len(runParts)):
-    run_main(runParts[i],Numbers)
+run_main(runParts,Numbers)
 
 print('')
 print('')
