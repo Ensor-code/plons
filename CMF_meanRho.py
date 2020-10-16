@@ -9,8 +9,8 @@ from matplotlib             import rcParams, rc
 # Change the matplotlib default parameters
 rcParams.update({'font.size':   11})
 rcParams.update({'figure.dpi': 200})
-rc('font', family='serif')
-rc('text', usetex=True)
+#rc('font', family='serif')
+#rc('text', usetex=True)
 
 # own scripts
 import Tools                 as tl
@@ -279,13 +279,13 @@ def plotLvsR(ax, theta, infoForPlot, infoForPlotL, infoForPlotR):
 
 
 
-def CMF_meanRho(run,loc, data, setup):
+def CMF_meanRho(run,outloc, data, setup):
     print('')
     print('(5)  Start calculations for the cummulative mass fraction and mean density plots...')
 
     #Make new folder to save plots and text file, unless folder exists
     try:
-        os.mkdir(loc+'CMF_meanRho/')
+        os.mkdir(outloc+'CMF_meanRho/')
     except OSError:
         print('')
 
@@ -332,7 +332,7 @@ def CMF_meanRho(run,loc, data, setup):
         ax.tick_params(labelsize=10)
         ax.set_title('Mean density ($\\theta$) (model '+ str(run)+')', fontsize = 15)
         ax.legend(handles = handles, loc = 'lower right',  fontsize = 8)
-        plt.savefig(loc+'CMF_meanRho/meanRhoPlot'+str(run))
+        plt.savefig(outloc+'CMF_meanRho/meanRhoPlot'+str(run))
         print('     Mean density plot of model',str(run),'ready and saved!')    
  
     else:
@@ -380,12 +380,12 @@ def CMF_meanRho(run,loc, data, setup):
     plt.xlabel('$\\theta$',fontsize = 13)
     plt.ylabel('$M[\\theta]/M_{tot}$', fontsize = 13)
     plt.title('Cumulative mass fraction (model '+ str(run) + ')', fontsize = 15)
-    plt.savefig(loc+'CMF_meanRho/CMFplot'+str(run))
+    plt.savefig(outloc+'CMF_meanRho/CMFplot'+str(run))
     print('     Cummulative mass fraction plot of model',str(run), 'ready and saved!')
 
 
     #Makes text file with all usefull data
-    title = loc+'CMF_meanRho/CMF_meanRho_'+str(run)+'.txt'
+    title = outloc+'CMF_meanRho/CMF_meanRho_'+str(run)+'.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('\n')

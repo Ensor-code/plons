@@ -26,6 +26,7 @@ def LoadDump_cgs(run, loc, setup):
 
     # make ascii file of this filenumber    
     fileName  = runName+'/wind_00'+fileNumber +'.ascii'
+    
     # load the dump file wind_00xxx
     try:
         '''
@@ -42,9 +43,9 @@ def LoadDump_cgs(run, loc, setup):
             x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
         
         except OSError:
-            print('Copying dump file from STER...')
+            print('Copying file desktop_run'+run+"/wind_00"+fileNumber+' from STER...')
             
-            os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/wind_00"+fileNumber+" " +loc+run+"/")
+            #os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+run+"/wind_00"+fileNumber+" /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
 
             print('Converting file to ascii...')
             
@@ -109,6 +110,7 @@ def LoadDump_cgs(run, loc, setup):
             }
     
 
+    
     return data
 
 
@@ -143,9 +145,9 @@ def LoadDump_single_cgs(run, loc, setup):
             x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
         
         except OSError:
-            print('Copying dump file from STER...')
+            print('Copying file desktop_run'+runNumber+"/wind_00"+fileNumber+' from STER...')
             
-            os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/wind_00"+fileNumber+" " +loc+run+"/")
+            os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+runNumber+"/wind_00"+fileNumber+" /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
 
             print('Converting file to ascii...')
             

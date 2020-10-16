@@ -30,7 +30,7 @@ def LoadSink_cgs(run, loc, setup):
         fileNumber = str(0) + fileNumber
 
     # make ascii file of this filenumber    
-    #fileName  = runName+'/wind_00'+fileNumber +'.ascii'
+    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
     
     # load the dump file wind_00xxx
     try:
@@ -41,10 +41,11 @@ def LoadSink_cgs(run, loc, setup):
         
     except OSError:
 
-        print('Copying sink files from STER...')
+        print('Copying file from STER...')
         
-        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0001N01.ev " +loc+run+"/")
-        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0002N01.ev " +loc+run+"/")
+        os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+run+"/windSink000* /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
+
+        print('Converting file to ascii...')
         
         os.system('cd')
         os.system('cd '+runName)
@@ -142,7 +143,7 @@ def LoadSink_single_cgs(run, loc, setup):
         fileNumber = str(0) + fileNumber
 
     # make ascii file of this filenumber    
-    #fileName  = runName+'/wind_00'+fileNumber +'.ascii'
+    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
     
     # load the dump file wind_00xxx
     try:
@@ -151,9 +152,11 @@ def LoadSink_single_cgs(run, loc, setup):
         
     except OSError:
 
-        print('Copying sink file from STER...')
+        print('Copying file from STER...')
         
-        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0001N01.ev " +loc+run+"/")
+        os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+runNumber+"/windSink000* /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
+
+        print('Converting file to ascii...')
         
         os.system('cd')
         os.system('cd '+runName)

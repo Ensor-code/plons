@@ -16,8 +16,8 @@ from matplotlib                 import rcParams, rc
 # Change the matplotlib default parameters
 rcParams.update({'font.size':   11})
 rcParams.update({'figure.dpi': 200})
-rc('font', family='serif')
-rc('text', usetex=True)
+#rc('font', family='serif')
+#rc('text', usetex=True)
 
 # ignore warnings
 import warnings
