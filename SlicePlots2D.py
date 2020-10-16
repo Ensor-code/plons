@@ -31,14 +31,14 @@ def smoothData(dumpData,setup):
     #Uncomment the ones you need, takes long to run, so don't run if not nescessary
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     #zoom = 1
-    results_sph_sl_z  ,x1  ,y1   ,z1  = sk.getSmoothingKernelledPix(50,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm() )
-    results_sph_sl_y  ,x2  ,y2   ,z2  = sk.getSmoothingKernelledPix(50,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm() )
+    results_sph_sl_z  ,x1  ,y1   ,z1  = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm() )
+    results_sph_sl_y  ,x2  ,y2   ,z2  = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm() )
     #zoom = 2
-    results_sph_sl_zZ2,x1Z2,y1Z2,z1Z2 = sk.getSmoothingKernelledPix(1,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm()/2)
-    results_sph_sl_yZ2,x2Z2,y2Z2,z2Z2 = sk.getSmoothingKernelledPix(1,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm()/2)
+    results_sph_sl_zZ2,x1Z2,y1Z2,z1Z2 = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm()/2)
+    results_sph_sl_yZ2,x2Z2,y2Z2,z2Z2 = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm()/2)
     #zoom = 5
-    results_sph_sl_zZ5,x1Z5,y1Z5,z1Z5 = sk.getSmoothingKernelledPix(1,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm()/5)
-    results_sph_sl_yZ5,x2Z5,y2Z5,z2Z5 = sk.getSmoothingKernelledPix(1,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm()/5)
+    results_sph_sl_zZ5,x1Z5,y1Z5,z1Z5 = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm()/5)
+    results_sph_sl_yZ5,x2Z5,y2Z5,z2Z5 = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm()/5)
 
     #smooth = {'sph_sl_z'     : results_sph_sl_z,
              #'sph_sl_zZ2'    : results_sph_sl_zZ2,
@@ -86,7 +86,19 @@ def smoothData(dumpData,setup):
 '''
 Makes one of the plots that will be combined in one figure
 '''
-def onePlot(ax,name,colormap,mi,ma,smooth,zoom,xlabel,ylabel,lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6):
+def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
+    
+    cm = {'rho'  : plt.cm.get_cmap('viridis' ),
+          'temp' : plt.cm.get_cmap('afmhot'  ),
+          'speed': plt.cm.get_cmap('PuBuGn_r')
+          }
+    
+    name = {'rho'  : 'log density [cm/g$^3$]',
+            'temp' : 'log temperature [K]' ,
+            'speed': 'speed [km/s]'
+                }
+            
+    
 
     xAGB = dumpData['posAGB'][0]/cgs.AU_cm()
     yAGB = dumpData['posAGB'][1]/cgs.AU_cm()
@@ -100,50 +112,66 @@ def onePlot(ax,name,colormap,mi,ma,smooth,zoom,xlabel,ylabel,lim,dumpData,setup,
  
     ax.axis('equal')
     ax.set_facecolor('k')
-    axPlot = ax.scatter(smooth['']/cgs.AU_cm(), y/cgs.AU_cm(), s=5, c=par, cmap=colormap, vmin=mi, vmax = ma)
-    axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(),smooth[zoom]['y_z']/cgs.AU_cm(),s=5,c=np.log10(smooth[zoom]['smooth_z'][par]),cmap=cm_rho,vmin=rhoMin, vmax = rhoMax)
+    if not par == 'speed':
+        if plane == 'z':
+            axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(),smooth[zoom]['y_z']/cgs.AU_cm(),s=5,c=np.log10(smooth[zoom]['smooth_z'][par]),cmap=cm[par],vmin=mi, vmax = ma)
+            ax.set_ylabel('y [AU]')
+        if plane == 'y':
+            axPlot = ax.scatter(smooth[zoom]['x_y']/cgs.AU_cm(),smooth[zoom]['z_y']/cgs.AU_cm(),s=5,c=np.log10(smooth[zoom]['smooth_y'][par]),cmap=cm[par],vmin=mi, vmax = ma)
+            ax.set_ylabel('z [AU]')
+    
+    if par == 'speed':
+        if plane == 'z':
+            axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(),smooth[zoom]['y_z']/cgs.AU_cm(),s=5,c=(smooth[zoom]['smooth_z'][par]*cgs.cms_kms()),cmap=cm[par],vmin=mi, vmax = ma)
+            ax.set_ylabel('y [AU]')
+        if plane == 'y':
+            axPlot = ax.scatter(smooth[zoom]['x_y']/cgs.AU_cm(),smooth[zoom]['z_y']/cgs.AU_cm(),s=5,c=(smooth[zoom]['smooth_y'][par]*cgs.cms_kms()),cmap=cm[par],vmin=mi, vmax = ma)
+            ax.set_ylabel('z [AU]')
+    
     
     
     # plot the position of the AGB star and comp in the edge-on plane & make colorbar 
-    if ax == ax2 or ax == ax4 or ax == ax6:
+    if ax == axs[2] or ax == axs[4] or ax == axs[6]:
         ax.plot(xAGB, zAGB, 'ko', markersize = 4,label = 'AGB')
         if setup['single_star'] == False:
             ax.plot(xcomp, zcomp, 'ro', markersize = 1.5,label = 'comp')  
         cbar = plt.colorbar(axPlot, ax = ax)
-        cbar.set_label(name, fontsize = 18)
+        cbar.set_label(name[par], fontsize = 18)
         
-    if ax == ax5 or ax == ax6:
-        ax.set_xlabel(xlabel)
+    if ax == axs[5] or ax == axs[6]:
+        ax.set_xlabel('x [AU]')
     
     # plot the position of the AGB star and comp in the face-on plane
-    if ax == ax1 or ax == ax3 or ax == ax5:
+    if ax == axs[1] or ax == axs[3] or ax == axs[5]:
         ax.plot(xAGB,yAGB, 'ko', markersize = 4,label = 'AGB')
         if setup['single_star'] == False:
             ax.plot(xcomp,ycomp, 'ro', markersize = 1.5,label = 'comp')  
             
-    ax.axis([-lim,lim,-lim,lim])
-    ax.set_ylabel(ylabel)
+    #ax.axis([-lim,lim,-lim,lim])
 
 '''
 Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), log(T[K]) and |v|[km/s]. Takes 'zoom'factor as input
 '''
-def allPlots(modelname, smooth, zoom, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc):
+def allPlots( smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, loc):
 
-    cm_rho  = plt.cm.get_cmap('viridis' )
-    cm_T    = plt.cm.get_cmap('afmhot'  )
-    cm_v    = plt.cm.get_cmap('PuBuGn_r')
-#     fig = plt.figure(figsize=(11, 14))
     fig, ((ax1,ax2),(ax3,ax4),(ax5,ax6))= plt.subplots(3, 2,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [0.8,1]})
     fig.set_size_inches(10, 14)
-    lim = bound/zoom  
+    
+    axs = {1: ax1,
+           2: ax2,
+           3: ax3,
+           4: ax4,
+           5: ax5,
+           6: ax6
+        }
           
     # the temperature colorbar limits may have to be changed...
-    onePlot(ax1,np.log10(smooth['sph_sl_z']['rho' ])              , 'log density [cm/g$^3$]', cm_rho, rhoMin, rhoMax, smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax2,np.log10(smooth['sph_sl_y']['rho' ])              , 'log density [cm/g$^3$]', cm_rho, rhoMin, rhoMax, smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax5,np.log10(smooth['sph_sl_z']['temp'])              , 'log temperature [K]'   , cm_T  , 1.7   , 5.2   , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax6,np.log10(smooth['sph_sl_y']['temp'])              , 'log temperature [K]'   , cm_T  , 1.7   , 5.2   , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax3,         smooth['sph_sl_z']['speed']*cgs.cms_kms(), 'speed [km/s]'          , cm_v  , 0     , vmax  , smooth['xz'],smooth['yz'], 'x[AU]', 'y[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
-    onePlot(ax4,         smooth['sph_sl_y']['speed']*cgs.cms_kms(), 'speed [km/s]'          , cm_v  , 0     , vmax  , smooth['xy'],smooth['zy'], 'x[AU]', 'z[AU]',lim,dumpData,setup,ax1,ax2,ax3,ax4,ax5,ax6)
+    onePlot(ax1,'rho'  , rhoMin, rhoMax, smooth, zoom, dumpData, setup, axs, 'z')
+    onePlot(ax2,'rho'  , rhoMin, rhoMax, smooth, zoom, dumpData, setup, axs, 'y')
+    onePlot(ax5,'temp' , 1.7   , 5.2   , smooth, zoom, dumpData, setup, axs, 'z')
+    onePlot(ax6,'temp' , 1.7   , 5.2   , smooth, zoom, dumpData, setup, axs, 'y')
+    onePlot(ax3,'speed', 0     , vmax  , smooth, zoom, dumpData, setup, axs, 'z')
+    onePlot(ax4,'speed', 0     , vmax  , smooth, zoom, dumpData, setup, axs, 'y')
     
     fig.savefig(loc+'2DslicePlots/'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
     
@@ -152,7 +180,7 @@ def allPlots(modelname, smooth, zoom, rhoMin, rhoMax, vmax, bound, dumpData, set
 '''
 Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). Takes 'zoom'factor as input
 '''
-def densityPlot(modelname,smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
+def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
 
     cm_rho  = plt.cm.get_cmap('viridis')
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
@@ -216,12 +244,12 @@ def SlicePlots(run,loc, dumpData, setup):
     print('     Start making the slice plot figures, please wait..')
     print('')
     # Make plots
-    densityPlot('M'+str(run), smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    densityPlot('M'+str(run), smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    densityPlot('M'+str(run), smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots(   'M'+str(run), smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots(   'M'+str(run), smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots(   'M'+str(run), smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    densityPlot( smooth, 1, rhoMin, rhoMax, bound, dumpData, setup, run, loc)
+    densityPlot( smooth, 2, rhoMin, rhoMax, bound, dumpData, setup, run, loc)
+    densityPlot( smooth, 5, rhoMin, rhoMax, bound, dumpData, setup, run, loc)
+    allPlots(    smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    allPlots(    smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
+    allPlots(    smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
 
 '''   
 NOTE: uncomment and change if we add Hill sphere plots
