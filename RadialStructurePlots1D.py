@@ -150,7 +150,7 @@ def radialStructPlots(run,loc, dumpData, setup):
     
     
     #Make text file with info to make plots
-    title = loc+'1DradialStructurePlots/1D_'+str(run)+'.txt'
+    title = loc+'1D_'+str(run)+'.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('Data to make radial structure plots yourself:')
