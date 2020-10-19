@@ -193,7 +193,10 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
     with open (title,'a') as f:
         f.write('\n')
-        f.write('The change in eccentricity, delta_e/e=         '+ str(round(ratio_delta_e_per_yr,9))+ '/yr'+'\n')
+        if setup['ecc']>0:
+            f.write('The change in eccentricity, delta_e/e=         '+ str(round(ratio_delta_e_per_yr,9))+ '/yr'+'\n')
+        else:
+            f.write('The change in eccentricity, delta_e=         '+ str(round(delta_e,9))+ '/yr'+'\n')
         f.write('The change in sma,          delta_a/a=         '+ str(round(ratio_delta_a_per_yr,9))+ '/yr'+'\n')
         f.write('\n')
         f.write('To plot the change in eccentricity and change in sma, use the following: '+ '\n')
