@@ -328,7 +328,7 @@ def CMF_meanRho(run,outloc, data, setup):
         # mean density profile plots, left and right side
         fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
         plotLvsR(ax, theta, infoForPlot, infoForPlotL, infoForPlotR)
-        plt.setp((ax), xticks= [0,1/4,1/2], xticklabels=['$\pi/2$', '$\pi/4$ $\&$ $3\pi/4$', '0 $\&$ $\pi$'])
+        plt.setp((ax), xticks= [0,1/4,1/2], xticklabels=['$\pi/2$', '$\pi/4$ $&$ $3\pi/4$', '0 $&$ $\pi$'])
         ax.tick_params(labelsize=10)
         ax.set_title('Mean density ($\\theta$) (model '+ str(run)+')', fontsize = 15)
         ax.legend(handles = handles, loc = 'lower right',  fontsize = 8)
@@ -375,7 +375,7 @@ def CMF_meanRho(run,outloc, data, setup):
 
     locs, labels = plt.xticks()  # Get the current locations and labels.
     plt.xticks(np.arange(1/2, 0, step=0.1))  # Set label locations.
-    plt.xticks([0,1/4,1/2], ['$\pi/2$', '$\pi/4$ $\&$ $3\pi/4$', '0 $\&$  $\pi$'])  
+    plt.xticks([0,1/4,1/2], ['$\pi/2$', '$\pi/4$ $&$ $3\pi/4$', '0 $&$  $\pi$'])  
 
     plt.xlabel('$\\theta$',fontsize = 13)
     plt.ylabel('$M[\\theta]/M_{tot}$', fontsize = 13)
@@ -459,10 +459,10 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('\n')
         # delta
         f.write('delta ratio:\n')
-        f.write('   Full = '+str(np.round(delta['deltaRatio'],3))+'\n')
+        f.write('   Full = '+str(np.round(delta['ratioDelta'],3))+'\n')
         #if setup['single_star'] == False:
-            #f.write('    Apa = '+ str(np.round(infoForPlotL['deltaRatio'] ,3))+'\n')
-            #f.write('    Per = '+ str(np.round(infoForPlotR['deltaRatio'] ,3))+'\n')
+            #f.write('    Apa = '+ str(np.round(infoForPlotL['ratioDelta'] ,3))+'\n')
+            #f.write('    Per = '+ str(np.round(infoForPlotR['ratioDelta'] ,3))+'\n')
             
         if setup['single_star'] == False:
             names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
