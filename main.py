@@ -145,7 +145,7 @@ print('--------')
 print('')
 print('')
 print('The pipeline is finished! You can find all plots and reduced data in the following directory:')
-print(str(saveloc))
+print(str(outputloc))
 print('')
 
 print('')
