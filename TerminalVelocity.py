@@ -72,9 +72,9 @@ def getTerminalVelocity(setup, dump):
     differences = binned_term_speed['diff']
     
     twist = []
-    for i in range(5,len(differences)-5):
-        if (differences[i]+differences[i-1] <= differences[i+1]) and (differences[i]+differences[i-1] <= differences[i+2]) and (differences[i]+differences[i-1] <= differences[i+3]) and (differences[i]+differences[i-1] <= differences[i+4]) and (differences[i]+differences[i-1] >= differences[i-2]) and (differences[i]+differences[i-1] >= differences[i-3]) and (differences[i]+differences[i-1] >= differences[i-4]) and (differences[i]+differences[i-1] >= differences[i-5]): 
-            twist.append(i)
+    #for i in range(5,len(differences)-5):
+        #if (differences[i]+differences[i-1] <= differences[i+1]) and (differences[i]+differences[i-1] <= differences[i+2]) and (differences[i]+differences[i-1] <= differences[i+3]) and (differences[i]+differences[i-1] <= differences[i+4]) and (differences[i]+differences[i-1] >= differences[i-2]) and (differences[i]+differences[i-1] >= differences[i-3]) and (differences[i]+differences[i-1] >= differences[i-4]) and (differences[i]+differences[i-1] >= differences[i-5]): 
+            #twist.append(i)
     
     if single_star == True:
         orbSep = 100
@@ -90,7 +90,6 @@ def getTerminalVelocity(setup, dump):
         index = -1
         
 
-    
     ### TERMINAL VELOCITY ###
    
     if outerBound > number_of_bins:
@@ -285,13 +284,6 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     if single_star == True:
         terminal_speed, binned_term_speed = getTerminalVelocity(setup, dump)
         
-    
-    # Make new directory to save text file in, unless directory already exists
-    
-    try:
-        os.mkdir(outputloc+'velocity_eta_Qp/')
-    except OSError:
-        print('')
 
     title = outputloc+'velocity_eta_Qp/run'+run+'.txt'
     with open (title,'w') as f:

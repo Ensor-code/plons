@@ -332,15 +332,6 @@ def orbEv_main(run,loc, sinkData, setup):
         
         print('(6)  Start calculations for orbital evolution...')
 
-        try:
-            os.mkdir(loc+'orbEvolution/')
-        except OSError:
-            print('')
-
-        try:
-            os.mkdir(loc+'orbEvolution/model'+str(run)+'/')
-        except OSError:
-            print('')
 
         # calculate orbSep, COM
         # calculate tot mass accreted, total mass lost, ratio mass accreted to mass lost
@@ -376,17 +367,16 @@ def orbEv_main(run,loc, sinkData, setup):
         plt.savefig(loc+'orbEvolution/model'+str(run)+'/Orbit_model'+str(run))
 
 
-        if setup['ecc'] >0:
-            # Calculate values of parameters in apastron and periastron 
-            info['peaksOrbSep'] = calcPeaksOrbSep(sinkData, setup, radii) 
-            #Make the plots of the change in OrbSep and eccentrictiy
-            plotChangeOrbSep(info, sinkData, setup, 'peaksOrbSep',run,loc)
-            #Plot evolution of the mass accretion
-            plotMassAccr(sinkData, run, loc)
-            #Plot orbital velocities 
-            plotOrbVelEcc(sinkData, run, loc)
-            #Plot orbital radii and orbital separation
-            plotOrbEvEcc(sinkData, run, loc)
+        # Calculate values of parameters in apastron and periastron 
+        info['peaksOrbSep'] = calcPeaksOrbSep(sinkData, setup, radii) 
+        #Make the plots of the change in OrbSep and eccentrictiy
+        plotChangeOrbSep(info, sinkData, setup, 'peaksOrbSep',run,loc)
+        #Plot evolution of the mass accretion
+        plotMassAccr(sinkData, run, loc)
+        #Plot orbital velocities 
+        plotOrbVelEcc(sinkData, run, loc)
+        #Plot orbital radii and orbital separation
+        plotOrbEvEcc(sinkData, run, loc)
 
 
         # if setup['ecc'] == 0:

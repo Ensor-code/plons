@@ -216,11 +216,6 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, l
 def SlicePlots(run,loc, dumpData, setup):
     print('')
     print('(1)  Start calculations for slice plots...')
-     # Make new directory to save figures in, unless directory already exists
-    try:
-        os.mkdir(loc+'2DslicePlots/')
-    except OSError:
-        print('')
 
     # Make sliceplots
     Mdot  = setup['Mdot']

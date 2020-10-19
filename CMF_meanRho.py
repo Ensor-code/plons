@@ -219,11 +219,6 @@ def CMF_meanRho(run,outloc, data, setup):
     print('')
     print('(5)  Start calculations for the cummulative mass fraction and mean density plots...')
 
-    #Make new folder to save plots and text file, unless folder exists
-    try:
-        os.mkdir(outloc+'CMF_meanRho/')
-    except OSError:
-        print('')
 
 
     # legend for plots

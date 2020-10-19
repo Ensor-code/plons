@@ -26,46 +26,61 @@ options = { '0': '(1) 2D slice plots \n(2) 1D line plots \n(3) Terminal velocity
             }
 
 
-def run_main(part):
-    if part == '0':
-        # (1) 2D slice plots
-        sl.SlicePlots(run, outputloc, dumpData, setup)
-        # (2) 1D line plots
-        rs.radialStructPlots(run, outputloc, dumpData, setup)
-        # (3) and (4) terminal velocity, eta, Qp
-        tmv.main_terminalVelocity(setup, dumpData, outputloc, run)
-        # (5) cummulative mass fraction
-        if setup['single_star'] == True:
-            cmf.CMF_meanRho(run, outputloc, dumpData, setup)
-        else:
-            cmf.CMF_meanRho(run, outputloc, outerData, setup)
-        # (6) orbital evolution
-        ov.orbEv_main(run, outputloc, sinkData, setup)
+def run_main(outputloc,part,Numbers):
+    for run in Numbers:
+        print('---- MODEL '+run+' ----')
+        saveloc = outputloc+run+'/' 
         
-    if part == '1':
-        # (1) 2D slice plots
-        sl.SlicePlots(run, outputloc, dumpData, setup)
-        
-    if part == '2':
-        # (2) 1D line plots
-        rs.radialStructPlots(run, outputloc, dumpData, setup)
+        try:
+            os.mkdir(outputloc+run+'/')
+        except OSError:
+            print('')
+        print('')
+        print('Data is loading...')
+        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound)
+        print('All data is loaded and ready to use.')
+        print('')
+        for part in runParts:
 
-    if part == '3' or part == '4':  
-        # (3) and (4) terminal velocity, eta, Qp
-        tmv.main_terminalVelocity(setup, dumpData, outputloc, run)
+            if part == '0':
+                # (1) 2D slice plots
+                sl.SlicePlots(run, saveloc, dumpData, setup)
+                # (2) 1D line plots
+                rs.radialStructPlots(run, saveloc, dumpData, setup)
+                # (3) and (4) terminal velocity, eta, Qp
+                tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
+                # (5) cummulative mass fraction
+                if setup['single_star'] == True:
+                    cmf.CMF_meanRho(run, saveloc, dumpData, setup)
+                else:
+                    cmf.CMF_meanRho(run, saveloc, outerData, setup)
+                # (6) orbital evolution
+                ov.orbEv_main(run, saveloc, sinkData, setup)
+                
+            if part == '1':
+                # (1) 2D slice plots
+                sl.SlicePlots(run, saveloc, dumpData, setup)
+                
+            if part == '2':
+                # (2) 1D line plots
+                rs.radialStructPlots(run, saveloc, dumpData, setup)
+
+            if part == '3' or part == '4':  
+                # (3) and (4) terminal velocity, eta, Qp
+                tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
+                
+            if part == '5':
+                # (5) cummulative mass fraction
+                if setup['single_star'] == True:
+                    cmf.CMF_meanRho(run, saveloc, dumpData, setup)
+                else:
+                    cmf.CMF_meanRho(run, saveloc, outerData, setup)
+                    
+            if part == '6':
+                # (6) orbital evolution
+                ov.orbEv_main(run, saveloc, sinkData, setup)
         
-    if part == '5':
-        # (5) cummulative mass fraction
-        if setup['single_star'] == True:
-            cmf.CMF_meanRho(run, outputloc, dumpData, setup)
-        else:
-            cmf.CMF_meanRho(run, outputloc, outerData, setup)
-            
-    if part == '6':
-        # (6) orbital evolution
-        ov.orbEv_main(run, outputloc, sinkData, setup)
-    
-    
+        
 
 print('')
 print('-------------------------------------------------------')
@@ -88,25 +103,29 @@ print('Which components of the pipeline do you want to run?')
 print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space:')
 part = input('  >>>   ')
 runParts = part.split() 
+print('For which models do you want to run this? ')
+print('Give the modelnames, split multiple models by a space:')
+runNumbers = str(input( '  >>>   '))
+Numbers    = runNumbers.split()
+
 for i in range(len(runParts)):
     print(options[runParts[i]])
     
 if '3' in runParts and '4' in runParts:
     runParts.remove('4')
+
+
+#print(options[part])
+# # Dit komt nog als inputs
+# run       = 'M16A'
+loc       = '/lhome/jolienm/Documents/thesisModellen/'
+outputloc = '/lhome/jolienm/Documents/phantomPipeline/' 
+factor    = 10   # the without inner, is without r< factor * sma
+bound     = None
     
 print('')
 print('')
 print('It takes some time, so sit back and relax!')
-
-
-#print(options[part])
-
-# Dit komt nog als inputs
-loc         = '/lhome/silkem/Documents/THESIS/Models/phantom_Masterthesis/desktop_run'
-run         = '59'
-outputloc   = '/lhome/silkem/Documents/PhD/Pipeline/testOutput/'
-factor      = 3   # the without inner, is without r< factor * sma
-bound       = None
 
 
 try:
@@ -116,18 +135,9 @@ except OSError:
 
 
 print('')
-print('---- MODEL '+run+' ----')
-
-print('')
-print('Data is loading...')
-[setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound)
-print('All data is loaded and ready to use.')
-print('')
-print
 
 
-for i in range(len(runParts)):
-    run_main(runParts[i])
+run_main(outputloc,runParts,Numbers)
 
 print('')
 print('')
@@ -135,7 +145,7 @@ print('--------')
 print('')
 print('')
 print('The pipeline is finished! You can find all plots and reduced data in the following directory:')
-print(str(outputloc))
+print(str(saveloc))
 print('')
 
 print('')
