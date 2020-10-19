@@ -187,10 +187,10 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     ax.set_ylabel('$\Delta$Orb sep [AU]', fontsize = 16)
     ax.set_title('Orbital evolution model'+str(run))
     ax.legend(handles = handles1, fontsize = 12)#, loc = 'lower left')
-    plt.savefig(loc+'orbEvolution/model'+str(run)+'/ChangeOrbSep_'+str(run))
+    plt.savefig(loc+'model'+str(run)+'/ChangeOrbSep_'+str(run))
     
     #Write text file with usefull info
-    title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
+    title = loc+'model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
     with open (title,'a') as f:
         f.write('\n')
         if setup['ecc']>0:
@@ -258,7 +258,7 @@ def plotMassAccr(sinkData, run, loc):
     plt.ylabel('Total accreted mass [g]', fontsize = 16)
 
     plt.title('Total accreted mass evolution', fontsize = 18)
-    plt.savefig(loc+'orbEvolution/model'+str(run)+'/MacrEvolution_'+str(run))
+    plt.savefig(loc+'model'+str(run)+'/MacrEvolution_'+str(run))
 
 
 
@@ -277,9 +277,9 @@ def plotOrbVelEcc(sinkData, run, loc):
     ax.tick_params(labelsize=10)
           
     plt.legend()
-    plt.savefig(loc+'orbEvolution/model'+str(run)+'/orbVel_'+str(run))
+    plt.savefig(loc+'model'+str(run)+'/orbVel_'+str(run))
     # #Write text file with usefull info
-    # title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
+    # title = loc+'model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
     # with open (title,'a') as f:
     #     f.write('\n')
     #     f.write('Orbital velocity companion (t) [cm/s]: '+ '\n')
@@ -302,7 +302,7 @@ def plotOrbEvEcc(sinkData, run, loc):
     ax.tick_params(labelsize=10)
 
     plt.legend()
-    plt.savefig(loc+'orbEvolution/model'+str(run)+'/rc,rA,orbSep_'+str(run))
+    plt.savefig(loc+'model'+str(run)+'/rc,rA,orbSep_'+str(run))
 
 
 # def plotOrbEvNoEcc(sinkData, run, loc):
@@ -318,7 +318,7 @@ def plotOrbEvEcc(sinkData, run, loc):
 #     ax.tick_params(labelsize=10)
 
 #     plt.legend()
-#     plt.savefig(loc+'orbEvolution/model'+str(run)+'/rc,rA,orbSep_'+str(run))
+#     plt.savefig(loc+'model'+str(run)+'/rc,rA,orbSep_'+str(run))
     
 
 
@@ -346,7 +346,7 @@ def orbEv_main(run,loc, sinkData, setup):
         info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
 
         #Write text file with usefull info
-        title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
+        title = loc+'model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
         with open (title,'w') as f:
             f.write('\n')
             f.write('Model '+str(run)+'\n')
@@ -364,7 +364,7 @@ def orbEv_main(run,loc, sinkData, setup):
         plot_orbit(sinkData,setup,radii, ax)
         ax.axis('equal')
         ax.legend(fontsize = 15, loc = 'center right')
-        plt.savefig(loc+'orbEvolution/model'+str(run)+'/Orbit_model'+str(run))
+        plt.savefig(loc+'model'+str(run)+'/Orbit_model'+str(run))
 
 
         # Calculate values of parameters in apastron and periastron 
@@ -384,7 +384,7 @@ def orbEv_main(run,loc, sinkData, setup):
             # plotOrbEvNoEcc(sinkData, run, loc)
 
         #Write text file with usefull info
-        title = loc+'orbEvolution/model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
+        title = loc+'model'+str(run)+'/info_OrbEvol_'+str(run)+'.txt'
         with open (title,'a') as f:
             f.write('\n')
             f.write('To plot mass accretion, orbital velocities and orbital radii: '+ '\n')

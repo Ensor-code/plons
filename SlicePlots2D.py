@@ -105,9 +105,9 @@ def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
     ax.tick_params(labelsize=14)
 
     fig.tight_layout()
-    fig.savefig(loc+'2DslicePlots/1Plot_'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc+'1Plot_'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
     
-    print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
+    print('Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 '''
 Makes one of the plots that will be combined in one figure
@@ -207,7 +207,7 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, l
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.2,hspace = 0.005)
     
-    fig.savefig(loc+'2DslicePlots/'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc +str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 

@@ -274,7 +274,7 @@ def CMF_meanRho(run,outloc, data, setup):
         ax.set_title('Model '+ str(run)+': Mean density ', fontsize = 15)
         ax.legend(handles = handles, loc = 'lower right',  fontsize = 8)
         fig.tight_layout()
-        plt.savefig(outloc+'CMF_meanRho/meanRhoPlot'+str(run))
+        plt.savefig(outloc+'meanRhoPlot'+str(run))
         print('     Mean density plot of model',str(run),'ready and saved!')    
 
 
@@ -315,12 +315,12 @@ def CMF_meanRho(run,outloc, data, setup):
     plt.ylabel('$M[\\theta]/M_{tot}$', fontsize = 13)
     plt.title('Model '+ str(run) + ': Cumulative mass fraction', fontsize = 15)
     fig.tight_layout()
-    plt.savefig(outloc+'CMF_meanRho/CMFplot'+str(run))
+    plt.savefig(outloc+'CMFplot'+str(run))
     print('     Cummulative mass fraction plot of model',str(run), 'ready and saved!')
 
 
     #Makes text file with all usefull data
-    title = outloc+'CMF_meanRho/CMF_meanRho_'+str(run)+'.txt'
+    title = outloc+'CMF_meanRho_'+str(run)+'.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('\n')

@@ -285,7 +285,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         terminal_speed, binned_term_speed = getTerminalVelocity(setup, dump)
         
 
-    title = outputloc+'velocity_eta_Qp/run'+run+'.txt'
+    title = outputloc+'run'+run+'.txt'
     with open (title,'w') as f:
         f.write('Model '+run+'\n')
         f.write('---------\n')
