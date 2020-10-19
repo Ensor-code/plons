@@ -159,20 +159,7 @@ def getEverything(mass, theta, rho):
 
 
 
-def calcThetaValues(infoForPlot, infoForPlotL, infoForPlotR):
-    theta25xL =  0.5-((np.pi-infoForPlotL['theta25'])/np.pi)
-    theta25yL =  np.log10(infoForPlotL['rho25'] ) 
-    theta50xL =  0.5-((np.pi-infoForPlotL['theta50'])/np.pi)
-    theta50yL =  np.log10(infoForPlotL['rho50'] )  
-    theta75xL =  0.5-((np.pi-infoForPlotL['theta75'])/np.pi)
-    theta75yL =  np.log10(infoForPlotL['rho75'] ) 
-    
-    theta25xR =  0.5-((np.pi-infoForPlotR['theta25'])/np.pi)
-    theta25yR =  np.log10(infoForPlotR['rho25'] )
-    theta50xR =  0.5-((np.pi-infoForPlotR['theta50'])/np.pi)
-    theta50yR =  np.log10(infoForPlotR['rho50'] )  
-    theta75xR =  0.5-((np.pi-infoForPlotR['theta75'])/np.pi)
-    theta75yR =  np.log10(infoForPlotR['rho75'] )   
+def calcThetaValues(infoForPlot): 
 
     theta25x =  0.5-((np.pi-infoForPlot['theta25'])/np.pi)
     theta25y =  np.log10(infoForPlot['rho25'] )
@@ -187,42 +174,11 @@ def calcThetaValues(infoForPlot, infoForPlotL, infoForPlotR):
                  '50y'   : theta50y  ,
                  '75x'   : theta75x  ,
                  '75y'   : theta75y  ,
-                 '25xR'  : theta25xR ,
-                 '25yR'  : theta25yR ,
-                 '50xR'  : theta50xR ,
-                 '50yR'  : theta50yR ,
-                 '75xR'  : theta75xR ,
-                 '75yR'  : theta75yR ,
-                 '25xL'  : theta25xL ,
-                 '25yL'  : theta25yL ,
-                 '50xL'  : theta50xL ,
-                 '50yL'  : theta50yL ,
-                 '75xL'  : theta75xL ,
-                 '75yL'  : theta75yL
         }
 
     return theta
 
-
-
-def calcThetaValuesSingle(infoForPlot):
-    
-    theta25x =  0.5-((np.pi-infoForPlot['theta25'])/np.pi)
-    theta25y =  np.log10(infoForPlot['rho25'] ) 
-    theta50x =  0.5-((np.pi-infoForPlot['theta50'])/np.pi)
-    theta50y =  np.log10(infoForPlot['rho50'] )   
-    theta75x =  0.5-((np.pi-infoForPlot['theta75'])/np.pi)
-    theta75y =  np.log10(infoForPlot['rho75'] )   
-
-    theta    = {'25x'  : theta25x,
-                '25y'  : theta25y,
-                '50x'  : theta50x,
-                '50y'  : theta50y,
-                '75x'  : theta75x,
-                '75y'  : theta75y,
-        }
-
-    return theta    
+   
 
 
 def calculateDeltaValues(infoForPlot):
@@ -234,43 +190,23 @@ def calculateDeltaValues(infoForPlot):
               'delta50'    : delta50,
               'ratioDelta' : ratio
         }
+    
     return delta
 
 
 '''
 Makes a plot of the mean density profile of both the apastron and periastron side seperately
 '''
-def plotLvsR(ax, theta, infoForPlot, infoForPlotL, infoForPlotR):
+def plotLvsR(ax, theta, infoForPlot, marker):#, infoForPlotL, infoForPlotR):
     color = 'k'
 #     normalising_factor = infoForPlot['meanRhoSm'][0]
     
-    # plot left
-    marker = 'dashed'
-    log_ysmooth = np.log10(infoForPlotL['meanRhoSm'] ) 
-
-    ax.plot(infoForPlotL['x'],(log_ysmooth), color, ls = marker)
-    ax.plot(theta['25xL'], theta['25yL'], marker = 'o', color = color, fillstyle = 'right')
-    ax.plot(theta['50xL'], theta['50yL'], marker = 'o', color = color, fillstyle = 'none' )
-    ax.plot(theta['75xL'], theta['75yL'], marker = 'o', color = color) 
-
-    # plot right
-    marker = 'dotted'
-    log_ysmooth = np.log10(infoForPlotR['meanRhoSm'] )  
-
-
-    ax.plot(infoForPlotR['x'],(log_ysmooth), color, ls = marker)
-    ax.plot(theta['25xR'], theta['25yR'], marker = 'o', color = color, fillstyle = 'right')
-    ax.plot(theta['50xR'], theta['50yR'], marker = 'o', color = color, fillstyle = 'none' )
-    ax.plot(theta['75xR'], theta['75yR'], marker = 'o', color = color) 
-
-    # plot the mean
-    marker = 'solid'
     log_ysmooth = np.log10(infoForPlot['meanRhoSm'] )  
 
     ax.plot(infoForPlot['x'], log_ysmooth, color, ls = marker)
-    ax.plot(theta['25x'], theta['25y'], marker = 'o', color = color, fillstyle = 'right')
-    ax.plot(theta['50x'], theta['50y'], marker = 'o', color = color, fillstyle = 'none' )
-    ax.plot(theta['75x'], theta['75y'], marker = 'o', color = color) 
+    ax.plot(theta['25x'], theta['25y'], marker = 'o', color = 'royalblue', fillstyle = 'right')
+    ax.plot(theta['50x'], theta['50y'], marker = 'o', color = 'firebrick', fillstyle = 'none' )
+    ax.plot(theta['75x'], theta['75y'], marker = 'o', color = 'goldenrod') 
 
     ax.set_xlim(0,1./2.)
 
@@ -290,14 +226,14 @@ def CMF_meanRho(run,outloc, data, setup):
         print('')
 
 
-    # legend:
+    # legend for plots
     left          = mlines.Line2D([],[], color = 'k', linestyle = 'dashed', label = 'Periastron')
     right         = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', label = 'Apastron')
-    full          = mlines.Line2D([],[], color = 'k', linestyle = 'solid', label = 'Full')
+    full          = mlines.Line2D([],[], color = 'k', linestyle = 'solid' , label = 'Full')
     
-    theta_25      = mlines.Line2D([],[], color = 'k', linestyle = 'None', fillstyle = 'right', marker = 'o', label = '$\\theta_{25}$')
-    theta_50      = mlines.Line2D([],[], color = 'k', linestyle = 'None', fillstyle = 'none' , marker = 'o', label = '$\\theta_{50}$')
-    theta_75      = mlines.Line2D([],[], color = 'k', linestyle = 'None', marker = 'o', label = '$\\theta_{75}$')
+    theta_25      = mlines.Line2D([],[], color = 'royalblue', linestyle = 'None', fillstyle = 'right', marker = 'o', label = '$\\theta_{25}$')
+    theta_50      = mlines.Line2D([],[], color = 'firebrick', linestyle = 'None', fillstyle = 'none' , marker = 'o', label = '$\\theta_{50}$')
+    theta_75      = mlines.Line2D([],[], color = 'goldenrod', linestyle = 'None', marker = 'o', label = '$\\theta_{75}$')
 
     handles       = [left, full, right, theta_25, theta_50, theta_75]
     handlestheta  = [theta_25, theta_50, theta_75]
@@ -307,8 +243,10 @@ def CMF_meanRho(run,outloc, data, setup):
     # get info needed to make plots
     # Perc contains all the mass fractions for which we calculate what theta is
     infoForPlot  = getEverything(data['mass'], data['theta'], data['rho'])
+    theta  = calcThetaValues(infoForPlot)
+    delta  = calculateDeltaValues(infoForPlot)
 
-    #select apastron and periastron side data in case of binary
+    # Select apastron and periastron side data in case of binary
     if setup['single_star'] == False:
         x = data['position'].transpose()[0]
         thetaR = data['theta'] [x>0]
@@ -321,56 +259,57 @@ def CMF_meanRho(run,outloc, data, setup):
 
         infoForPlotL = getEverything(massL, thetaL, rhoL)
         infoForPlotR = getEverything(massR, thetaR, rhoR)
-        theta = calcThetaValues(infoForPlot, infoForPlotL, infoForPlotR)
-        delta = calculateDeltaValues(infoForPlot)
+        
+        thetaL = calcThetaValues(infoForPlotL)
+        thetaR = calcThetaValues(infoForPlotR)
+        
+        deltaR = calculateDeltaValues(infoForPlotR)
+        deltaL = calculateDeltaValues(infoForPlotL)
 
 
         # mean density profile plots, left and right side
         fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
-        plotLvsR(ax, theta, infoForPlot, infoForPlotL, infoForPlotR)
+        
+        plotLvsR(ax, theta , infoForPlot , 'solid' )
+        plotLvsR(ax, thetaL, infoForPlotL, 'dashed')
+        plotLvsR(ax, thetaR, infoForPlotR, 'dotted')
+        
         plt.setp((ax), xticks= [0,1/4,1/2], xticklabels=['$\pi/2$', '$\pi/4$ $&$ $3\pi/4$', '0 $&$ $\pi$'])
         ax.tick_params(labelsize=10)
-        ax.set_title('Mean density ($\\theta$) (model '+ str(run)+')', fontsize = 15)
+        ax.set_title('Model '+ str(run)+': Mean density ', fontsize = 15)
         ax.legend(handles = handles, loc = 'lower right',  fontsize = 8)
+        fig.tight_layout()
         plt.savefig(outloc+'CMF_meanRho/meanRhoPlot'+str(run))
         print('     Mean density plot of model',str(run),'ready and saved!')    
- 
-    else:
-        theta = calcThetaValuesSingle(infoForPlot)
-        delta = calculateDeltaValues(infoForPlot)
 
 
-    # plot of the cumulative mass fraction 
-    plt.figure(figsize=(5, 4))
+    # Plot of the cumulative mass fraction 
+    fig = plt.figure(figsize=(5, 6))
 
     color = 'k'
     marker = 'solid'
     plt.plot(infoForPlot['x'],infoForPlot['massFraction'][:-1],color = color, linestyle = marker)
+    
+    plt.plot(theta['25x'],0.25, color = 'royalblue', marker='o', fillstyle = 'right')
+    plt.plot(theta['50x'],0.5 , color = 'firebrick', marker='o', fillstyle = 'none')
+    plt.plot(theta['75x'],0.75, color = 'goldenrod', marker='o')
+
+    plt.legend(handles = handlestheta, loc = 'lower right', fontsize = 12)
 
 
     if setup['single_star'] == False:
-        plt.plot(theta['25x'],0.25, color = color, marker='o', fillstyle = 'right')
-        plt.plot(theta['50x'],0.5 , color = color, marker='o', fillstyle = 'none')
-        plt.plot(theta['75x'],0.75, color = color, marker='o')
-
+       
         plt.plot(infoForPlotL['x'],infoForPlotL['massFraction'][:-1],color = color, linestyle = 'dashed')
-        plt.plot(theta['25xL'],0.25, color = color, marker='o', fillstyle = 'right')
-        plt.plot(theta['50xL'],0.5 , color = color, marker='o', fillstyle = 'none')
-        plt.plot(theta['75xL'],0.75, color = color, marker='o')
+        plt.plot(thetaL['25x'],0.25, color = 'royalblue', marker='o', fillstyle = 'right')
+        plt.plot(thetaL['50x'],0.5 , color = 'firebrick', marker='o', fillstyle = 'none')
+        plt.plot(thetaL['75x'],0.75, color = 'goldenrod', marker='o')
 
         plt.plot(infoForPlotR['x'],infoForPlotR['massFraction'][:-1],color = color, linestyle = 'dotted')
-        plt.plot(theta['25xR'],0.25, color = color, marker='o', fillstyle = 'right')
-        plt.plot(theta['50xR'],0.5 , color = color, marker='o', fillstyle = 'none')
-        plt.plot(theta['75xR'],0.75, color = color, marker='o')
+        plt.plot(thetaR['25x'],0.25, color = 'royalblue', marker='o', fillstyle = 'right')
+        plt.plot(thetaR['50x'],0.5 , color = 'firebrick', marker='o', fillstyle = 'none')
+        plt.plot(thetaR['75x'],0.75, color = 'goldenrod', marker='o')
 
-        plt.legend(handles = handles, loc = 'lower right', fontsize = 12)
-
-
-    else:
-        plt.plot(theta['25x'],0.25, color = color, marker='o', fillstyle = 'right')
-        plt.plot(theta['50x'],0.5 , color = color, marker='o', fillstyle = 'none')
-        plt.plot(theta['75x'],0.75, color = color, marker='o')
-        plt.legend(handles = handlestheta, loc = 'lower right', fontsize = 12)
+        plt.legend(handles = handles, loc = 'lower right', fontsize = 12)    
 
 
     locs, labels = plt.xticks()  # Get the current locations and labels.
@@ -379,7 +318,8 @@ def CMF_meanRho(run,outloc, data, setup):
 
     plt.xlabel('$\\theta$',fontsize = 13)
     plt.ylabel('$M[\\theta]/M_{tot}$', fontsize = 13)
-    plt.title('Cumulative mass fraction (model '+ str(run) + ')', fontsize = 15)
+    plt.title('Model '+ str(run) + ': Cumulative mass fraction', fontsize = 15)
+    fig.tight_layout()
     plt.savefig(outloc+'CMF_meanRho/CMFplot'+str(run))
     print('     Cummulative mass fraction plot of model',str(run), 'ready and saved!')
 
@@ -391,8 +331,11 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('\n')
         f.write('Description parameters:'+'\n')
         f.write('\n')
-        f.write('theta50 / theta75: Angle wrt orbital plane at which 50 / 75 percent of total mass is accumulated'+'\n')
-        f.write('rho50 / rho75:     Mean density corresponding to angle theta50 / theta 75'+'\n')
+        f.write('theta25/50/75:     Angle wrt orbital plane at which 25 / 50 / 75 percent of total mass is accumulated'+'\n')
+        f.write('rho25/5075   :     Mean density corresponding to angle theta25/50/75, in unit [g/cm^3]\n')
+        f.write('delta        :     = (theta25-theta50)/(theta50-theta75) ratio of difference between thetas. \n')
+        f.write('                       If normalised to the corresponding single model, delta gives an indication \n')
+        f.write('                       of the strength of the equatorial density enhancement (EDE)\n')
         f.write('Mass fraction:     Array with cumulative mass fraction for increasing angle with the orbital plane.'+'\n')
         f.write('                   Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
         f.write('meanRhoSm:         Smoothened array of mean rho. Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
@@ -415,10 +358,10 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('theta(25) to plot on x-axis:\n')
         f.write('   Full:  '+str(np.round(theta['25x'],3))+'\n')
         if setup['single_star'] == False:
-            f.write('    Apa:  '+str(np.round(theta['25xL'],3))+'\n')
-            f.write('    Per:  '+str(np.round(theta['25xR'],3))+'\n')
+            f.write('    Apa:  '+str(np.round(thetaL['25x'],3))+'\n')
+            f.write('    Per:  '+str(np.round(thetaR['25x'],3))+'\n')
         f.write('rho(25) to plot on y-axis:\n')
-        f.write('   Full:    '+str(infoForPlot['rho25'])+'\n')
+        f.write('   Full:  '+str(infoForPlot['rho25'])+'\n')
         if setup['single_star'] == False:
             f.write('    Apa:  '+str(infoForPlotL['rho25'])+'\n')
             f.write('    Per:  '+str(infoForPlotR['rho25'])+'\n')    
@@ -432,10 +375,10 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('theta(50) to plot on x-axis:\n')
         f.write('   Full:  '+str(np.round(theta['50x'],3))+'\n')
         if setup['single_star'] == False:
-            f.write('    Apa:  '+str(np.round(theta['50xL'],3))+'\n')
-            f.write('    Per:  '+str(np.round(theta['50xR'],3))+'\n')
+            f.write('    Apa:  '+str(np.round(thetaL['50x'],3))+'\n')
+            f.write('    Per:  '+str(np.round(thetaR['50x'],3))+'\n')
         f.write('rho(50) to plot on y-axis:\n')
-        f.write('   Full:    '+str(infoForPlot['rho50'])+'\n')
+        f.write('   Full:  '+str(infoForPlot['rho50'])+'\n')
         if setup['single_star'] == False:
             f.write('    Apa:  '+str(infoForPlotL['rho50'])+'\n')
             f.write('    Per:  '+str(infoForPlotR['rho50'])+'\n')    
@@ -449,21 +392,22 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('theta(75) to plot on x-axis:\n')
         f.write('   Full:  '+str(np.round(theta['75x'],3))+'\n')
         if setup['single_star'] == False:
-            f.write('    Apa:  '+str(np.round(theta['75xL'],3))+'\n')
-            f.write('    Per:  '+str(np.round(theta['75xR'],3))+'\n')
-        f.write('rho(75) to plot on y-axis\n')
-        f.write('   Full:    '+str(infoForPlot['rho75'])+'\n')
+            f.write('    Apa:  '+str(np.round(thetaL['75x'],3))+'\n')
+            f.write('    Per:  '+str(np.round(thetaR['75x'],3))+'\n')
+        f.write('rho(75) to plot on y-axis:s\n')
+        f.write('   Full:  '+str(infoForPlot['rho75'])+'\n')
         if setup['single_star'] == False:
             f.write('    Apa:  '+str(infoForPlotL['rho75'])+'\n')
             f.write('    Per:  '+str(infoForPlotR['rho75'])+'\n')    
         f.write('\n')
         # delta
         f.write('delta ratio:\n')
-        f.write('   Full = '+str(np.round(delta['ratioDelta'],3))+'\n')
-        #if setup['single_star'] == False:
-            #f.write('    Apa = '+ str(np.round(infoForPlotL['ratioDelta'] ,3))+'\n')
-            #f.write('    Per = '+ str(np.round(infoForPlotR['ratioDelta'] ,3))+'\n')
-            
+        f.write('   Full = '+str(np.round(delta['ratioDelta'],5))+'\n')
+        if setup['single_star'] == False:
+            f.write('    Apa = '+ str(np.round(deltaL['ratioDelta'] ,5))+'\n')
+            f.write('    Per = '+ str(np.round(deltaR['ratioDelta'] ,5))+'\n')
+        f.write('\n')
+        f.write('\n')
         if setup['single_star'] == False:
             names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
             f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))

@@ -39,19 +39,7 @@ def smoothData(dumpData,setup):
     #zoom = 5
     results_sph_sl_zZ5,x1Z5,y1Z5,z1Z5 = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm()/5)
     results_sph_sl_yZ5,x2Z5,y2Z5,z2Z5 = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','y',(setup['bound'])*cgs.AU_cm()/5)
-
-    #smooth = {'sph_sl_z'     : results_sph_sl_z,
-             #'sph_sl_zZ2'    : results_sph_sl_zZ2,
-             #'sph_sl_zZ5'    : results_sph_sl_zZ5,
-             #'sph_sl_y'      : results_sph_sl_y,
-             #'sph_sl_yZ2'    : results_sph_sl_yZ2,
-             #'sph_sl_yZ5'    : results_sph_sl_yZ5,
-             #'xz'            : x1 ,
-             #'yz'            : y1 ,
-             #'xy'            : x2 ,
-             #'zy'            : z2 ,
-        #}
-    
+   
     smooth_zoom1 = {'smooth_z'     :  results_sph_sl_z,
                     'x_z'          :  x1,
                     'y_z'          :  y1,
@@ -83,23 +71,60 @@ def smoothData(dumpData,setup):
 
     return smooth
 
+
+'''
+Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). Takes 'zoom'factor as input
+'''
+def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
+
+    cm_rho  = plt.cm.get_cmap('viridis')
+    fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    fig.set_size_inches(9.8, 8)
+        
+    ax.axis('equal')
+    ax.set_facecolor('k')
+    axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(),smooth[zoom]['y_z']/cgs.AU_cm(),s=5,c=np.log10(smooth[zoom]['smooth_z']['rho']),cmap=cm_rho,vmin=rhoMin, vmax = rhoMax)
+        
+    
+    if setup['single_star']== False:
+        xAGB  = dumpData['posAGB' ][0] / cgs.AU_cm()
+        yAGB  = dumpData['posAGB' ][1] / cgs.AU_cm()
+        xcomp = dumpData['posComp'][0] / cgs.AU_cm()
+        ycomp = dumpData['posComp'][1] / cgs.AU_cm()
+        ax.plot(xAGB ,yAGB , 'ko', markersize = 4  ,label = 'AGB')
+        ax.plot(xcomp,ycomp, 'ro', markersize = 2,label = 'comp')   
+
+    cbar = plt.colorbar(axPlot, ax = ax)
+    cbar.set_label('log density [cm/g$^3$]', fontsize = 25)
+    cbar.ax.tick_params(labelsize=14)
+    ax.set_xlabel('x [AU]', fontsize = 18)
+    ax.set_ylabel('y [AU]', fontsize = 18)
+      
+    lim = (setup['bound']-30)/zoom
+    ax.axis([-lim,lim,-lim,lim])
+    ax.tick_params(labelsize=14)
+
+    fig.tight_layout()
+    fig.savefig(loc+'2DslicePlots/1Plot_'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
+    
+    print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
+
 '''
 Makes one of the plots that will be combined in one figure
 '''
 def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
     
+    # colormap per parameter
     cm = {'rho'  : plt.cm.get_cmap('viridis' ),
           'temp' : plt.cm.get_cmap('afmhot'  ),
           'speed': plt.cm.get_cmap('PuBuGn_r')
           }
-    
+    # label name per parameter
     name = {'rho'  : 'log density [cm/g$^3$]',
             'temp' : 'log temperature [K]' ,
             'speed': 'speed [km/s]'
-                }
+          }
             
-    
-
     xAGB = dumpData['posAGB'][0]/cgs.AU_cm()
     yAGB = dumpData['posAGB'][1]/cgs.AU_cm()
     zAGB = dumpData['posAGB'][2]/cgs.AU_cm()
@@ -132,9 +157,9 @@ def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
     
     # plot the position of the AGB star and comp in the edge-on plane & make colorbar 
     if ax == axs[2] or ax == axs[4] or ax == axs[6]:
-        ax.plot(xAGB, zAGB, 'ko', markersize = 4,label = 'AGB')
+        ax.plot(xAGB, zAGB, 'ko', markersize = 4*zoom,label = 'AGB')
         if setup['single_star'] == False:
-            ax.plot(xcomp, zcomp, 'ro', markersize = 1.5,label = 'comp')  
+            ax.plot(xcomp, zcomp, 'ro', markersize = 1.5*zoom,label = 'comp')  
         cbar = plt.colorbar(axPlot, ax = ax)
         cbar.set_label(name[par], fontsize = 18)
         
@@ -143,19 +168,20 @@ def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
     
     # plot the position of the AGB star and comp in the face-on plane
     if ax == axs[1] or ax == axs[3] or ax == axs[5]:
-        ax.plot(xAGB,yAGB, 'ko', markersize = 4,label = 'AGB')
+        ax.plot(xAGB,yAGB, 'ko', markersize = 4*zoom,label = 'AGB')
         if setup['single_star'] == False:
-            ax.plot(xcomp,ycomp, 'ro', markersize = 1.5,label = 'comp')  
+            ax.plot(xcomp,ycomp, 'ro', markersize = 1.5*zoom,label = 'comp')  
             
-    #ax.axis([-lim,lim,-lim,lim])
+    lim = (setup['bound']-30)/zoom
+    ax.axis([-lim,lim,-lim,lim])
 
 '''
 Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), log(T[K]) and |v|[km/s]. Takes 'zoom'factor as input
 '''
-def allPlots( smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, loc):
+def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, loc):
 
-    fig, ((ax1,ax2),(ax3,ax4),(ax5,ax6))= plt.subplots(3, 2,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [0.8,1]})
-    fig.set_size_inches(10, 14)
+    fig, ((ax1,ax2),(ax3,ax4),(ax5,ax6))= plt.subplots(3, 2,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [0.81,1]})
+    fig.set_size_inches(12, 14.4)
     
     axs = {1: ax1,
            2: ax2,
@@ -173,45 +199,18 @@ def allPlots( smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, 
     onePlot(ax3,'speed', 0     , vmax  , smooth, zoom, dumpData, setup, axs, 'z')
     onePlot(ax4,'speed', 0     , vmax  , smooth, zoom, dumpData, setup, axs, 'y')
     
+    ax1.axes.get_xaxis().set_visible(False)
+    ax2.axes.get_xaxis().set_visible(False)
+    ax3.axes.get_xaxis().set_visible(False)
+    ax4.axes.get_xaxis().set_visible(False)
+    
+    fig.tight_layout()
+    fig.subplots_adjust(wspace = 0.2,hspace = 0.005)
+    
     fig.savefig(loc+'2DslicePlots/'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
-'''
-Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). Takes 'zoom'factor as input
-'''
-def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
-
-    cm_rho  = plt.cm.get_cmap('viridis')
-    fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
-    fig.set_size_inches(9.8, 8)
-        
-    ax.axis('equal')
-    ax.set_facecolor('k')
-    axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(),smooth[zoom]['y_z']/cgs.AU_cm(),s=5,c=np.log10(smooth[zoom]['smooth_z']['rho']),cmap=cm_rho,vmin=rhoMin, vmax = rhoMax)
-        
-    
-    if setup['single_star']== False:
-        xAGB  = dumpData['posAGB' ][0] / cgs.AU_cm()
-        yAGB  = dumpData['posAGB' ][1] / cgs.AU_cm()
-        xcomp = dumpData['posComp'][0] / cgs.AU_cm()
-        ycomp = dumpData['posComp'][1] / cgs.AU_cm()
-        ax.plot(xAGB ,yAGB , 'ko', markersize = 4  ,label = 'AGB')
-        ax.plot(xcomp,ycomp, 'ro', markersize = 2,label = 'comp')   
-
-    cbar = plt.colorbar(axPlot, ax = ax)
-    cbar.set_label('log density [cm/g$^3$]', fontsize = 25)
-    cbar.ax.tick_params(labelsize=14)
-    ax.set_xlabel('x [AU]', fontsize = 18)
-    ax.set_ylabel('y [AU]', fontsize = 18)
-    #lim = bound/zoom  
-    #ax.axis([-lim,lim,-lim,lim])
-    ax.tick_params(labelsize=14)
-
-    fig.tight_layout()
-    fig.savefig(loc+'2DslicePlots/1Plot_'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
-    
-    print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 
 def SlicePlots(run,loc, dumpData, setup):
