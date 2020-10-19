@@ -1,0 +1,42 @@
+
+-------------------------------
+    README PHANTOM PIPELINE 
+-------------------------------
+
+This is the README for the first python pipeline to reduce data of hydrodynamical simulations by use of the SPH code PHANTOM (Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031). PHANTOM returns different types of useful data files: 'wind_xxxxx'-files and '.ev'-files. The former can only be read in its raw form by the SPH visualisation tool SPLASH ( Price, D. J. 2007, PASA, 24, 159; https://users.monash.edu.au/~dprice/splash/). By using SPLASH, the files can be converted to .ascii to use for reduction. The .ev-files can be use straight away, but can also be visualised using SPLASH.
+
+PHANTOM outputs (full) dump files every certain timestep during the evolution of the model. These are the wind_xxxxx-files and contain the data (position, velocity, mass, density, energy, temperature) of the SPH particles in the model. The two last rows of the output are the sink particles in the model. More detailed information of the sink particles (position, velocity, mass, accreted mass, spin, angular momentum) in function of evolution time of the model, can be retrieved in the .ev files.
+
+General
+-------
+
+By giving as input the directory where the models are located, the last full dump in .ascii and the .ev files of both particles are reduced in order to gain relevant information about the model:
+(1)  2D slice plots of the density, speed and temperature are produced (face-on/orbital plane & edge-on plane) .
+(2)  1D radial plots of the density, speed and temperature are produced (along the x-, y- and z-axes).
+(3)  The terminal velocity in the model in calculated.
+(4)  Two morphological paramaters are determined, giving a more quantitative insight in the degree of aspherity.
+(5)  The cummulative mass fraction and mean density are calculated in function of polar coordinate theta. This gives an indication about the degree of equatorial density enhancement (EDE).
+(6)  Information about the orbital evolution of the binary system and accreted mass onto the companion.
+
+
+More detailed information
+-------------------------
+
+(1)
+
+The 2D slices in the plots are infinitely thin and calculated by using the smoothing kernel from PHANTOM. The density, speed and temperature are calculated by this method on a grid of 300*300 pixels, using the data of the 20 nearest neighbours (SPH particles) of those grid points. These plots give a visual representation of the morphology present in the AGB wind of the simulation.
+
+(2)
+
+In 1D, the data along the x-, y- and z-axes is constructed in the same way as explained in (1), but for a 1D grid. This results in plots of the radial structure, which is an important addition to the 2D slice plots.
+
+(3)
+
+The terminal velocity is in the case of the PHANTOM SPH code not an input parameter, so it needs to be calculated. Due to the morphology in the outflow of the AGB star, at a certain radius a wide range of speeds will be obtained. Therefore calculating only one value for the terminal velocity is not possible. Instead, three values are obtained, a minimum, mean and maximum terminal velocity. The method used here is binning of the speed in function of the radius of the SHP particle to the AGB star. Bins of 1AU are constructed and per bin, the minimum, mean and maximum speed is calculated. Using speed of the outer 20% of the data, three values for the terminal velocity are obtained. 
+NOTE: For some models (most often with slow initial wind velocity, low mass loss rate and/or low-mass companion), the interaction of the companion has not reached the outer boundary of the model. Therefore, this method will not lead to a correct terminal velocity value and thus the unphysical part of the data will be cut off. Visually, the speed profile in function of radius shows a strong, unphysical linear increase.
+
+(4)
+
+
+(5)
+This leads to the theta-parameter, which gives the polar angle at which 25, 50 and 75 % of the mass is located. This leads to the parameter delta (when normalised to the single model), which
