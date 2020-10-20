@@ -1,5 +1,6 @@
 import datetime                     as dt
 import numpy                        as np
+import sys
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -35,11 +36,13 @@ def run_main(outputloc,part,Numbers):
             os.mkdir(outputloc+run+'/')
         except OSError:
             print('')
+            
         print('')
         print('Data is loading...')
         [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound)
         print('All data is loaded and ready to use.')
         print('')
+        
         for part in runParts:
 
             if part == '0':
@@ -79,8 +82,12 @@ def run_main(outputloc,part,Numbers):
             if part == '6':
                 # (6) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
+        print('')
         
         
+    
+
+    
 
 print('')
 print('-------------------------------------------------------')
@@ -95,37 +102,51 @@ print('     (3) Information about the terminal velocity of the model.')
 print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta and Qp.')
 print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
 print('     (6) Information of the orbital evolution.')
-
-# which parts do you want to run?
 print('')
+print('')
+
+
+loc         = None
+outputloc   = None
+factor      = 3   # the without inner, is without r< factor * sma
+bound       = None
+
+
+if loc == None or outputloc == None:
+    print(' !! Before you start, give the directory where: ')
+    print('     - the PHANTOM output of the models is saved   (LoadDataPHANTOM.py, line 109)')
+    print('     - the output of the pipeline should be saved  (LoadDataPHANTOM.py, line 110)')
+    print('')
+    print('------------------END:', dt.datetime.now(),'---------------------')
+    sys.exit()
+
+
+# Which parts do you want to run?
+
+print('Which models do you want to run this for? ')
+print('Give the number, split multiple models by a space:')
+runNumbers = str(input( '  >>>   '))
+numbers    = runNumbers.split()
 print('')
 print('Which components of the pipeline do you want to run?')
 print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space:')
 part = input('  >>>   ')
 runParts = part.split() 
-print('For which models do you want to run this? ')
-print('Give the modelnames, split multiple models by a space:')
-runNumbers = str(input( '  >>>   '))
-Numbers    = runNumbers.split()
-
 for i in range(len(runParts)):
     print(options[runParts[i]])
     
 if '3' in runParts and '4' in runParts:
     runParts.remove('4')
-
-
-#print(options[part])
-# # Dit komt nog als inputs
-# run       = 'M16A'
-loc       = '/lhome/jolienm/Documents/thesisModellen/'
-outputloc = '/lhome/jolienm/Documents/phantomPipeline/' 
-factor    = 10   # the without inner, is without r< factor * sma
-bound     = None
     
 print('')
 print('')
 print('It takes some time, so sit back and relax!')
+print('')
+print('')
+
+
+
+
 
 
 try:
@@ -134,10 +155,7 @@ except OSError:
     print('')
 
 
-print('')
-
-
-run_main(outputloc,runParts,Numbers)
+run_main(outputloc, runParts, numbers)
 
 print('')
 print('')
