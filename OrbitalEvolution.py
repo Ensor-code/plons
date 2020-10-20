@@ -227,33 +227,36 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
 def plotMassAccr(setup, sinkData, run, loc):
   # make plot of the mass accretion evolution, very interesting to plot!
     fig = plt.figure(figsize=(8, 5))
+    
+    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    handles_ap    = [apaLine, perLine]
     #to scale:
     maxi = max(sinkData['maccrComp'])
     mini = min(sinkData['maccrComp'])
 
     plt.plot(sinkData['time'],  sinkData['maccrComp'], color = 'royalblue', linestyle = 'solid')
     period = setup['period_ini'] * cgs.sec_year()
+    #print(' period is', period, ' yrs' )
+    j = period/2  # First periastron
+    i = 0         # Start at apastron
 
-
-    j = period/2
-    i = 0
-    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-    while (j-period) <= setup['tmax']/period :
-        i = i+period
-        j = j+period
+    while (j) <= setup['tmax']/period +2 * period:
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+        i = i+period
+        j = j+period
 
-    i = i+period
     plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    
+    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+   
     ax = plt.subplot(111)
     #plt.setp(ax, xticks= sma_t, xticklabels=['$0$','$1$', '$2$','$3$','$4$','$5$'])
     plt.xlabel('Time[yrs]', fontsize = 16)
     plt.ylabel('Accreted mass [g]', fontsize = 16)
 
     plt.title('Total accreted mass by the companion', fontsize = 18)
+    plt.legend(handles = handles_ap)
     fig.tight_layout()
     plt.savefig(loc+str(run)+'_evolution_Maccr_companion')
 
