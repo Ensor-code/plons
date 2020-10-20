@@ -184,8 +184,13 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     ax.plot(sma_t, sma-sma[0], color = c, linestyle = 'dotted', markersize = 10)
     
     ax.tick_params(labelsize=12)     
+    period = setup['period_ini'] * cgs.sec_year()
+
+    ticks = []
+    for p in range(0, int(setup['tmax']/period),1):
+        ticks.append(str(p))
     
-    plt.setp(ax, xticks= sma_t, xticklabels=['$0$','$1$', '$2$','$3$','$4$','$5$'])
+    plt.setp(ax, xticks= sma_t, xticklabels=ticks)
     
     ax.set_xlabel('Orbit', fontsize = 18)
     ax.set_ylabel('$\Delta$Orb sep [AU]', fontsize = 16)
@@ -240,7 +245,6 @@ def plotMassAccr(setup, sinkData, run, loc):
 
     i = i+period
     plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    
     
     ax = plt.subplot(111)
     #plt.setp(ax, xticks= sma_t, xticklabels=['$0$','$1$', '$2$','$3$','$4$','$5$'])
