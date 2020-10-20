@@ -211,7 +211,7 @@ def plotLvsR(ax, theta, infoForPlot, marker):#, infoForPlotL, infoForPlotR):
     ax.set_xlim(0,1./2.)
 
     ax.set_xlabel('$\\theta$', fontsize = 13)
-    ax.set_ylabel('log density', fontsize = 13)   
+    ax.set_ylabel('log density [cm/g$^3$]', fontsize = 13)   
 
 
 
