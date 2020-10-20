@@ -268,11 +268,12 @@ def getQp(setup, dump, wind_comp):
 def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     
     single_star = setup['single_star']
+    print('')
+    print('(3)  Start calculations for terminal velocity...')
+    print('')
     
     if single_star == False:
-        print('')
-        print('(3)  Start calculations for terminal velocity...')
-        print('')
+
         terminal_speed, binned_term_speed, wind_comp, index = getTerminalVelocity(setup, dump)
         print('')
         print('(4)  Start calculations for morphological parameters eta and Qp...')
@@ -283,6 +284,9 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         
     if single_star == True:
         terminal_speed, binned_term_speed = getTerminalVelocity(setup, dump)
+        print('')
+        print('(4)  No calculations for morphological parameters eta and Qp, as there is no companion')
+        print('')
         
 
     title = outputloc+run+'_data_terminalVelocity_eta_Qp'+run+'.txt'
@@ -356,7 +360,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write('Apastron:'+'\n')
                 f.write(str(round(eta2['min' ][0], 2))+'\n')
                 f.write(str(round(eta2['mean'][0], 2))+'\n')
-                f.write(str(round(eta2['max' ][0], 2))+'\n')
+                f.write(str(round(eta2['max' ][0], 2))+'\n') 
                 f.write('mean:'+'\n')
                 f.write(str(round(eta2['min' ][1], 2))+'\n')
                 f.write(str(round(eta2['mean'][1], 2))+'\n')
@@ -382,7 +386,10 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 #f.write(str(round(wind_speed_min[ key], 2))+'\n')
                 #f.write('\n')
                 
-        print('         The output of (3) terminal velocity and (4) morphological parameters is saved in a text file!')
+        if single_star == False:
+            print('         The output of (3) terminal velocity and (4) morphological parameters is saved in a text file!')
+        if single_star == True:
+            print('     The terminal velocity data is ready and saved!')
         print('')
     
     

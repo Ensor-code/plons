@@ -240,10 +240,8 @@ def plotMassAccr(setup, sinkData, run, loc):
     #print(' period is', period, ' yrs' )
     j = period/2  # First periastron
     i = 0         # Start at apastron
-    #print(' Amount of orbits is', sinkData['time'][-1]/period, int(sinkData['time'][-1]/period))
-    #print('tmax is ', sinkData['time'][-1], ' yrs' )
 
-    for orbit in range(0, int(sinkData['time'][-1]/period)+1):
+    while (j) <= setup['tmax']/period +2 * period:
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
         i = i+period

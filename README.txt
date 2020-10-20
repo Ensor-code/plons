@@ -28,8 +28,9 @@ By giving the directory where the models are located as input, the last full dum
 Pipeline - More detailed information
 ------------------------------------
 
-This pipeline load the wind.in and wind.setup files first. This is the general setup information of the model (configuration of the system, information of the thermodynamics, evolution time, wind outflow setup,...). Next the last full dump is loaded, and using this data, some other useful quantities are calculated (gas pressure/temperature, speed, sperical coordinates, sound speed of the gas,...).  Lastly, the data of the sink particle(s) is loaded. From this file, also the period and orbital velocity of the sink particles in calculated, if the system is a binary, in function of time. The last entry in the sink data, corresponds to the full dump loaded. Therefore the position/velocity/mass/... of this last entry are also saved in the full dump data for easy usage.
-NOTE: If you have paused and restarted your simulation, multiple .ev files will be constructed per sink particle. The code anticipates to this problem, but you have to say so in the code yourself: Uncommend 
+This pipeline loads the wind.in and wind.setup files first. This is the general setup information of the model (configuration of the system, information of the thermodynamics, evolution time, wind outflow setup,...). Next the last full dump is loaded, and using this data, some other useful quantities are calculated (gas pressure/temperature, speed, sperical coordinates, sound speed of the gas,...).  Lastly, the data of the sink particle(s) is loaded. From this file, also the period and orbital velocity of the sink particles in calculated, if the system is a binary, in function of time. The last entry in the sink data, corresponds to the full dump loaded. Therefore the position/velocity/mass/... of this last entry are also saved in the full dump data for easy usage.
+
+NOTE: If you have paused and restarted your simulation, multiple .ev files will be constructed per sink particle. The code anticipates to this problem, but you have to say so in the code yourself: Uncomment the part starting at line 50 in the LoadSink.py script and put in the correct model. 
 
 
 (1)
@@ -43,12 +44,29 @@ In 1D, the data along the x-, y- and z-axes is constructed in the same way as ex
 (3)
 
 The terminal velocity is in the case of the PHANTOM SPH code not an input parameter, so it needs to be calculated. Due to the morphology in the outflow of the AGB star, at a certain radius a wide range of speeds will be obtained. Therefore calculating only one value for the terminal velocity is not possible. Instead, three values are obtained, a minimum, mean and maximum terminal velocity. The method used here is binning of the speed in function of the radius of the SHP particle to the AGB star. Bins of 1AU are constructed and per bin, the minimum, mean and maximum speed is calculated. Using speed of the outer 20% of the data, three values for the terminal velocity are obtained. 
+
 NOTE: For some models (most often with slow initial wind velocity, low mass loss rate and/or low-mass companion), the interaction of the companion has not reached the outer boundary of the model. Therefore, this method will not lead to a correct terminal velocity value and thus the unphysical part of the data will be cut off. Visually, the speed profile in function of radius shows a strong, unphysical linear increase.
 
 (4)
 
+In order to get some quantitative indication about the morphology of the models, two morphology parameters are currently in use: 
+    - eta = v/v_orb (see Saladino, M. I., Pols, O. R., van der Helm, E., Pelupessy, I., & Portegies Zwart, S. 2018,
+A&A, 618, A50; El Mellah, I., Bolte, J., Decin, L., Homan, W., & Keppens, R. 2020, arXiv e-prints,
+arXiv:2001.04482)
+    - Qp = p_comp/p_wind (see Decin, L., Montarg`es, M., Richards, A. M. S., et al. 2020, Science, 369, 1497)
+Depending on the value of these parameters, the model is expected to show radial/EDE/complex morphology.
+
+NOTE: For eta, different velocities/speed v can be used:
+    - terminal velocity
+    - speed of the wind at the location of the companion 
+    - speed of the wind of the corresponding single models at the location of the companion
+    - speed resulting from the vector sum of the speed of the wind of the corresponding single models at the location of the companion and the orbital velocity of the AGB star.
+Only the first two ways of computing eta are available in this script. Nevertheless, from the output of this script, the latter two can also be obtained easily.
+
 
 (5)
+
+The cummulative mass fraction is calculated in function of the polar angle theta (theta = 0.5pi is the orbital plane, theta = 0 the north pole), again by using the method of binning. Only the northern hemisphere is used, because of symmetry. Because of asymmetry along the x-axis, the positive (right) and negative (left) part according to x are also calculated seperately. Certainly for eccentric models this can differ. From this cummulative mass fraction, the angle is calculated where 25, 50 and 75% of the mass of the wind is present, called theta25/50/75 respectively. From this, the parameter delta is calculated, defined as (theta25-theta50)/(theta50-theta75). When this parameter is normalised to the value for the corresponding single model
 
 factor
 
