@@ -21,12 +21,12 @@ Calculates orbital separation and r of the COM, used sinkData (data)
 '''
 def calcRadii(data):
     t  = data['time']
-    x1 = data['posComp'].transpose()[0] 
-    x2 = data['posAGB' ].transpose()[0]
-    y1 = data['posComp'].transpose()[1]
-    y2 = data['posAGB' ].transpose()[1]
-    z1 = data['posComp'].transpose()[2]
-    z2 = data['posAGB' ].transpose()[2]
+    x1 = data['posComp' ].transpose()[0] 
+    x2 = data['posAGB'  ].transpose()[0]
+    y1 = data['posComp' ].transpose()[1]
+    y2 = data['posAGB'  ].transpose()[1]
+    z1 = data['posComp' ].transpose()[2]
+    z2 = data['posAGB'  ].transpose()[2]
     M1 = data['massComp']
     M2 = data['massAGB' ]
     xCOM = (M1*x1 + M2 * x2)/(M1+M2)
@@ -35,7 +35,7 @@ def calcRadii(data):
     rCOM = np.sqrt(xCOM**2 + yCOM**2)
 
     rC = data['rComp']
-    rA = data['rAGB']
+    rA = data['rAGB' ]
     OrbSep = rC+rA
 
     output = {'orbSep': OrbSep,
@@ -54,9 +54,9 @@ uses sinkData = data
 def calcPeaksOrbSep(data, setup, radii):
 
     period = setup['period_ini'] * cgs.sec_year()
-    time   = data['time']
-    ecc    = setup['ecc']
-    orbSep = radii['orbSep']    
+    time   = data['time'       ]
+    ecc    = setup['ecc'       ]
+    orbSep = radii['orbSep'    ]    
     # print('time goes from ', min(time),' to ', max(time))
     # print('period is ', period)
     # print('the amount of periods is max(time)/period: ', math.ceil(max(time)/period))
@@ -117,13 +117,14 @@ def plot_orbit(data, setup, radii, ax):
     ax.set_ylim(-4,4)
     
     ax.plot(xc,yc, c = 'r', label = 'companion')
-    ax.plot(xa,ya, c = 'b', label = 'AGB')
-    ax.set_ylabel('y[cm]',fontsize = 15)
-    ax.set_xlabel('x[cm]',fontsize = 15)
+    ax.plot(xa,ya, c = 'b', label = 'AGB'      )
+    ax.set_ylabel('$y$ [cm]',fontsize = 15)
+    ax.set_xlabel('$x$ [cm]',fontsize = 15)
     ax.plot(0,0,'*', color = 'k', label = 'COM')
-    ax.set_title('$e = $'+str(setup['ecc'])+', $a =$'+ str(setup['sma_ini'])+' AU, $q=$'+ str(setup['massAGB_ini']/setup['massComp_ini']), fontsize = 15)
+    ax.set_title('$e = $'+str(setup['ecc'])+', $a = $'+ str(setup['sma_ini'])+' AU, $q = $'+ str(setup['massAGB_ini']/setup['massComp_ini']), fontsize = 15)
 
     ax.tick_params(labelsize=12)
+    
 
 '''
 Calculates semi-major axis at timesteps of the input peaks 'infoPeaksOrbSep'
@@ -147,8 +148,8 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     
     # LEGEND
-    apastron      = mlines.Line2D([],[], color = 'k', linestyle = 'None',marker = '$a$' ,label = 'Apastron', markersize = 8)
-    periastron    = mlines.Line2D([],[], color = 'k', linestyle = 'None',marker = '$p$', label = 'Periastron', markersize =8)
+    apastron      = mlines.Line2D([],[], color = 'k', linestyle = 'None'  , marker = '$a$' ,label = 'Apastron', markersize = 8)
+    periastron    = mlines.Line2D([],[], color = 'k', linestyle = 'None'  , marker = '$p$', label = 'Periastron', markersize =8)
     sma           = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', label = 'sma')
     handles1      = [apastron,sma, periastron]
 
@@ -174,10 +175,10 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     ax.plot(sma_t,toPlot[0]-toPlot[0][0],color = c, marker = '$a$', linestyle = 'dashed', markersize = 10)
     ax.plot(sma_t,toPlot[1]-toPlot[1][0],color = c, marker = '$p$', linestyle = 'dashed', markersize = 10)
     for i in range(len(sma_t)):
-        ax.plot(sma_t[i],toPlot[0][i]-toPlot[0][0],color = 'white', marker = 'o', markersize = 12)
-        ax.plot(sma_t[i],toPlot[0][i]-toPlot[0][0],color = c, marker = '$a$', markersize = 11)
-        ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = 'white', marker = 'o', markersize = 12)
-        ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = c, marker = '$p$', markersize = 11)
+        ax.plot(sma_t[i],toPlot[0][i]-toPlot[0][0],color = 'white', marker = 'o'  , markersize = 12)
+        ax.plot(sma_t[i],toPlot[0][i]-toPlot[0][0],color = c      , marker = '$a$', markersize = 11)
+        ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = 'white', marker = 'o  ', markersize = 12)
+        ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = c      , marker = '$p$', markersize = 11)
 
     ax.plot(sma_t, sma-sma[0], color = c, linestyle = 'dotted', markersize = 10)
     
@@ -185,19 +186,20 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     
     ax.set_xlabel('Orbit', fontsize = 18)
     ax.set_ylabel('$\Delta$Orb sep [AU]', fontsize = 16)
-    ax.set_title('Orbital evolution model'+str(run))
+    ax.set_title('Orbital evolution')
     ax.legend(handles = handles1, fontsize = 12)#, loc = 'lower left')
-    plt.savefig(loc+'ChangeOrbSep_'+str(run))
+    fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_OrbitalSeparation')
     
     #Write text file with usefull info
-    title = loc+'info_OrbEvol_'+str(run)+'.txt'
+    title = loc+str(run)+'_data_OrbitalEvolution.txt'
     with open (title,'a') as f:
         f.write('\n')
         if setup['ecc']>0:
-            f.write('The change in eccentricity, delta_e/e=         '+ str(round(ratio_delta_e_per_yr,9))+ '/yr'+'\n')
+            f.write('The change in eccentricity: delta_e/e =         '+ str(round(ratio_delta_e_per_yr,9))+ '/yr'+'\n')
         else:
-            f.write('The change in eccentricity, delta_e=         '+ str(round(delta_e,9))+ '/yr'+'\n')
-        f.write('The change in sma,          delta_a/a=         '+ str(round(ratio_delta_a_per_yr,9))+ '/yr'+'\n')
+            f.write('The change in eccentricity: delta_e   =         '+ str(round(delta_e,9))+ '/yr'+'\n')
+        f.write('The change in sma:          delta_a/a =         '+ str(round(ratio_delta_a_per_yr,9))+ '/yr'+'\n')
         f.write('\n')
         f.write('To plot the change in eccentricity and change in sma, use the following: '+ '\n')
         f.write('\n')
@@ -254,11 +256,12 @@ def plotMassAccr(sinkData, run, loc):
 
     ax = plt.subplot(111)
 
-    plt.xlabel('Time[yrs]', fontsize = 16)
-    plt.ylabel('Total accreted mass [g]', fontsize = 16)
+    plt.xlabel('Time [yrs]', fontsize = 16)
+    plt.ylabel('Accreted mass [g]', fontsize = 16)
 
-    plt.title('Total accreted mass evolution', fontsize = 18)
-    plt.savefig(loc+'MacrEvolution_'+str(run))
+    plt.title('Total accreted mass by the companion', fontsize = 18)
+    fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_Maccr_companion')
 
 
 
@@ -277,7 +280,8 @@ def plotOrbVelEcc(sinkData, run, loc):
     ax.tick_params(labelsize=10)
           
     plt.legend()
-    plt.savefig(loc+'orbVel_'+str(run))
+    fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_OrbitalVelocity')
     # #Write text file with usefull info
     # title = loc+'info_OrbEvol_'+str(run)+'.txt'
     # with open (title,'a') as f:
@@ -293,16 +297,17 @@ def plotOrbEvEcc(sinkData, run, loc):
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
 
     ax.plot(sinkData['time'], sinkData['rComp'], label= 'r comp')
-    ax.set_ylabel('$r$[cm]', fontsize = 12)
+    ax.set_ylabel('$r$ [cm]', fontsize = 12)
     ax.set_title('r comp, r AGB, orb sep (model'+str(run)+')', fontsize = 15)
        
     ax.plot(sinkData['time'], sinkData['rAGB'], label ='r AGB')
     ax.plot(sinkData['time'], sinkData['rAGB']+sinkData['rComp'], label = 'Orb sep')
-    ax.set_xlabel('time[yrs]', fontsize = 14)
+    ax.set_xlabel('time [yrs]', fontsize = 14)
     ax.tick_params(labelsize=10)
 
     plt.legend()
-    plt.savefig(loc+'rc,rA,orbSep_'+str(run))
+    fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_rComp_rAGB_orbSep'+str(run))
 
 
 # def plotOrbEvNoEcc(sinkData, run, loc):
@@ -340,13 +345,13 @@ def orbEv_main(run,loc, sinkData, setup):
         info = {}
         radii= calcRadii(sinkData)
 
-        info['TotMaC'] = sinkData['maccrComp'][-1] # the total mass accreted by the companion
-        info['TotMaA'] = sinkData['maccrAGB'][-1]  # the total mass accreted by the AGB
-        info['MassLostAGB'] = sinkData['massAGB'][0] - (sinkData['massAGB'][-1] - info['TotMaA'])
+        info['TotMaC']         = sinkData['maccrComp'][-1] # the total mass accreted by the companion
+        info['TotMaA']         = sinkData['maccrAGB' ][-1]  # the total mass accreted by the AGB
+        info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData['massAGB'][-1] - info['TotMaA'])
         info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
 
         #Write text file with usefull info
-        title = loc+'info_OrbEvol_'+str(run)+'.txt'
+        title = loc+str(run)+'_data_OrbitalEvolution.txt'
         with open (title,'w') as f:
             f.write('\n')
             f.write('Model '+str(run)+'\n')
@@ -364,7 +369,8 @@ def orbEv_main(run,loc, sinkData, setup):
         plot_orbit(sinkData,setup,radii, ax)
         ax.axis('equal')
         ax.legend(fontsize = 15, loc = 'center right')
-        plt.savefig(loc+'Orbit_model'+str(run))
+        fig.tight_layout()
+        plt.savefig(loc+str(run)+'_Orbit'+str(run))
 
 
         # Calculate values of parameters in apastron and periastron 
@@ -384,7 +390,7 @@ def orbEv_main(run,loc, sinkData, setup):
             # plotOrbEvNoEcc(sinkData, run, loc)
 
         #Write text file with usefull info
-        title = loc+'info_OrbEvol_'+str(run)+'.txt'
+        title = loc+str(run)+'_data_OrbitalEvolution.txt'
         with open (title,'a') as f:
             f.write('\n')
             f.write('To plot mass accretion, orbital velocities and orbital radii: '+ '\n')
