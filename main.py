@@ -106,8 +106,8 @@ print('')
 print('')
 
 
-loc         = '/lhome/silkem/Documents/THESIS/Models/phantom_Masterthesis/desktop_run'
-outputloc   = '/lhome/silkem/Documents/Pipeline/testOutput/'
+loc         = None
+outputloc   = None
 factor      = 3   # the without inner, is without r< factor * sma
 bound       = None
 
