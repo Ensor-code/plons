@@ -183,20 +183,22 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
 
     ax.plot(sma_t, sma-sma[0], color = c, linestyle = 'dotted', markersize = 10)
     
+
     ax.tick_params(labelsize=12)     
     period = setup['period_ini'] * cgs.sec_year()
 
-    ticks = []
+    tickorbit = []
     for p in range(0, int(setup['tmax']/period),1):
-        ticks.append(str(p))
-    
-    plt.setp(ax, xticks= sma_t, xticklabels=ticks)
+        tickorbit.append(str(p))
+        
+    plt.setp(ax, xticks= sma_t, xticklabels=tickorbit)
     
     ax.set_xlabel('Orbit', fontsize = 18)
     ax.set_ylabel('$\Delta$Orb sep [AU]', fontsize = 16)
     ax.set_title('Orbital evolution')
     ax.legend(handles = handles1, fontsize = 12)#, loc = 'lower left')
     fig.tight_layout()
+
     plt.savefig(loc+str(run)+'_evolution_OrbitalSeparation')
     
     #Write text file with usefull info
