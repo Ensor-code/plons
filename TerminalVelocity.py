@@ -268,11 +268,11 @@ def getQp(setup, dump, wind_comp):
 def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     
     single_star = setup['single_star']
-    print('')
-    print('(3)  Start calculations for terminal velocity...')
-    print('')
     
     if single_star == False:
+        print('')
+        print('(3)  Start calculations for terminal velocity...')
+        print('')
         terminal_speed, binned_term_speed, wind_comp, index = getTerminalVelocity(setup, dump)
         print('')
         print('(4)  Start calculations for morphological parameters eta and Qp...')
@@ -283,9 +283,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         
     if single_star == True:
         terminal_speed, binned_term_speed = getTerminalVelocity(setup, dump)
-        print('')
-        print('(4)  No calculations for morphological parameters eta and Qp, as there is no companion')
-        print('')
+        
 
     title = outputloc+run+'_data_terminalVelocity_eta_Qp'+run+'.txt'
     with open (title,'w') as f:

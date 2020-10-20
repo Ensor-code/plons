@@ -147,7 +147,7 @@ def radialStructPlots(run,loc, dumpData, setup):
     
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.005,hspace = 0.01)
-    fig.savefig(loc+str(run)+'1Dplot_radialStructure.png')
+    fig.savefig(loc+str(run)+'_1Dplot_radialStructure.png')
     
     
     #Make text file with info to make plots

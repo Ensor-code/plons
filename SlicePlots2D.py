@@ -207,7 +207,7 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, l
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.2,hspace = 0.005)
     
-    fig.savefig(loc +str(run)+'2Dplot_DensSpeedTemp_zoom'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc +str(run)+'_2Dplot_DensSpeedTemp_zoom'+str(zoom)+'.png',dpi = 300)
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
