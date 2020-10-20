@@ -12,6 +12,7 @@ rcParams.update({'figure.dpi': 200})
 
 # own scripts
 import ConversionFactors_cgs    as cgs
+import PhysicalQuantities       as pq
 
 
     
@@ -162,11 +163,11 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     t_total     = max(sinkData['time']) #in years
 
     #detla a = detla r_apa + delta r_per / 2 
-    delta_a              = ((toPlot[0]-toPlot[0][0] + (toPlot[1]-toPlot[1][0]) )/2)[-1]
-    ratio_delta_a_per_yr = (delta_a/(setup['sma_ini']*cgs.AU_cm()))/ t_total
+    delta_a              = (((toPlot[0]-toPlot[0][0] + (toPlot[1]-toPlot[1][0]) )/2)[-1]) / t_total
+    ratio_delta_a_per_yr = (delta_a/(setup['sma_ini']*cgs.AU_cm()))
 
-    delta_e              = ((toPlot[0]-toPlot[0][0] - (toPlot[1]-toPlot[1][0]) )/(2*setup['sma_ini']*cgs.AU_cm() + 2*delta_a) )[-1]
-    ratio_delta_e_per_yr = (delta_e/setup['ecc'] ) /t_total
+    delta_e              = (((toPlot[0]-toPlot[0][0] - (toPlot[1]-toPlot[1][0]) )/(2*setup['sma_ini']*cgs.AU_cm() + 2*delta_a) )[-1])/t_total
+    ratio_delta_e_per_yr = (delta_e/setup['ecc'] ) 
 
     # print('delta_e/e= ', str(ratio_delta_e_per_yr), '/yr')
     # print('delta_a/a= ', str(ratio_delta_a_per_yr), '/yr')
@@ -177,18 +178,27 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
     for i in range(len(sma_t)):
         ax.plot(sma_t[i],toPlot[0][i]-toPlot[0][0],color = 'white', marker = 'o'  , markersize = 12)
         ax.plot(sma_t[i],toPlot[0][i]-toPlot[0][0],color = c      , marker = '$a$', markersize = 11)
-        ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = 'white', marker = 'o'  , markersize = 12)
+        ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = 'white', marker = 'o', markersize = 12)
         ax.plot(sma_t[i],toPlot[1][i]-toPlot[1][0],color = c      , marker = '$p$', markersize = 11)
 
     ax.plot(sma_t, sma-sma[0], color = c, linestyle = 'dotted', markersize = 10)
     
+
     ax.tick_params(labelsize=12)     
+    period = setup['period_ini'] * cgs.sec_year()
+
+    tickorbit = []
+    for p in range(0, int(setup['tmax']/period),1):
+        tickorbit.append(str(p))
+        
+    plt.setp(ax, xticks= sma_t, xticklabels=tickorbit)
     
     ax.set_xlabel('Orbit', fontsize = 18)
-    ax.set_ylabel('$\Delta$Orb sep [AU]', fontsize = 16)
+    ax.set_ylabel('$\Delta$Orb sep [cm]', fontsize = 16)
     ax.set_title('Orbital evolution')
     ax.legend(handles = handles1, fontsize = 12)#, loc = 'lower left')
     fig.tight_layout()
+
     plt.savefig(loc+str(run)+'_evolution_OrbitalSeparation')
     
     #Write text file with usefull info
@@ -214,49 +224,33 @@ def plotChangeOrbSep(info, sinkData, setup, peaksPar, run, loc):#, ylabel, unit,
 
 
 
-def plotMassAccr(sinkData, run, loc):
+def plotMassAccr(setup, sinkData, run, loc):
   # make plot of the mass accretion evolution, very interesting to plot!
-    plt.figure(figsize=(8, 5))
+    fig = plt.figure(figsize=(8, 5))
     #to scale:
     maxi = max(sinkData['maccrComp'])
     mini = min(sinkData['maccrComp'])
 
     plt.plot(sinkData['time'],  sinkData['maccrComp'], color = 'royalblue', linestyle = 'solid')
+    period = setup['period_ini'] * cgs.sec_year()
 
-    j = 9.3/2
+
+    j = period/2
     i = 0
     plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
     plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+    while (j-period) <= setup['tmax']/period :
+        i = i+period
+        j = j+period
+        plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
+        plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
 
-    i = i+9.3
-    j = j+9.3
+    i = i+period
     plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-
-    i = i+9.3
-    j = j+9.3
-    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-    i = i+9.3
-    j = j+9.3
-    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-    i = i+9.3
-    j = j+9.3
-    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-    i = i+9.3
-    j = j+9.3
-    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-
-    i = i+9.3
-    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-
-
+    
     ax = plt.subplot(111)
-
-    plt.xlabel('Time [yrs]', fontsize = 16)
+    #plt.setp(ax, xticks= sma_t, xticklabels=['$0$','$1$', '$2$','$3$','$4$','$5$'])
+    plt.xlabel('Time[yrs]', fontsize = 16)
     plt.ylabel('Accreted mass [g]', fontsize = 16)
 
     plt.title('Total accreted mass by the companion', fontsize = 18)
@@ -310,22 +304,6 @@ def plotOrbEvEcc(sinkData, run, loc):
     plt.savefig(loc+str(run)+'_evolution_rComp_rAGB_orbSep'+str(run))
 
 
-# def plotOrbEvNoEcc(sinkData, run, loc):
-#     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
-
-#     ax.plot(sinkData['time'], sinkData['rComp'], label= 'r comp')
-#     ax.set_ylabel('$r$[cm]', fontsize = 12)
-#     ax.set_title('r comp, r AGB, orb sep (model'+str(run)+')', fontsize = 15)
-       
-#     ax.plot(sinkData['time'], sinkData['rAGB'], label ='r AGB')
-#     ax.plot(sinkData['time'], sinkData['rAGB']+sinkData['rComp'], label = 'Orb sep')
-#     ax.set_xlabel('time[yrs]', fontsize = 14)
-#     ax.tick_params(labelsize=10)
-
-#     plt.legend()
-#     plt.savefig(loc+'rc,rA,orbSep_'+str(run))
-    
-
 
 def orbEv_main(run,loc, sinkData, setup):
     print('')
@@ -378,7 +356,7 @@ def orbEv_main(run,loc, sinkData, setup):
         #Make the plots of the change in OrbSep and eccentrictiy
         plotChangeOrbSep(info, sinkData, setup, 'peaksOrbSep',run,loc)
         #Plot evolution of the mass accretion
-        plotMassAccr(sinkData, run, loc)
+        plotMassAccr(setup,sinkData, run, loc)
         #Plot orbital velocities 
         plotOrbVelEcc(sinkData, run, loc)
         #Plot orbital radii and orbital separation
