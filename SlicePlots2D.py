@@ -105,9 +105,9 @@ def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
     ax.tick_params(labelsize=14)
 
     fig.tight_layout()
-    fig.savefig(loc+'1Plot_'+str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc+str(run)+'_2Dplot_density_zoom'+str(zoom)+'.png',dpi = 300)
     
-    print('Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
+    print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 '''
 Makes one of the plots that will be combined in one figure
@@ -181,7 +181,7 @@ Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), lo
 def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, loc):
 
     fig, ((ax1,ax2),(ax3,ax4),(ax5,ax6))= plt.subplots(3, 2,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [0.81,1]})
-    fig.set_size_inches(12, 14.4)
+    fig.set_size_inches(12, 14.3)
     
     axs = {1: ax1,
            2: ax2,
@@ -207,7 +207,7 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, l
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.2,hspace = 0.005)
     
-    fig.savefig(loc +str(run)+'_zoom'+str(zoom)+'.png',dpi = 300)
+    fig.savefig(loc +str(run)+'2Dplot_DensSpeedTemp_zoom'+str(zoom)+'.png',dpi = 300)
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 

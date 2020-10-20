@@ -35,15 +35,16 @@ def getParamsLine(results_line,rR, minT):
 '''
 definition used in plotParR, plots radial structure of given parameter (log(rho)/|v|/T) on the x- and y-axis
 '''
-def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMax, xcomp, xAGB, bound):
-
-    axis.plot((X/cgs.AU_cm()),parX, color = 'royalblue', label = 'x-axis', markersize = 0.2, lw = 0.6)
-    axis.plot((Y/cgs.AU_cm()),parY, color = 'firebrick', label = 'y-axis', markersize = 0.2, lw = 0.6)
-    axis.plot((Z/cgs.AU_cm()),parZ, color = 'goldenrod', label = 'z-axis', markersize = 0.2, lw = 0.6)
+def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, color, axis, parMin, parMax, xcomp, xAGB, bound):
+    
+    
+    axis.plot((X/cgs.AU_cm()),parX, ls = '-' , color = color, label = 'x-axis', markersize = 0.3, lw = 0.8)
+    axis.plot((Y/cgs.AU_cm()),parY, ls = ':' , color = color, label = 'y-axis', markersize = 0.3, lw = 0.8)
+    axis.plot((Z/cgs.AU_cm()),parZ, ls = '-.', color = color, label = 'z-axis', markersize = 0.3, lw = 0.8)
 
     axis.set_xlim(-bound,bound)
-    axis.vlines(xcomp, parMin, parMax ,'royalblue', linestyle = 'dashed' ,linewidth = 0.5)
-    axis.vlines(xAGB, parMin, parMax,'royalblue', linestyle = 'solid', linewidth = 0.5)
+    #axis.vlines(xcomp, parMin, parMax ,'k', linestyle = 'dashed' ,linewidth = 0.5)
+    #axis.vlines(xAGB , parMin, parMax ,'k', linestyle = 'solid', linewidth = 0.5)
     axis.set_ylim(parMin,parMax)
 
 
@@ -56,13 +57,13 @@ def radialStructPlots(run,loc, dumpData, setup):
     print('(2)  Start calculations for the radial structure plots.')
 
     # Define legend
-    xAxis  = mlines.Line2D([],[], color = 'royalblue', label='x-axis')
-    yAxis  = mlines.Line2D([],[], color = 'firebrick', label='y-axis')
-    zAxis  = mlines.Line2D([],[], color = 'goldenrod', label='z-axis')
-    comp   = mlines.Line2D([],[], color = 'royalblue', linestyle = 'dashed',linewidth = 1, label = 'comp')
-    AGB    = mlines.Line2D([],[], color = 'royalblue', linestyle = 'solid', linewidth = 1, label = 'AGB' )
-    handles1 = [xAxis,yAxis,zAxis,AGB, comp]
-    handles2 = [xAxis,yAxis,zAxis,AGB]
+    xAxis  = mlines.Line2D([],[], ls = '-' , color = 'k', label='x-axis', markersize = 0.3, lw = 0.8)
+    yAxis  = mlines.Line2D([],[], ls = ':' , color = 'k', label='y-axis', markersize = 0.3, lw = 0.8)
+    zAxis  = mlines.Line2D([],[], ls = '-.', color = 'k', label='z-axis', markersize = 0.3, lw = 0.8)
+    #comp   = mlines.Line2D([],[], color = 'royalblue', linestyle = 'dashed',linewidth = 1, label = 'comp')
+    #AGB    = mlines.Line2D([],[], color = 'royalblue', linestyle = 'solid', linewidth = 1, label = 'AGB' )
+    handles1 = [xAxis,yAxis,zAxis]#,AGB, comp]
+    handles2 = [xAxis,yAxis,zAxis]#,AGB]
 
 
     #plots radial structure of log(rho), |v| and T on the x- and y-axis
@@ -77,7 +78,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         xAGB  = dumpData['posAGB' ][0]/cgs.AU_cm()
         handl = handles1
     
-    fig = plt.figure(figsize=(6, 9))
+    fig = plt.figure(figsize=(5, 9))
     
     #fig = plt.figure(figsize=(4.5, 10))
     ax1 = plt.subplot(311)
@@ -123,7 +124,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         rhoMax = 10**(-12)
 
     vmin = 0
-    vmax = 40
+    vmax = 50
     Tmin = 1e1
     Tmax = 1e6
 
@@ -131,9 +132,9 @@ def radialStructPlots(run,loc, dumpData, setup):
     #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
     
     # Plots
-    oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'density [cm/g$^3$]', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
-    oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, 'speed [km/s]'      , ax2, vmin  , vmax  , xcomp, xAGB, setup['bound'])
-    oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'temperature [K]'   , ax3, Tmin  , Tmax  , xcomp, xAGB, setup['bound'])
+    oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'density [cm/g$^3$]','royalblue', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
+    oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, 'speed [km/s]'      ,'firebrick', ax2, vmin  , vmax  , xcomp, xAGB, setup['bound'])
+    oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'temperature [K]'   ,'goldenrod', ax3, Tmin  , Tmax  , xcomp, xAGB, setup['bound'])
     
     # Plot make up
     ax1.legend(handles = handl, fontsize = 12, loc = 'upper right')
@@ -146,11 +147,11 @@ def radialStructPlots(run,loc, dumpData, setup):
     
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.005,hspace = 0.01)
-    fig.savefig(loc+'1D_'+str(run)+'.png')
+    fig.savefig(loc+str(run)+'1Dplot_radialStructure.png')
     
     
     #Make text file with info to make plots
-    title = loc+'1D_'+str(run)+'.txt'
+    title = loc+str(run)+'_data_1D_radialStructure.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('Data to make radial structure plots yourself:')

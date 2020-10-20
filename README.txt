@@ -3,24 +3,34 @@
     README PHANTOM PIPELINE 
 -------------------------------
 
-This is the README for the first python pipeline to reduce data of hydrodynamical simulations by use of the SPH code PHANTOM (Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031). PHANTOM returns different types of useful data files: 'wind_xxxxx'-files and '.ev'-files. The former can only be read in its raw form by the SPH visualisation tool SPLASH ( Price, D. J. 2007, PASA, 24, 159; https://users.monash.edu.au/~dprice/splash/). By using SPLASH, the files can be converted to .ascii to use for reduction. The .ev-files can be use straight away, but can also be visualised using SPLASH.
+This is the README for the first python pipeline ever to reduce data of hydrodynamical simulations by use of the SPH code PHANTOM (Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031). PHANTOM returns different types of useful data files: 'wind_xxxxx'-files and '.ev'-files. The former can only be read in its raw form by the SPH visualisation tool SPLASH (Price, D. J. 2007, PASA, 24, 159; https://users.monash.edu.au/~dprice/splash/). By using SPLASH, the files can be converted to .ascii to use for reduction. The .ev-files can be use straight away, but can also be visualised using SPLASH.
 
-PHANTOM outputs (full) dump files every certain timestep during the evolution of the model. These are the wind_xxxxx-files and contain the data (position, velocity, mass, density, energy, temperature) of the SPH particles in the model. The two last rows of the output are the sink particles in the model. More detailed information of the sink particles (position, velocity, mass, accreted mass, spin, angular momentum) in function of evolution time of the model, can be retrieved in the .ev files.
-
-General
+PHANTOM
 -------
 
-By giving as input the directory where the models are located, the last full dump in .ascii and the .ev files of both particles are reduced in order to gain relevant information about the model:
-(1)  2D slice plots of the density, speed and temperature are produced (face-on/orbital plane & edge-on plane) .
+PHANTOM returns (full) dump files every certain timestep during the evolution of the model. These are the wind_xxxxx-files and contain the relevant data (position, velocity, mass, density, energy, temperature) of the SPH particles in the model. The last x rows of the output are the x sink particles in the model. More detailed information of the sink particles (position, velocity, mass, accreted mass, spin, angular momentum) in function of evolution time of the model, can be retrieved in the .ev files.
+
+Pipeline - General
+------------------
+
+This pipeline is suited for binary and single AGB wind models.
+
+By giving the directory where the models are located as input, the last full dump in .ascii and the .ev files of the sink particle(s) are reduced in order to gain relevant information about the model:
+(1)  2D slice plots of the density, speed and temperature are produced (face-on/orbital plane & edge-on plane).
 (2)  1D radial plots of the density, speed and temperature are produced (along the x-, y- and z-axes).
-(3)  The terminal velocity in the model in calculated.
+(3)  The terminal velocity in the model is calculated.
 (4)  Two morphological paramaters are determined, giving a more quantitative insight in the degree of aspherity.
-(5)  The cummulative mass fraction and mean density are calculated in function of polar coordinate theta. This gives an indication about the degree of equatorial density enhancement (EDE).
+(5)  The cummulative mass fraction and mean density are calculated in function of polar coordinate theta. 
+     This gives an indication about the degree of equatorial density enhancement (EDE).
 (6)  Information about the orbital evolution of the binary system and accreted mass onto the companion.
 
 
-More detailed information
--------------------------
+Pipeline - More detailed information
+------------------------------------
+
+This pipeline load the wind.in and wind.setup files first. This is the general setup information of the model (configuration of the system, information of the thermodynamics, evolution time, wind outflow setup,...). Next the last full dump is loaded, and using this data, some other useful quantities are calculated (gas pressure/temperature, speed, sperical coordinates, sound speed of the gas,...).  Lastly, the data of the sink particle(s) is loaded. From this file, also the period and orbital velocity of the sink particles in calculated, if the system is a binary, in function of time. The last entry in the sink data, corresponds to the full dump loaded. Therefore the position/velocity/mass/... of this last entry are also saved in the full dump data for easy usage.
+NOTE: If you have paused and restarted your simulation, multiple .ev files will be constructed per sink particle. The code anticipates to this problem, but you have to say so in the code yourself: Uncommend 
+
 
 (1)
 
@@ -39,4 +49,7 @@ NOTE: For some models (most often with slow initial wind velocity, low mass loss
 
 
 (5)
+
+factor
+
 This leads to the theta-parameter, which gives the polar angle at which 25, 50 and 75 % of the mass is located. This leads to the parameter delta (when normalised to the single model), which
