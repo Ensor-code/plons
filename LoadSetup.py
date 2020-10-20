@@ -27,7 +27,7 @@ def LoadSetup(run, loc):
                 setup.append(lines[i].split())
     except FileNotFoundError:
         print('')
-        print("ERROR: No wind.setup file found.")
+        print(" ERROR: No wind.setup file found!")
         print('')
         exit()
 
@@ -39,7 +39,7 @@ def LoadSetup(run, loc):
                 infile.append(lines[i].split())
     except FileNotFoundError:
         print('')
-        print("ERROR: No wind.setup file found.")
+        print(" ERROR: No wind.setup file found!")
         print('')
         exit()
     

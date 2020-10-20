@@ -37,22 +37,14 @@ def LoadDump_cgs(run, loc, setup):
         x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
     except OSError:
         try: 
-            print('Converting file to ascii...')
+            print('Converting dump file to ascii...')
             
             os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
             x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
         
         except OSError:
-            print('Copying file desktop_run'+run+"/wind_00"+fileNumber+' from STER...')
+            print(' ERROR: No dump file found for this model in the current directory!')
             
-            #os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+run+"/wind_00"+fileNumber+" /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
-
-            print('Converting file to ascii...')
-            
-            os.system('cd')
-            os.system('cd '+runName)
-            os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
-            x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
             
     rows = len(x)       
     (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-2, unpack=True)
@@ -139,22 +131,13 @@ def LoadDump_single_cgs(run, loc, setup):
 
     except OSError:
         try:
-            print('Converting file to ascii...')
+            print('Converting dump file to ascii...')
             
             os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
             x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
         
         except OSError:
-            print('Copying file desktop_run'+runNumber+"/wind_00"+fileNumber+' from STER...')
-            
-            os.system("scp -r silkem@copernicus.ster.kuleuven.be:/STER/silkem/THESIS/phantom_Masterthesis/desktop_run"+runNumber+"/wind_00"+fileNumber+" /home/silke/Documents/Univ/THESIS/Models/phantom_Masterthesis/desktop_run"+runNumber+"/")
-
-            print('Converting file to ascii...')
-            
-            os.system('cd')
-            os.system('cd '+runName)
-            os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
-            x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
+            print(' ERROR: No dump file found for this model in the current directory!')
         
     rows = len(x)       
     (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-1, unpack=True)

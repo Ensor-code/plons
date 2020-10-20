@@ -30,7 +30,7 @@ def LoadSink_cgs(run, loc, setup):
         fileNumber = str(0) + fileNumber
 
     # make ascii file of this filenumber    
-    #fileName  = runName+'/wind_00'+fileNumber +'.ascii'
+    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
     
     # load the dump file wind_00xxx
     try:
@@ -38,55 +38,43 @@ def LoadSink_cgs(run, loc, setup):
         (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(runName+'/windSink0001N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
         (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(runName+'/windSink0002N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
         
-        
     except OSError:
 
-        print('Copying sink files from STER...')
+        print(' ERROR: No sink files found for this model in the current directory!')
         
-        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0001N01.ev " +loc+run+"/")
-        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0002N01.ev " +loc+run+"/")
-        
-        #os.system('cd')
-        #os.system('cd '+runName)
-        #os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
-        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(runName+'/windSink0001N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-        (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(runName+'/windSink0002N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+    
+    '''
+    Uncommand this part of the code when your simmulation has been paused and restarted.
+    Give the model's name.
+    '''
+    #if run == None:
+        #try:
+            #(t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(runName+'/windSink0001N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+            #(t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(runName+'/windSink0002N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        #except OSError:
 
-    #a model that was paused during its running has 2 .ev files per star, so add extra values from the second files to previous
-    if run == 'M19':
-        try:
-            (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(runName+'/windSink0001N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-            (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(runName+'/windSink0002N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-        except OSError:
+            #print(' ERROR: No extra sink files found for this model.')
 
-            print('Copying sink files from STER...')
-            
-            os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0001N02.ev " +loc+run+"/")
-            os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0002N02.ev " +loc+run+"/")
-            
-            (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(runName+'/windSink0001N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-            (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(runName+'/windSink0002N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-        
 
-        t1     = np.append(t1,t1e)
-        x1     = np.append(x1,x1e)
-        y1     = np.append(y1,y1e)
-        z1     = np.append(z1,z1e)
-        mass1  = np.append(mass1, mass1e)
-        vx1    = np.append(vx1, vx1e)
-        vy1    = np.append(vy1, vy1e)
-        vz1    = np.append(vz1, vz1e)
-        maccr1 = np.append(maccr1, maccr1e)
+        #t1     = np.append(t1,t1e)
+        #x1     = np.append(x1,x1e)
+        #y1     = np.append(y1,y1e)
+        #z1     = np.append(z1,z1e)
+        #mass1  = np.append(mass1, mass1e)
+        #vx1    = np.append(vx1, vx1e)
+        #vy1    = np.append(vy1, vy1e)
+        #vz1    = np.append(vz1, vz1e)
+        #maccr1 = np.append(maccr1, maccr1e)
 
-        t2     = np.append(t2,t2e)
-        x2     = np.append(x2,x2e)
-        y2     = np.append(y2,y2e)
-        z2     = np.append(z2,z2e)
-        mass2  = np.append(mass2, mass2e)
-        vx2    = np.append(vx2, vx2e)
-        vy2    = np.append(vy2, vy2e)
-        vz2    = np.append(vz2, vz2e)
-        maccr2 = np.append(maccr2, maccr2e)
+        #t2     = np.append(t2,t2e)
+        #x2     = np.append(x2,x2e)
+        #y2     = np.append(y2,y2e)
+        #z2     = np.append(z2,z2e)
+        #mass2  = np.append(mass2, mass2e)
+        #vx2    = np.append(vx2, vx2e)
+        #vy2    = np.append(vy2, vy2e)
+        #vz2    = np.append(vz2, vz2e)
+        #maccr2 = np.append(maccr2, maccr2e)
 
 
     # AGB star
@@ -177,7 +165,7 @@ def LoadSink_single_cgs(run, loc, setup):
         fileNumber = str(0) + fileNumber
 
     # make ascii file of this filenumber    
-    #fileName  = runName+'/wind_00'+fileNumber +'.ascii'
+    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
     
     # load the dump file wind_00xxx
     try:
@@ -186,14 +174,7 @@ def LoadSink_single_cgs(run, loc, setup):
         
     except OSError:
 
-        print('Copying sink file from STER...')
-        
-        os.system("scp -r jolienm@copernicus.ster.kuleuven.be:/STER/jolienm/thesis/finalModels/"+run+"/windSink0001N01.ev " +loc+run+"/")
-        
-        os.system('cd')
-        os.system('cd '+runName)
-        #os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
-        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(runName+'/windSink0001N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        print(' ERROR: No sink file found for this model in the current directory!')
         
 
    
