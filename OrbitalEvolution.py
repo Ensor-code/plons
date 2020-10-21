@@ -299,7 +299,7 @@ def plotOrbRad(sinkData, run, loc):
 
     plt.legend()
     fig.tight_layout()
-    plt.savefig(loc+str(run)+'_evolution_rComp_rAGB_orbSep'+str(run))
+    plt.savefig(loc+str(run)+'_evolution_rComp_rAGB_orbSep')
 
 
 
@@ -343,7 +343,7 @@ def orbEv_main(run,loc, sinkData, setup):
         ax.axis('equal')
         ax.legend(fontsize = 15, loc = 'center right')
         fig.tight_layout()
-        plt.savefig(loc+str(run)+'_Orbit'+str(run))
+        plt.savefig(loc+str(run)+'_Orbit')
 
 
         # Calculate orbital separation and time in apastron and periastron passages
