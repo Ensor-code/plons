@@ -81,7 +81,7 @@ def getTerminalVelocity(setup, dump):
             twist.append(i)
     
     if single_star == True:
-        orbSep = 100
+        sma = 100
     
     if len(twist) != 0 and twist[0] > sma:
         #print('twist is there')
@@ -241,8 +241,8 @@ RETURNS
 def getQp(setup, dump, wind_comp):
     
     z       = dump['position'].transpose()[2]
-    mass    = dump['mass']
-    rHill   = dump['rHill']
+    mass    = dump['mass'    ]
+    rHill   = dump['rHill'   ]
     sma     = setup['sma_ini'] * cgs.AU_cm()
     
     mass    = mass      [ z <  rHill ]
@@ -284,10 +284,10 @@ RETURNS:
 '''
 def getEpsilon(v, setup):
     sma   = setup['sma_ini'     ] * cgs.AU_cm()         # [cm]
-    mComp = setup['massComp_ini'] * cgs.Msun_gram()     # [g]
-    mAGB  = setup['massAGB_ini' ] * cgs.Msun_gram()     # [g]
-    
-    epsilon = (v**2*sma)/(cgs.G()*(24*(mComp)**2*mAGB)*(1/3))
+    mComp = setup['massComp_ini']                       # [Msun]
+    mAGB  = setup['massAGB_ini' ]                       # [Msun]
+       
+    epsilon = (v**2 * sma)/(cgs.G() * cgs.Msun_gram() * (24 * (mComp)**2 * mAGB)*(1/3))
     
     return epsilon
     
@@ -310,6 +310,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
         Qp, massHill, wind_comp_mean = getQp(setup, dump, wind_comp)
         epsilon                      = getEpsilon(wind_comp_mean, setup)
+        print(epsilon)
         
         
     if single_star == True:
@@ -320,7 +321,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         print('')
         
 
-    title = outputloc+run+'_data_terminalVelocity_eta_Qp'+run+'.txt'
+    title = outputloc+run+'_data_terminalVelocity_eta_Qp.txt'
     with open (title,'w') as f:
         f.write('Model '+run+'\n')
         f.write('---------\n')
@@ -402,10 +403,10 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write(str(massHill/cgs.Msun_gram())+'\n')
             f.write('\n')
             f.write('Q1 = 1e-6*Qp = 1e-6 (Mcomp*v_orb)/(Mwind*v_wind)\n')
-            f.write(str(round(Qp,4))+'\n')
+            f.write(str(Qp)+'\n')
             f.write('\n')
             f.write('epsilon = kin_energy / grav_energy\n')
-            f.write(str(round(epsilon,4))+'\n')
+            f.write(str(epsilon)+'\n')
         if single_star == True:
             f.write('Velocities [cm/s] at the different orbital separations:\n')
             for key in wind_speed_single['min' ]:
