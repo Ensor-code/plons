@@ -4,7 +4,7 @@ import matplotlib.pyplot        as plt
 import os
 
 # import own scripts
-import smoothingKernelScript    as sk
+import SmoothingKernelScript    as sk
 import ConversionFactors_cgs    as cgs
 
 # import certain things from packages
@@ -73,12 +73,15 @@ def smoothData(dumpData,setup):
 
 
 '''
-Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). 
-smooth is smoothing kernel data
-rhoMin,rhoMax determine the colorbars for the density plot
-Takes 'zoom' factor as input
+Make figure with the xy(orbital plane) slice plot of log density [g/cm^3]. 
+    - smooth            is smoothing kernel data
+    - zoom              zoom factor of the plot
+    - rhoMin/rhoMax     determine the min and max of the colorbar
+    - dumpData      data of dump file
+    - setup         setup data
+    - run           run number [str]
+    - loc           output directory
 '''
-
 def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
 
     cm_rho  = plt.cm.get_cmap('viridis')
@@ -116,11 +119,13 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
 
 '''
 Makes one slice plot 
-on given axis ax
-of parameter par
-with colorbar limits mi and ma
-uses smoothing kernel data smooth
-takes zoom factor as input
+
+INPUT
+    - ax        is given subplot
+    - par       is the name of the parameter
+    - mi/ma     colorbar limits
+    - smooth    smoothed data
+    - zoom      zoom factor for the plot
 '''
 def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
     
@@ -187,10 +192,22 @@ def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
 
 
 '''
-Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), log(T[K]) and |v|[km/s]. 
-Takes 'zoom'factor as input
-rhoMin and rhoMax determine limits of colorbar of density plot
-vmax determines upper limit of colorbar velocity plot
+Make plot with 6 pannels:
+    left:    xy-plane (= orbital plane = face-on plane)
+    right:   xz-plane (= edge-on plane)
+    upper:   log density [g/cm^3]
+    middle:  speed [km/s]
+    lower:   log temperature [K].
+    
+INPUT:
+    - smooth        smoothed data
+    - zoom          zoom factor for the plot
+    - rhoMin/rhoMax limits of colorbar of density plots
+    - vmax          upper limit of colorbar velocity plots
+    - dumpData      data of dump file
+    - setup         setup data
+    - run           run number [str]
+    - loc           output directory
 '''
 def allPlots(smooth, zoom, rhoMin, rhoMax, vmax, dumpData, setup, run, loc):
 
@@ -225,10 +242,11 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax, dumpData, setup, run, loc):
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
+
+
 '''
 main definition
 '''
-
 def SlicePlots(run,loc, dumpData, setup):
     print('')
     print('(1)  Start calculations for slice plots...')

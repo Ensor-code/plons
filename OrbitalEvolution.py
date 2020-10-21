@@ -29,9 +29,6 @@ def orbSep_apa_per(data, setup):
     time   = data['time'       ]
     ecc    = setup['ecc'       ]
     orbSep = data['rComp'      ] + data['rAGB' ]
-    # print('time goes from ', min(time),' to ', max(time))
-    # print('period is ', period)
-    # print('the amount of periods is max(time)/period: ', math.ceil(max(time)/period))
 
     apastronOS   = []
     periastronOS = []  
@@ -131,15 +128,17 @@ def calcSMA(OrbSep_a_p):
 
 
 '''
-Makes plots of the evolution of the semi-major axis and of the orbital separation at the apastron and periastron passages
-Calculates the change in eccentricity and semi-major axis 
-Returns text file with data to make the evolution plot and with the calculated delta(e) and delta(a)
+- Makes plots of the evolution of the semi-major axis and of 
+    the orbital separation at the apastron and periastron passages.
+- Calculates the change in eccentricity and semi-major axis.
+- Returns text file with data to make the evolution plot and 
+    with the calculated delta(e) and delta(a).
 '''
 def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, title):
     
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     
-    # legend
+    # Legend
     apastron      = mlines.Line2D([],[], color = 'k', linestyle = 'None'  , marker = '$a$' ,label = 'Apastron', markersize = 8)
     periastron    = mlines.Line2D([],[], color = 'k', linestyle = 'None'  , marker = '$p$', label = 'Periastron', markersize =8)
     sma           = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', label = 'sma')
@@ -149,19 +148,19 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
     fig.set_size_inches(7, 5)
     c = 'k'
     
-    # the data to plot are the orbital separations at apastron and periastron passages
+    # The data to plot are the orbital separations at apastron and periastron passages
     toPlot        = info['OrbSep_a_p']
-    #Calculate the sma and mean time at every orbit
+    # Calculate the sma and mean time at every orbit
     [sma,orbit_t] = calcSMA(info['OrbSep_a_p'])
     
-    #t_total is the final timestep
+    # t_total is the final timestep
     t_total     = max(sinkData['time']) #in years
 
-    #The change in sma per year is: delta a = (delta r_apa + delta r_per) / (2*time)
+    # The change in sma per year is: delta a = (delta r_apa + delta r_per) / (2*time)
     delta_a              = (((toPlot[0]-toPlot[0][0] + (toPlot[1]-toPlot[1][0]) )/2)[-1]) / t_total
     ratio_delta_a_per_yr = (delta_a/(setup['sma_ini']*cgs.AU_cm()))
     
-    #The change in ecc per year is: delta e = (delta r_apa - delta r_per) / (2*(a+delta a) *time)
+    # The change in ecc per year is: delta e = (delta r_apa - delta r_per) / (2*(a+delta a) *time)
     delta_e              = (((toPlot[0]-toPlot[0][0] - (toPlot[1]-toPlot[1][0]) )/(2*setup['sma_ini']*cgs.AU_cm() + 2*delta_a) )[-1])/t_total
     ratio_delta_e_per_yr = (delta_e/setup['ecc'] ) 
 
@@ -174,10 +173,10 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
         ax.plot(orbit_t[i],toPlot[0][i]-toPlot[0][0],color = c      , marker = '$a$', markersize = 11)
         ax.plot(orbit_t[i],toPlot[1][i]-toPlot[1][0],color = 'white', marker = 'o', markersize = 12)
         ax.plot(orbit_t[i],toPlot[1][i]-toPlot[1][0],color = c      , marker = '$p$', markersize = 11)
-    #Plot the change in sma at each orbit
+    # Plot the change in sma at each orbit
     ax.plot(orbit_t, sma-sma[0], color = c, linestyle = 'dotted', markersize = 10)
     
-    #change xticks to orbit numbers
+    # Change xticks to orbit numbers
     ax.tick_params(labelsize=12)     
     period = setup['period_ini'] * cgs.sec_year()
     tickorbit = []
@@ -189,12 +188,12 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
     ax.set_xlabel('Orbit', fontsize = 18)
     ax.set_ylabel('$\Delta$Orb sep [cm]', fontsize = 16)
     ax.set_title('Orbital evolution')
-    ax.legend(handles = handles1, fontsize = 12)#, loc = 'lower left')
+    ax.legend(handles = handles1, fontsize = 12)
     fig.tight_layout()
 
     plt.savefig(loc+str(run)+'_evolution_OrbitalSeparation')
     
-    #Write text file with usefull info
+    # Write text file with usefull info
     title = loc+str(run)+'_data_OrbitalEvolution.txt'
     with open (title,'a') as f:
         f.write('\n')
@@ -221,19 +220,18 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
 Makes plot of the evolution of mass accretion by the companion
 Returns text file with data to make the evolution plot 
 '''
-
 def plotMassAccr(setup, sinkData, run, loc):
-  # make plot of the mass accretion evolution, very interesting to plot!
+    # Make plot of the mass accretion evolution, very interesting to plot!
     fig = plt.figure(figsize=(8, 5))
-    #legend
+    # Legend
     apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
     perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
     handles_ap    = [apaLine, perLine]
 
-    #plot the accreted mass in function of time
+    # Plot the accreted mass in function of time
     plt.plot(sinkData['time'],  sinkData['maccrComp'], color = 'royalblue', linestyle = 'solid')
     
-    #Plot vertical lines indicating where there are apastron and periastron passages
+    # Plot vertical lines indicating where there are apastron and periastron passages
     period = setup['period_ini'] * cgs.sec_year()
     j = period/2  # First periastron
     i = 0         # Start at apastron
@@ -263,7 +261,6 @@ def plotMassAccr(setup, sinkData, run, loc):
 '''
 Makes plot of the evolution of the orbital velocity of the AGB star and companion 
 '''
-
 def plotOrbVel(sinkData, run, loc):
     fig, ((ax))= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     fig.suptitle('Orbital velocities (model'+str(run)+')', fontsize = 15)
@@ -306,7 +303,6 @@ def plotOrbRad(sinkData, run, loc):
 '''
 Main function executing calculations about orbital evolution
 '''
-
 def orbEv_main(run,loc, sinkData, setup):
     print('')
     if setup['single_star'] == True:
@@ -316,15 +312,15 @@ def orbEv_main(run,loc, sinkData, setup):
     else:
         print('(6)  Start calculations for orbital evolution...')
 
-        # calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
-        # save it in dictionary 'info'
+        # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
+        # Save it in dictionary 'info'
         info = {}
         info['TotMaC']         = sinkData['maccrComp'][-1] # the total mass accreted by the companion
         info['TotMaA']         = sinkData['maccrAGB' ][-1]  # the total mass accreted by the AGB
         info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData['massAGB'][-1] - info['TotMaA'])
         info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
 
-        #Write text file with this info
+        # Write text file with this info
         title = loc+str(run)+'_data_OrbitalEvolution.txt'
         with open (title,'w') as f:
             f.write('\n')
@@ -336,7 +332,7 @@ def orbEv_main(run,loc, sinkData, setup):
             f.write('The ratio of the mass accreted by the companion to the mass lost by the AGB is : '+ str(round(info['RatioMaC_MLAGB'],5)))
             f.write('\n')
 
-        #Visualise the orbit of the system
+        # Visualise the orbit of the system
         fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
         fig.set_size_inches(7, 7)
         plot_orbit(sinkData,setup, ax)
@@ -348,17 +344,17 @@ def orbEv_main(run,loc, sinkData, setup):
 
         # Calculate orbital separation and time in apastron and periastron passages
         info['OrbSep_a_p'] = orbSep_apa_per(sinkData, setup) 
-        #Make plots of the change in sma and OrbSep 
+        # Make plots of the change in sma and OrbSep 
         plotChangeOrbSep(info, sinkData, setup, run,loc)
-        #Plot evolution of the mass accretion by the companion
+        # Plot evolution of the mass accretion by the companion
         plotMassAccr(setup,sinkData, run, loc)
-        #Plot evolution of orbital velocities 
+        # Plot evolution of orbital velocities 
         plotOrbVel(sinkData, run, loc)
-        #Plot evolution of orbital radii and orbital separation
+        # Plot evolution of orbital radii and orbital separation
         plotOrbRad(sinkData, run, loc)
 
 
-        #Write text file with usefull info
+        # Write text file with usefull info
         title = loc+str(run)+'_data_OrbitalEvolution.txt'
         with open (title,'a') as f:
             f.write('\n')

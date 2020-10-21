@@ -28,37 +28,37 @@ Makes sure the arrays are in the correct order to plot them wrt to the angle: pi
 def getEverything(mass, theta, rho): 
     TotalMass        = np.sum(mass)
     
-    #Make array of theta from pi/2 till pi (Orb plane till edge on where z<0)
+    # Make array of theta from pi/2 till pi (Orb plane till edge on where z<0)
     indThetaOrdered  = np.argsort(theta)
     thetaOrdered     = theta[indThetaOrdered]
     indPi2Ordered    = tl.find_nearest(thetaOrdered, np.pi/2)
     thetaPi2_Pi      = thetaOrdered[indPi2Ordered:]
     
-    #Make array of theta from pi/2 till 0 (Orb plane till edge on where z>0)
+    # Make array of theta from pi/2 till 0 (Orb plane till edge on where z>0)
     indThetaReversed = np.flip(indThetaOrdered)
     thetaReversed    = theta[indThetaReversed]
     indPi2Reversed   = tl.find_nearest(thetaReversed,np.pi/2)
     thetaPi2_0       = thetaReversed[indPi2Reversed:]
     
-    # make arrays with mass for those theta values (same indices)
+    # Make arrays with mass for those theta values (same indices)
     massPi2_Pi       = mass[indThetaOrdered][indPi2Ordered:]
     massPi2_0        = mass[indThetaReversed][indPi2Reversed:]    
     
-    # make arrays with rho for those theta values (same indices)
+    # Make arrays with rho for those theta values (same indices)
     rhoPi2_Pi        = rho[indThetaOrdered][indPi2Ordered:]
     rhoPi2_0         = rho[indThetaReversed][indPi2Reversed:]
         
-    # Make bins of theta values, so for theta going from pi/2 till pi-0 by pi/2+-i
-    # to have integers, go from pi/2 * 100 = 157 to pi*100 = 314.15
-    # the length of such array is pi/2 *100 
+    # Make bins of theta values, so for theta going from pi/2 till pi-0 by pi/2+-i.
+    # To have integers, go from pi/2 * 100 = 157 to pi*100 = 314.15.
+    # The length of such array is pi/2 *100.
     number_of_bins = int(100 * np.pi/2)
-    # create the bins from 157 till 314, with width =1, so we bin thetas with width 1/100
-    # the created bin is [(157,158),(158,159),...,(313,314)]
+    # Create the bins from 157 till 314, with width =1, so we bin thetas with width 1/100
+    # The created bin is [(157,158),(158,159),...,(313,314)]
     ThetaBins = tl.create_bins(lower_bound=int(100 * np.pi/2), width=1, quantity=number_of_bins )
     # Now we have bins corresponding to the theta values Pi2_Pi
     # Make array containing the corresponding rho and mass values for the bins:
     
-    #Create dictionaries
+    # Create dictionaries
     rhoBinned  = {}
     massBinned = {}
     # Add zeros such that we can use .append function later
@@ -66,37 +66,37 @@ def getEverything(mass, theta, rho):
         rhoBinned[i]  = [0]
         massBinned[i] = [0]
 
-    # link the theta values to a bin, by the function find_bin
+    # Link the theta values to a bin, by the function find_bin
     for index in range(len(thetaPi2_Pi)):
-        #for each theta from pi2_pi, find index of correct bin
+        # For each theta from pi2_pi, find index of correct bin
         bin_index = tl.find_bin(100*thetaPi2_Pi[index],ThetaBins)
-        #and add mass and rho value for that theta to that bin
+        # And add mass and rho value for that theta to that bin
         rhoBinned[bin_index].append(rhoPi2_Pi[index])
         massBinned[bin_index].append(massPi2_Pi[index])
 
-    #the same for pi2_0, here theta = pi2-x corresponds to thetaBin = pi2+x bin
+    # The same for pi2_0, here theta = pi2-x corresponds to thetaBin = pi2+x bin
     for index in range(len(thetaPi2_0)):
         theta = thetaPi2_0[index]
-        # this theta = pi2 - x , x = pi2-theta, 
+        # This theta = pi2 - x , x = pi2-theta, 
         x = np.pi/2 - theta
-        # so theta corresponds to the theta in the bins 
+        # So theta corresponds to the theta in the bins 
         thetaBin = np.pi/2 + x
         bin_index = tl.find_bin(thetaBin*100, ThetaBins)
-        #add mass and rho value for that theta to that bin
+        # Add mass and rho value for that theta to that bin
         rhoBinned[bin_index].append(rhoPi2_0[index])
         massBinned[bin_index].append(massPi2_0[index])
     
-    # calculate the mean rho for each thetaBin, but remove the first 0 that we had to add to make initial array
+    # Calculate the mean rho for each thetaBin, but remove the first 0 that we had to add to make initial array
     rhoMean = []
     for index in range(len(rhoBinned)-1):
         rhoMean.append(np.mean(rhoBinned[index][1:]))
     rhoMeanSmoothened = tl.smoothen(rhoMean,4)
     
-    # calculate the mass fraction for theta from pi/2 till pi/2+-pi/2
+    # Calculate the mass fraction for theta from pi/2 till pi/2+-pi/2
     massAccumulated   = []
     totalMassPerTheta = []
     massFraction      = []
-    # to find theta value where mass fraction is 25%, 50% and 75%:
+    # To find theta value where mass fraction is 25%, 50% and 75%:
     index25 = 0
     index50 = 0
     index75 = 0
@@ -105,7 +105,7 @@ def getEverything(mass, theta, rho):
     totalMassPerTheta.append(np.sum(massBinned[0]))
     massAccumulated.append(totalMassPerTheta[0])
     massFraction.append(massAccumulated[0]/TotalMass)
-    # for each thetaBin calculate total mass for that thetaBin, and add it to the mass fraction 
+    # For each thetaBin calculate total mass for that thetaBin, and add it to the mass fraction 
     for index in range(1,len(massBinned)):
         totalMassPerTheta.append(np.sum(massBinned[index]))
         massAccumulated.append(massAccumulated[index-1]+totalMassPerTheta[index])
@@ -119,17 +119,17 @@ def getEverything(mass, theta, rho):
             index75 = index75 +1
             
         
-    # theta where 25/50/75 procent of mass is accumulated is upper boundary of the bin corresponding to index25/50/75
+    # Theta where 25/50/75 procent of mass is accumulated is upper boundary of the bin corresponding to index25/50/75
     theta25 = ThetaBins[index25][1]/100
     theta50 = ThetaBins[index50][1]/100
     theta75 = ThetaBins[index75][1]/100
     
-    # rhomean where 50 and 75 procent of mass is accumulated
+    # RhoMean where 50 and 75 procent of mass is accumulated
     rho25   = rhoMeanSmoothened[index25]
     rho50   = rhoMeanSmoothened[index50]
     rho75   = rhoMeanSmoothened[index75]
     
-    x=[]
+    x = []
     for i in range(len(rhoMean)):
         x.append(i/(np.pi*100))
         
@@ -192,7 +192,7 @@ Makes a plot of the mean density profile of both the apastron and periastron sid
 def plotLvsR(ax, theta, infoForPlot, marker):#, infoForPlotL, infoForPlotR):
     color = 'k'
 #     normalising_factor = infoForPlot['meanRhoSm'][0]
-    log_ysmooth = np.log10(infoForPlot['meanRhoSm'] )  
+    log_ysmooth = np.log10( infoForPlot['meanRhoSm'] )  
 
     ax.plot(infoForPlot['x'], log_ysmooth, color, ls = marker)
     ax.plot(theta['25x'], theta['25y'], marker = 'o', color = 'royalblue', fillstyle = 'right')
@@ -227,7 +227,7 @@ def CMF_meanRho(run,outloc, data, setup):
 
 
     # Calculation of theta, mean rho, mass fractions, ...
-    # get info needed to make plots
+    # Get info needed to make plots
     # Perc contains all the mass fractions for which we calculate what theta is
     infoForPlot  = getEverything(data['mass'], data['theta'], data['rho'])
     theta  = calcThetaValues(infoForPlot)
@@ -254,7 +254,7 @@ def CMF_meanRho(run,outloc, data, setup):
         deltaL = calculateDeltaValues(infoForPlotL)
 
 
-        # mean density profile plots, left and right side
+        # Mean density profile plots, left and right side
         fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
         
         plotLvsR(ax, theta , infoForPlot , 'solid' )
@@ -311,7 +311,7 @@ def CMF_meanRho(run,outloc, data, setup):
     print('     Cummulative mass fraction plot of model',str(run), 'ready and saved!')
 
 
-    #Makes text file with all usefull data
+    # Makes text file with all usefull data
     title = outloc+str(run)+'_data_CummulativeMassFraction_meanDensity.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')

@@ -4,7 +4,7 @@ import matplotlib.lines         as mlines
 import os
 
 # import own scripts
-import smoothingKernelScript    as sk
+import SmoothingKernelScript    as sk
 import ConversionFactors_cgs    as cgs
 
 # import certain things from packages
@@ -42,8 +42,8 @@ def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMa
     axis.plot((Z/cgs.AU_cm()),parZ, color = 'goldenrod', label = 'z-axis', markersize = 0.2, lw = 0.6)
 
     axis.set_xlim(-bound,bound)
-    axis.vlines(xcomp, parMin, parMax ,'royalblue', linestyle = 'dashed' ,linewidth = 0.5)
-    axis.vlines(xAGB, parMin, parMax,'royalblue', linestyle = 'solid', linewidth = 0.5)
+    axis.vlines(xcomp, parMin, parMax, 'royalblue', linestyle = 'dashed', linewidth = 0.5)
+    axis.vlines(xAGB,  parMin, parMax, 'royalblue', linestyle = 'solid' , linewidth = 0.5)
     axis.set_ylim(parMin,parMax)
 
 
@@ -150,7 +150,7 @@ def radialStructPlots(run,loc, dumpData, setup):
     fig.savefig(loc+str(run)+'_1Dplot_radialStructure.png')
     
     
-    #Make text file with info to make plots
+    # Make text file with info to make plots
     title = loc+str(run)+'_data_1D_radialStructure.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')

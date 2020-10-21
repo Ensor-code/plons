@@ -17,6 +17,15 @@ Load the .ev-files from a phantom model
         in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
       - Only suited for a binary model
       - Units in cgs
+      
+INPUT:
+    - 'run'   is the number of the run specifically           [str]
+    - 'loc'   is the directory where the model is located     [str]
+    - 'setup' is the setup data                               [dict]
+    
+RETURN:
+    a dictionary containing the data from the sink files (all units in cgs)
+    
 '''
 def LoadSink_cgs(run, loc, setup):
 
@@ -47,7 +56,7 @@ def LoadSink_cgs(run, loc, setup):
     Uncommand this part of the code when your simmulation has been paused and restarted.
     Give the model's name.
     '''
-    if run == '59':
+    if run == '59' or run == '52' or run == '48' or run == '41':
         try:
             (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(runName+'/windSink0001N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
             (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(runName+'/windSink0002N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)

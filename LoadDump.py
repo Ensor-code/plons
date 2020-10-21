@@ -12,6 +12,14 @@ import LoadSetup                as stp
 Loads the final full dump of a phantom model, given the number, in cgs-units 
 (converts it to ascii or copies it from the server, if needed)
     Suited for binary model only
+    
+INPUT:
+    - 'run'   is the number of the run specifically           [str]
+    - 'loc'   is the directory where the model is located     [str]
+    - 'setup' is the setup data                               [dict]
+    
+RETURNS
+    a dictionary containing the data from the dump (all units in cgs)
 '''
 def LoadDump_cgs(run, loc, setup):
     
@@ -110,6 +118,14 @@ def LoadDump_cgs(run, loc, setup):
 Loads the final full dump of a phantom model, given the number, in cgs-units 
 (converts it to ascii or copies it from the server, if needed)
     Suited for single model only
+    
+INPUT:
+    - 'run'   is the number of the run specifically           [str]
+    - 'loc'   is the directory where the model is located     [str]
+    - 'setup' is the setup data                               [dict]
+    
+RETURNS
+    a dictionary containing the data from the dump (all units in cgs)
 '''
 def LoadDump_single_cgs(run, loc, setup):
     
@@ -195,8 +211,19 @@ def LoadDump_single_cgs(run, loc, setup):
 
 
 '''
-Cut out the inner part of the wind, since here the wind is not yet self-similar
+Cut out the inner part of the wind, since here the wind is not yet self-similar.
       Suited only for binary model
+    
+INPUT:
+    - 'run'    is the number of the run specifically                    [str]
+    - 'loc'    is the directory where the model is located              [str]
+    - 'factor' is the factor of the semi-major axis you want to cut out [float]
+    - 'bound'  is a chosen boundary of the model                        [float]
+    - 'setup'  is the setup data                                        [dict]
+    - 'dump'   is the original dump data                                [dict]
+
+RETURNS
+    a dictionary containing the data from the dump of a chosen outer range (all units in cgs)
 '''
 def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     
@@ -267,7 +294,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'h'             : h,             # [cm]
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
-            'u'             : u,              # [erg/g]
+            'u'             : u,             # [erg/g]
             'temp'          : temp,          # [K]    
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          

@@ -54,6 +54,7 @@ In order to get some quantitative indication about the morphology of the models,
 A&A, 618, A50; El Mellah, I., Bolte, J., Decin, L., Homan, W., & Keppens, R. 2020, arXiv e-prints,
 arXiv:2001.04482)
     - Qp = p_comp/p_wind (see Decin, L., Montarg`es, M., Richards, A. M. S., et al. 2020, Science, 369, 1497)
+    - epsilon = e_kin/e_grav
 Depending on the value of these parameters, the model is expected to show radial/EDE/complex morphology.
 
 NOTE: For eta, different velocities/speed v can be used:
@@ -66,8 +67,12 @@ Only the first two ways of computing eta are available in this script. Neverthel
 
 (5)
 
-The cummulative mass fraction is calculated in function of the polar angle theta (theta = 0.5pi is the orbital plane, theta = 0 the north pole), again by using the method of binning. Only the northern hemisphere is used, because of symmetry. Because of asymmetry along the x-axis, the positive (right) and negative (left) part according to x are also calculated seperately. Certainly for eccentric models this can differ. From this cummulative mass fraction, the angle is calculated where 25, 50 and 75% of the mass of the wind is present, called theta25/50/75 respectively. From this, the parameter delta is calculated, defined as (theta25-theta50)/(theta50-theta75). When this parameter is normalised to the value for the corresponding single model
+The cummulative mass fraction (CMF) is calculated in function of the polar angle theta (theta = 0.5pi is the orbital plane, theta = 0 the north pole), again by using the method of binning. Only the northern hemisphere is used, because of symmetry. Because of asymmetry along the x-axis, the positive (right) and negative (left) part according to x are also calculated seperately. Certainly for eccentric models this can differ. To calculate the CMF, only the selfsimilar part of the outflow it used, therefore a factor (called factor) is given. The inner factor * semi-major axis AU is left out in this calculation.
 
-factor
+From this CMF, the angle is calculated where 25, 50 and 75% of the mass of the wind is present, called theta25/50/75 respectively. From this, the parameter delta is calculated, defined as (theta25-theta50)/(theta50-theta75). When this parameter is normalised to the value for the corresponding single model, it gives a measure for the degree of EDE.
 
-This leads to the theta-parameter, which gives the polar angle at which 25, 50 and 75 % of the mass is located. This leads to the parameter delta (when normalised to the single model), which
+Also the mean density is calculated using a similar approach as the CMF, using the method of binning. This mean density can easily be normalised to compare the morphology in different models.
+
+(6)
+
+In order to get information about the orbital evolution, the sink files are used (.ev), which gives relevant quantities of the sink particles in function of time. This file returns plots of the orbit, evolution of orbital separation, orbital velocity and accreted mass of the companion.
