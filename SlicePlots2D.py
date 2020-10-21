@@ -28,7 +28,7 @@ warnings.filterwarnings("ignore")
 Load the smoothing kernel data
 '''
 def smoothData(dumpData,setup):
-    #Uncomment the ones you need, takes long to run, so don't run if not nescessary
+    #comment the ones you don't need, it takes long to run, so don't run if not nescessary
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     #zoom = 1
     results_sph_sl_z  ,x1  ,y1   ,z1  = sk.getSmoothingKernelledPix(300,20,dumpData,['rho','temp','speed'], 'comp','z',(setup['bound'])*cgs.AU_cm() )
@@ -73,9 +73,13 @@ def smoothData(dumpData,setup):
 
 
 '''
-Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). Takes 'zoom'factor as input
+Make figure with the x-y(orbital plane) slice plot of log(rho[g/cm3]). 
+smooth is smoothing kernel data
+rhoMin,rhoMax determine the colorbars for the density plot
+Takes 'zoom' factor as input
 '''
-def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
+
+def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
 
     cm_rho  = plt.cm.get_cmap('viridis')
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
@@ -109,8 +113,14 @@ def densityPlot(smooth,zoom,rhoMin,rhoMax,vmax,dumpData, setup,run, loc):
     
     print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
+
 '''
-Makes one of the plots that will be combined in one figure
+Makes one slice plot 
+on given axis ax
+of parameter par
+with colorbar limits mi and ma
+uses smoothing kernel data smooth
+takes zoom factor as input
 '''
 def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
     
@@ -175,10 +185,14 @@ def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
     lim = (setup['bound']-30)/zoom
     ax.axis([-lim,lim,-lim,lim])
 
+
 '''
-Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), log(T[K]) and |v|[km/s]. Takes 'zoom'factor as input
+Make figure with the x-y(left) and x-z(right) slice plots of log(rho[g/cm3]), log(T[K]) and |v|[km/s]. 
+Takes 'zoom'factor as input
+rhoMin and rhoMax determine limits of colorbar of density plot
+vmax determines upper limit of colorbar velocity plot
 '''
-def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, loc):
+def allPlots(smooth, zoom, rhoMin, rhoMax, vmax, dumpData, setup, run, loc):
 
     fig, ((ax1,ax2),(ax3,ax4),(ax5,ax6))= plt.subplots(3, 2,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [0.81,1]})
     fig.set_size_inches(12, 14.3)
@@ -211,7 +225,9 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax,  bound, dumpData, setup, run, l
     
     print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
-
+'''
+main definition
+'''
 
 def SlicePlots(run,loc, dumpData, setup):
     print('')
@@ -221,7 +237,7 @@ def SlicePlots(run,loc, dumpData, setup):
     Mdot  = setup['Mdot']
     bound = setup['bound']   
 
-    #Set the limits of the colorbars
+    #Set the limits of the density plot colorbars, scales exactly with Mdot if no cooling is included
     if Mdot > 1e-5:
         rhoMin = -18.5
         rhoMax = -13.5
@@ -238,98 +254,9 @@ def SlicePlots(run,loc, dumpData, setup):
     print('     Start making the slice plot figures, please wait..')
     print('')
     # Make plots
-    densityPlot( smooth, 1, rhoMin, rhoMax, bound, dumpData, setup, run, loc)
-    densityPlot( smooth, 2, rhoMin, rhoMax, bound, dumpData, setup, run, loc)
-    densityPlot( smooth, 5, rhoMin, rhoMax, bound, dumpData, setup, run, loc)
-    allPlots(    smooth, 1, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots(    smooth, 2, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-    allPlots(    smooth, 5, rhoMin, rhoMax, vmax, bound, dumpData, setup, run, loc)
-
-'''   
-NOTE: uncomment and change if we add Hill sphere plots
-'''
-
-## Make figure with the x-y(left) and x-z(right) Hill sphere slice plots of log(rho[g/cm3]) and |v|[km/s].
-
-# def HillsphPlot(modelname,results_sph_sl_y,x2,z2,zoom,rhoMin,rhoMax):
-#     cm_rho  = plt.cm.get_cmap('inferno')
-#     cm_T    = plt.cm.get_cmap('afmhot')
-#     cm_v    = plt.cm.get_cmap('viridis')
-#     cm_vtvv = plt.cm.get_cmap('seismic')
-# #     fig = plt.figure(figsize=(11, 14))
-#     fig, ((ax1,ax2),(ax3,ax4))= plt.subplots(2, 2,  gridspec_kw={'height_ratios':[1,1],'width_ratios': [1,1]})
-#     fig.set_size_inches(10, 8)
-    
-#     #CHANGE 200 TO OUTER BOUNDARY
-#     lim = setup['bound']/zoom        
-
-#     def onePlotRH(axis,par,name,colormap,mi,ma,x,y,xlabel,ylabel):
-#         axi = axis
-#         axi.axis('equal')
-#         axi.set_facecolor('k')
-#         axPlot = axi.scatter(x/cgs.AU_cm(),y/cgs.AU_cm(),s=11,c=par,cmap=colormap,vmin=mi, vmax = ma)
-#         cbar = plt.colorbar(axPlot, ax = axi)
-#         cbar.set_label(name, fontsize = 18)
-#         if axi == ax3 or axi == ax4:
-#             axi.set_xlabel(xlabel)
-#         if axi == ax1 or axi == ax3:
-#             axi.set_ylabel(ylabel)
-#         axi.axis([-lim,lim,-lim,lim])
-#         axi.plot(0,0, 'ro', markersize = 5,label = 'comp')
- 
-#     onePlotRH(ax1,np.log10(results_sph_sl_y['rho']),'log($\\rho$[g/cm$^3$])', cm_rho, rhoMin, rhoMax, x2,z2,'x[AU]', 'z[AU]')
-#     onePlotRH(ax2,np.log10(results_sph_sl_y['temp']),'log($T$[K])', cm_T, 3, 6,x2,z2, 'x[AU]', 'z[AU]')
-#     onePlotRH(ax3,results_sph_sl_y['speed']*1e-5,'$|v|$[km/s]', cm_v, 0, 26, x2,z2, 'x[AU]', 'z[AU]')
-#     onePlotRH(ax4,results_sph_sl_y['vtvv'],'$(v_t/v)^2$', cm_vtvv, 0, 1, x2, z2, 'x[AU]', 'z[AU]' )
-#     zoom = '_RH'
-#     fig.savefig(loc+'2DSliceplots/HillSphere_'+str(run)+'Z'+str(zoom)+'.png',dpi = 300)
-#     print('Hill sphere plot model '+str(run)+' ready and saved!')
-
-
-    # #Load data for Hill sphere
-    # xcomp = dumpData['posComp'][0]/cgs.AU_cm()
-    # ycomp = dumpData['posComp'][1]/cgs.AU_cm()
-    # zcomp = dumpData['posComp'][2]/cgs.AU_cm()
-    # hillsph = dumpData['rHill']/cgs.AU_cm()
-    # # bound = dumpData['boundary']/cgs.AU_cm()
-    # # zoom = int(bound/hillsph)
-    # # dataHS = ld.LoadData_cgs_inner(str(run),hillsph,xcomp*AU,ycomp*AU,zcomp*AU)
-    # #Make Hill sphere plots 
-    # dumpDataHS  = dataHS #rcomp is now (0,0,0)
-    # dumpData    = data
-    # xAGB = dumpData['posAGB'][0]/cgs.AU_cm()
-    # yAGB = dumpData['posAGB'][1]/cgs.AU_cm()
-    # zAGB = dumpData['posAGB'][2]/cgs.AU_cm()
-    # xcomp = dumpData['posComp'][0]/cgs.AU_cm()
-    # ycomp = dumpData['posComp'][1]/cgs.AU_cm()
-    # zcomp = dumpData['posComp'][2]/cgs.AU_cm()
-    # Mdot  = setup['Mdot']
-    # v_ini = setup['v_ini'] *cgs.cms_kms()
-    # # hillsph = dumpData['rHill']/cgs.AU_cm()
-    # # bound = setup['boundary']/cgs.AU_cm()
-    # # zoom = int(bound/hillsph)
-
-    # results_sph_sl_yHS,x2HS,y2HS,z2HS = sk.getSmoothingKernelledPix(400,20,dumpDataHS,['rho','temp','speed','vtvv'], 'comp','y',10*AU)
-
-    # #Change these limits if the plots don't look nice
-    # if Mdot > 1e-5:
-    #     if v_ini == 5:
-    #         rhoMin = -14.5
-    #         rhoMax = -11.5
-    #     elif v_ini == 20:
-    #         rhoMin = -15.5
-    #         rhoMax = -12.5
-
-    # elif Mdot < 5e-7:
-    #     if v_ini == 5:
-    #         rhoMin = -17
-    #         rhoMax = -14
-    #     elif v_ini == 20:
-    #         rhoMin = -18
-    #         rhoMax = -15
-
-    # elif 5e-7 <= Mdot <= 1e-5:
-    #     rhoMin = -16
-    #     rhoMax = -13
-
-    # HillsphPlot('M'+str(run),results_sph_sl_yHS,x2HS,z2HS,zoom,rhoMin,rhoMax)
+    densityPlot( smooth, 1, rhoMin, rhoMax, dumpData, setup, run, loc)
+    densityPlot( smooth, 2, rhoMin, rhoMax, dumpData, setup, run, loc)
+    densityPlot( smooth, 5, rhoMin, rhoMax, dumpData, setup, run, loc)
+    allPlots(    smooth, 1, rhoMin, rhoMax, vmax, dumpData, setup, run, loc)
+    allPlots(    smooth, 2, rhoMin, rhoMax, vmax, dumpData, setup, run, loc)
+    allPlots(    smooth, 5, rhoMin, rhoMax, vmax, dumpData, setup, run, loc)
