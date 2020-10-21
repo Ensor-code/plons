@@ -405,7 +405,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write(str(round(Qp,4))+'\n')
             f.write('\n')
             f.write('epsilon = kin_energy / grav_energy\n')
-            f.write(str(epsilon)+'\n')
+            f.write(str(round(epsilon,4))+'\n')
         if single_star == True:
             f.write('Velocities [cm/s] at the different orbital separations:\n')
             for key in wind_speed_single['min' ]:
