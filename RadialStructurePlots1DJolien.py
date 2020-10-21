@@ -54,11 +54,6 @@ def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMa
 def radialStructPlots(run,loc, dumpData, setup):
     print('')
     print('(2)  Start calculations for the radial structure plots.')
-    try:
-        os.mkdir(loc+'1DradialStructurePlots/')
-    except OSError:
-        print('')
-
 
     # Define legend
     xAxis  = mlines.Line2D([],[], color = 'royalblue', label='x-axis')
@@ -151,11 +146,12 @@ def radialStructPlots(run,loc, dumpData, setup):
     
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.005,hspace = 0.01)
-    fig.savefig(loc+'1DradialStructurePlots/1D_'+str(run)+'.png')
+    
+    fig.savefig(loc+str(run)+'_1Dplot_radialStructure.png')
     
     
     #Make text file with info to make plots
-    title = loc+'1DradialStructurePlots/1D_'+str(run)+'.txt'
+    title = loc+str(run)+'_data_1D_radialStructure.txt'
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('Data to make radial structure plots yourself:')
