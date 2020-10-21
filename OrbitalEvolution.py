@@ -275,6 +275,7 @@ def plotOrbVel(sinkData, run, loc):
           
     plt.legend()
     fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_OrbitalVelocity')
 
 
 
