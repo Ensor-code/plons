@@ -310,7 +310,6 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
         Qp, massHill, wind_comp_mean = getQp(setup, dump, wind_comp)
         epsilon                      = getEpsilon(wind_comp_mean, setup)
-        print(epsilon)
         
         
     if single_star == True:
