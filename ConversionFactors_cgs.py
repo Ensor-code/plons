@@ -4,7 +4,7 @@
 
 # gravitational constant 
 def G():
-    G = 6.674e-8                    # [cm^3 g^-1 s^-1]
+    G = 6.674e-8                    # [cm^3 g^-1 s^-2]
     return G
 
 # mass of a hydrogen
