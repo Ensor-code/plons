@@ -26,20 +26,21 @@ RETURNS:
         (read in function)
 '''
 def getTerminalVelocity(setup, dump):
-    
+      
     single_star = setup['single_star']
     if single_star == False:
         sma     = setup['sma_ini']
     outerBound  = int(round( setup['bound']  ))  
     r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.AU_cm()  # radius [AU] from AGB, not barycentre!
     
-
     # Prepare for binning.
     rmin = min( r )     # minimum radius in the data set [AU]
     rmax = max( r )     # maximum radius in the data set [AU]
     
+    binned_speed, number_of_bins = tl.bin_data(dump['speed'],r)     # speed in [cm/s]
     
-    binned_speed, number_of_bins = tl.bin_data(dump['speed'],r)
+    #print(len(binned_speed[4]))
+    #print(binned_speed[4][100]*cgs.cms_kms())
     
     binned_speed_means = {}
     for i in range(number_of_bins):
@@ -112,10 +113,9 @@ def getTerminalVelocity(setup, dump):
     
     if single_star == False:
         ### VELOCITY AT COMPANION ###
-        
-        wind_comp_min  = binned_term_speed['min' ][int(round(sma))]
-        wind_comp_mean = binned_term_speed['mean'][int(round(sma))]
-        wind_comp_max  = binned_term_speed['max' ][int(round(sma))]
+        wind_comp_min  = np.mean( binned_term_speed['min' ][int(round(sma))] )
+        wind_comp_mean = np.mean( binned_term_speed['mean'][int(round(sma))] )
+        wind_comp_max  = np.mean( binned_term_speed['max' ][int(round(sma))] )
         
         wind_comp = {'min': wind_comp_min, 'mean': wind_comp_mean, 'max': wind_comp_max}
 
@@ -144,11 +144,10 @@ def getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp):
         vOrb_AGB  = dump['v_orbAGB' ]
         vOrb_comp = dump['v_orbComp']
 
-    elif setup['ecc'] >0:
+    elif setup['ecc'] > 0:
         vOrb_AGB  = [min(sinkData['v_orbAGB_t' ]), np.mean(sinkData['v_orbAGB_t' ]), max(sinkData['v_orbAGB_t' ])]
         vOrb_comp = [min(sinkData['v_orbComp_t']), np.mean(sinkData['v_orbComp_t']), max(sinkData['v_orbComp_t'])]
   
-    
     '''
     Uses the terminal velocity to compute eta
     '''
@@ -162,6 +161,7 @@ def getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp):
     '''
     Uses the speed at the semi-major axis 
     '''
+    #print(wind_comp['mean' ]*cgs.cms_kms())
    
     eta2_min  = wind_comp['min' ] / vOrb_comp
     eta2_mean = wind_comp['mean'] / vOrb_comp
@@ -241,30 +241,35 @@ RETURNS
 def getQp(setup, dump, wind_comp):
     
     z       = dump['position'].transpose()[2]
-    mass    = dump['mass'    ]
-    rHill   = dump['rHill'   ]
-    sma     = setup['sma_ini'] * cgs.AU_cm()
-    
+    mass    = dump['mass'    ]                          # [g]
+    rHill   = dump['rHill'   ]                          # [cm]
+    sma     = setup['sma_ini'] * cgs.AU_cm()            # [cm]
+    mComp   = setup['massComp_ini'] * cgs.Msun_gram()   # [g]
+    mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
+
     mass    = mass      [ z <  rHill ]
     r       = dump['r'] [ z <  rHill ]
     z       = z         [ z <  rHill ]
     mass    = mass      [ z > -rHill ]
     r       = r         [ z > -rHill ]
-    z       = z         [ z > -rHill ]
 
     mass    = mass    [ r > sma-rHill ]  
     r       = r       [ r > sma-rHill ]
     mass    = mass    [ r < sma+rHill ]
     r       = r       [ r < sma+rHill ]
+
     
-    massHill  = sum(mass)
+    massHill  = sum(mass)                               # [g]
+    
 
     wind_comp_mean   = np.mean([wind_comp['min'],wind_comp['max']])     # mean wind speed at the location of the compnion
     
-    v_orb    = np.sqrt( cgs.G() * (dump['massComp']+dump['massAGB']) / (sma) ) 
-    Qp       = ( (dump['massComp'] * v_orb)/(massHill * wind_comp_mean) ) 
+    v_orb    = np.sqrt( cgs.G() * (mComp + mAGB) / (sma) )          # [cm/s]                                        
+    Qp_1     = ( (mComp * v_orb)/(massHill * wind_comp_mean   ) ) 
+    Qp_2     = ( (mComp * v_orb)/(massHill * wind_comp['mean']) ) 
+
         
-    return Qp*1e-6, massHill, wind_comp_mean
+    return Qp_1*1e-6, Qp_2*1e-6, massHill, wind_comp_mean
     
     
 '''
@@ -284,10 +289,10 @@ RETURNS:
 '''
 def getEpsilon(v, setup):
     sma   = setup['sma_ini'     ] * cgs.AU_cm()         # [cm]
-    mComp = setup['massComp_ini']                       # [Msun]
-    mAGB  = setup['massAGB_ini' ]                       # [Msun]
+    mComp = setup['massComp_ini'] * cgs.Msun_gram()     # [Msun]
+    mAGB  = setup['massAGB_ini' ] * cgs.Msun_gram()     # [Msun]
        
-    epsilon = (v**2 * sma)/(cgs.G() * cgs.Msun_gram() * (24 * (mComp)**2 * mAGB)*(1/3))
+    epsilon = (v**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
     
     return epsilon
     
@@ -308,8 +313,10 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         print('(4)  Start calculations for morphological parameters eta, Qp and epsilon...')
         print('')
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
-        Qp, massHill, wind_comp_mean = getQp(setup, dump, wind_comp)
-        epsilon                      = getEpsilon(wind_comp_mean, setup)
+        Qp_1, Qp_2, massHill, wind_comp_mean = getQp(setup, dump, wind_comp)
+        epsilon_1                      = getEpsilon(wind_comp_mean, setup)
+        epsilon_2                      = getEpsilon(wind_comp['mean'], setup)
+        
         
         
     if single_star == True:
@@ -352,8 +359,10 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             if setup['ecc'] == 0:
                 f.write('Wind speed at companion [km/s]:\n')
                 f.write(str(round(wind_comp['min' ]*cgs.cms_kms() , 2))+'\n')
-                f.write(str(round(wind_comp['mean']*cgs.cms_kms(), 2))+'\n')
+                f.write(str(round(wind_comp['mean']*cgs.cms_kms() , 2))+'\n')
                 f.write(str(round(wind_comp['max' ]*cgs.cms_kms() , 2))+'\n')
+                f.write('   mean:\n')
+                f.write(str(round(wind_comp_mean   *cgs.cms_kms() , 2))+'\n')
                 f.write('\n')
                 f.write('eta1 = v_term/v_orb'+'\n')
                 f.write(str(round(eta1['min' ], 2))+'\n')
@@ -402,10 +411,12 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write(str(massHill/cgs.Msun_gram())+'\n')
             f.write('\n')
             f.write('Q1 = 1e-6*Qp = 1e-6 (Mcomp*v_orb)/(Mwind*v_wind)\n')
-            f.write(str(Qp)+'\n')
+            f.write(str(Qp_1)+'\n')
+            f.write(str(Qp_2)+'\n')
             f.write('\n')
             f.write('epsilon = kin_energy / grav_energy\n')
-            f.write(str(epsilon)+'\n')
+            f.write(str(epsilon_1)+'\n')
+            f.write(str(epsilon_2)+'\n')
         if single_star == True:
             f.write('Velocities [cm/s] at the different orbital separations:\n')
             for key in wind_speed_single['min' ]:

@@ -42,20 +42,22 @@ def LoadDump_cgs(run, loc, setup):
         To efficiently skips these rows, we load only one parameter, to get the length. All other parameters
         are loaded after without the two last rows.
         '''
-        x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
+        (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
+     
     except OSError:
         try: 
             print('Converting dump file to ascii...')
             
             os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
-            x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
+            (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
+     
         
         except OSError:
             print(' ERROR: No dump file found for this model in the current directory!')
             
             
-    rows = len(x)       
-    (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-2, unpack=True)
+    #rows = len(x)       
+    #(x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-2, unpack=True)
         
     
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
@@ -76,6 +78,22 @@ def LoadDump_cgs(run, loc, setup):
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
 
     
+    # Data of the two stars
+    # AGB star
+    xAGB     = x[-2]
+    yAGB     = y[-2]
+    zAGB     = z[-2]
+    posAGB   = [xAGB, yAGB, zAGB]
+    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
+    massAGB  = mass[-2] 
+    
+    # companion
+    xComp    = x[-1]
+    yComp    = y[-1]
+    zComp    = z[-1]
+    posComp  = [xComp, yComp, zComp]
+    rComp    = gf.calc_r(xComp, yComp, zComp)
+    massComp = mass[-1]
     
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -83,7 +101,7 @@ def LoadDump_cgs(run, loc, setup):
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
-    
+    rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
     
   
     # get normal of the edge-on plane
@@ -92,21 +110,28 @@ def LoadDump_cgs(run, loc, setup):
 
     
     # output
-    data = {'position'      : position,         # [cm]
-            'velocity'      : velocity,         # [cm/s]
-            'h'             : h,                # [cm]
-            'mass'          : mass,             # [g]
-            'rho'           : rho,              # [g/cm^3]
-            'u'             : u,                # [erg/g]
-            'temp'          : temp,             # [K]    
-            'speed'         : speed,            # [cm/s]
-            'mach'          : mach,             
-            'vtvv'          : vtvv,
+    data = {'position'      : position[:-2],         # [cm]
+            'velocity'      : velocity[:-2],         # [cm/s]
+            'h'             : h[:-2],                # [cm]
+            'mass'          : mass[:-2],             # [g]
+            'rho'           : rho[:-2],              # [g/cm^3]
+            'u'             : u[:-2],                # [erg/g]
+            'temp'          : temp[:-2],             # [K]    
+            'speed'         : speed[:-2],            # [cm/s]
+            'mach'          : mach[:-2],             
+            'vtvv'          : vtvv[:-2],
             'fileNumber'    : fileNumber,
-            'r'             : r,                # [cm]
-            'phi'           : phi,
-            'theta'         : theta,
-            'cs'            : cs                # [cm]
+            'r'             : r[:-2],                # [cm]
+            'phi'           : phi[:-2],
+            'theta'         : theta[:-2],
+            'cs'            : cs[:-2],               # [cm]
+            'posAGB'        : posAGB,           # [cm]
+            'rAGB'          : rAGB,             # [cm]
+            'massAGB'       : massAGB,          # [g]
+            'posComp'       : posComp,          # [cm]
+            'rComp'         : rComp,            # [cm]
+            'massComp'      : massComp,         # [g]
+            'rHill'         : rHill             # [cm]
             }
     
 

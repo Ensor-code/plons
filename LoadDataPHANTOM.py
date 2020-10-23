@@ -52,24 +52,24 @@ def LoadData_binary_cgs(run, loc, factor, bound, setup):
     outerData = dmp.LoadDump_outer_cgs(run, loc, factor, bound, setup, dumpData)
     
     # save the final specifics of the AGB star and companion to dumpData
-    dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
-    dumpData['posComp'  ] = sinkData['posComp'    ][-1]
+    #dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
+    #dumpData['posComp'  ] = sinkData['posComp'    ][-1]
                                                   
     dumpData['velAGB'   ] = sinkData['velAGB'     ][-1]
     dumpData['velComp'  ] = sinkData['velComp'    ][-1]
                                                   
-    dumpData['rAGB'     ] = sinkData['rAGB'       ][-1]
-    dumpData['rComp'    ] = sinkData['rComp'      ][-1]
+    #dumpData['rAGB'     ] = sinkData['rAGB'       ][-1]
+    #dumpData['rComp'    ] = sinkData['rComp'      ][-1]
                                                   
-    dumpData['massAGB'  ] = sinkData['massAGB'    ][-1]
-    dumpData['massComp' ] = sinkData['massComp'   ][-1]
+    #dumpData['massAGB'  ] = sinkData['massAGB'    ][-1]
+    #dumpData['massComp' ] = sinkData['massComp'   ][-1]
                                                   
     dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
     dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
                                                   
     dumpData['period_fi'] = sinkData['period_t'   ][-1]
                                                   
-    dumpData['rHill'    ] = sinkData['rHill_t'    ][-1]
+    #dumpData['rHill'    ] = sinkData['rHill_t'    ][-1]
                                                   
     dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
     dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]

@@ -98,8 +98,8 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
         yAGB  = dumpData['posAGB' ][1] / cgs.AU_cm()
         xcomp = dumpData['posComp'][0] / cgs.AU_cm()
         ycomp = dumpData['posComp'][1] / cgs.AU_cm()
-        ax.plot(xAGB ,yAGB , 'ko', markersize = 4  ,label = 'AGB')
-        ax.plot(xcomp,ycomp, 'ro', markersize = 2,label = 'comp')   
+        ax.plot(xAGB ,yAGB , 'ko', markersize =   4*zoom ,label = 'AGB')
+        ax.plot(xcomp,ycomp, 'ro', markersize = 1.5*zoom ,label = 'comp')   
 
     cbar = plt.colorbar(axPlot, ax = ax)
     cbar.set_label('log density [cm/g$^3$]', fontsize = 25)

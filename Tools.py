@@ -67,7 +67,7 @@ def bin_data(data,sortData):
     for i in range(number_of_bins):             # make keys
         binned_data[i] = []
         
-    for i in range(len(data)):                 # make values
+    for i in range(len(data)):                  # make values
         bin_index = find_bin(sortData[i], bins)
         binned_data[bin_index].append(data[i])
         

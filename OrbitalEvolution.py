@@ -14,6 +14,7 @@ rcParams.update({'figure.dpi': 200})
 # import own scripts
 import ConversionFactors_cgs    as cgs
 import PhysicalQuantities       as pq
+import Tools                    as tl
 
 '''
 Calculates:
@@ -218,7 +219,6 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
 
 '''
 Makes plot of the evolution of mass accretion by the companion
-Returns text file with data to make the evolution plot 
 '''
 def plotMassAccr(setup, sinkData, run, loc):
     # Make plot of the mass accretion evolution, very interesting to plot!
@@ -259,6 +259,68 @@ def plotMassAccr(setup, sinkData, run, loc):
 
 
 '''
+Makes plot of the evolution of mass accretion rate by the companion
+returns t_yrs and mass accretion rate to make plot yourself
+'''
+def plotMassAccrRate(setup, sinkData, run, loc):
+    # Make plot of the mass accretion evolution, very interesting to plot!
+    fig = plt.figure(figsize=(8, 5))
+    # Legend
+    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    handles_ap    = [apaLine, perLine]
+    #print(min(sinkData['time']),max(sinkData['time']), len(sinkData['time']))
+    
+    # Make empty array for accrRates per year
+    accrRates    = []
+    # Make array with the years
+    yrs          = np.arange(1,int(max(sinkData['time']))+1)
+    # Make array with the indices of years in sinkData['time']
+    indices_yrs  = [0]
+    t_yrs        = [sinkData['time'][0]]
+    
+    #For each year, calculate the mass accreted in that 1 year and add it to the accRates array
+    for year in yrs:
+        i           = tl.find_nearest(sinkData['time'], year)
+        indices_yrs.append(i)
+        t_yrs.append(sinkData['time'][i])
+        
+        #calculate difference in accreted mass between this and the previous year, to find accretion rate per year in this year
+        accrRate = (sinkData['maccrComp'][indices_yrs[-1]]-sinkData['maccrComp'][indices_yrs[-2]])/cgs.Msun_gram()
+        accrRates.append(accrRate)
+    
+    plt.plot(t_yrs[:-1], accrRates,color = 'royalblue', linestyle = 'solid')
+
+    
+    #Plot vertical lines indicating where there are apastron and periastron passages
+    period = setup['period_ini'] * cgs.sec_year()
+    j = period/2  # First periastron
+    i = 0         # Start at apastron
+
+    maxi = max(accrRates)
+    mini = min(accrRates)
+    for orbit in range(0, int(sinkData['time'][-1]/period)+1):
+        plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
+        plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+        i = i+period
+        j = j+period
+
+    plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
+    plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+   
+    ax = plt.subplot(111)
+    plt.xlabel('Time[yrs]', fontsize = 14)
+    plt.ylabel('Mass accretion rate [Msun/yr]', fontsize = 14)
+
+    plt.title('Mass accretion rate by the companion', fontsize = 18)
+    plt.legend(handles = handles_ap)
+    fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_MaccrRate_companion')
+    
+    return(t_yrs[:-1], accrRates)
+
+
+'''
 Makes plot of the evolution of the orbital velocity of the AGB star and companion 
 '''
 def plotOrbVel(sinkData, run, loc):
@@ -275,6 +337,7 @@ def plotOrbVel(sinkData, run, loc):
           
     plt.legend()
     fig.tight_layout()
+    plt.savefig(loc+str(run)+'_evolution_OrbitalVelocity')
 
 
 
@@ -348,6 +411,9 @@ def orbEv_main(run,loc, sinkData, setup):
         plotChangeOrbSep(info, sinkData, setup, run,loc)
         # Plot evolution of the mass accretion by the companion
         plotMassAccr(setup,sinkData, run, loc)
+        
+        # Plot evolution of the mass accretion rate by the companion
+        (t_yrs, accrRates) = plotMassAccrRate(setup,sinkData, run, loc)
         # Plot evolution of orbital velocities 
         plotOrbVel(sinkData, run, loc)
         # Plot evolution of orbital radii and orbital separation
@@ -358,15 +424,15 @@ def orbEv_main(run,loc, sinkData, setup):
         title = loc+str(run)+'_data_OrbitalEvolution.txt'
         with open (title,'a') as f:
             f.write('\n')
-            f.write('To plot mass accretion, orbital velocities and orbital radii: '+ '\n')
+            f.write('To plot mass accretion, orbital velocities, orbital radii and mass accretion rate per year: '+ '\n')
             f.write('\n')
 
-            names = ['Time on x-axis [yrs]', 'Total accr mass comp [g]', 'Orbital Radius comp [cm]','Orbital Radius AGB [cm]', 'Orbital separation [cm]', 'Orbital vel comp [cm/s]', 'Orbital vel AGB [cm/s]']
-            f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
+            names = ['Time on x-axis [yrs]', 'Total accr mass comp [g]', 'Orbital Radius comp [cm]','Orbital Radius AGB [cm]', 'Orbital separation [cm]', 'Orbital vel comp [cm/s]', 'Orbital vel AGB [cm/s]', 'Time in years on x-axis [yrs]', 'Mass accretion rates per year [Msun/yr]']
+            f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
             f.write('\n')
 
-            col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 15 character width
-            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'],sinkData['v_orbAGB_t'] ):
+            col_format = "{:<35}" * 9 + "\n"   # 9 left-justfied columns with 15 character width
+            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'],sinkData['v_orbAGB_t'], t_yrs, accrRates ):
                     f.write(col_format.format(*i))
 
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
