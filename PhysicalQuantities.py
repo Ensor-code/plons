@@ -58,10 +58,19 @@ def getRadTanVelocity(x,y,v_x,v_y):
     return np.array(v_tan)
 
 '''
-Calculate hill sphere for a certain object:
+Calculate hill sphere for a certain object.
 '''
 def getRHill(orbSep, mcomp, mAGB):
     rH = orbSep * ((mcomp/(3*mAGB))**(1./3.))
     return rH
+
+
+'''
+Calculate the accretion radius of the companion.
+'''
+def getCaptureRadius(mcomp, vwind):
+    Rcap = (2*cgs.G()*mcomp)/(vwind**2)
+    return Rcap
+    
 
 

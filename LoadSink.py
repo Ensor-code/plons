@@ -126,7 +126,7 @@ def LoadSink_cgs(run, loc, setup):
     period          = pq.getPeriod(mass1, mass2, (r1 + r2) /cgs.AU_cm()  )
     orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.AU_cm()  )
     orbitalVel_comp = pq.getOrbitalVelocity(period, r2     /cgs.AU_cm()  )
-    rHill           = pq.getRHill(abs(r1 + r2), mass2, mass1             )         # [cm]
+    rHill           = pq.getRHill( abs(r1 + r2), mass2, mass1            )         # [cm]
     
     # output
     #    "_t" stands for the fact that these values are in function of the evolution time, not from the last dump in function of location

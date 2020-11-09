@@ -124,47 +124,59 @@ if loc == None or outputloc == None:
 # Which parts do you want to run?
 
 print('Which models do you want to run this for? ')
-print('Give the number, split multiple models by a space:')
+print('Give the number, split multiple models by a space (q to quit):')
 runNumbers = str(input( '  >>>   '))
-numbers    = runNumbers.split()
-print('')
-print('Which components of the pipeline do you want to run?')
-print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space:')
-part = input('  >>>   ')
-runParts = part.split() 
-for i in range(len(runParts)):
-    print(options[runParts[i]])
-    
-if '3' in runParts and '4' in runParts:
-    runParts.remove('4')
-    
-print('')
-print('')
-print('It takes some time, so sit back and relax!')
-print('')
-print('')
-
-
-
-
-
-
-try:
-    os.mkdir(outputloc)
-except OSError:
+if runNumbers == 'q':
     print('')
+    print('Program is stopped by the user!!')
+    print('')
+    
+    print('')
+    print('------------------END:', dt.datetime.now(),'---------------------')
+else:
+    numbers    = runNumbers.split()
+    print('')
+    print('Which components of the pipeline do you want to run?')
+    print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space (q to quit):')
+    part = input('  >>>   ')
+    if part == 'q':
+        print('')
+        print('Program is stopped by the user!!')
+        print('')
+        
+        print('')
+        print('------------------END:', dt.datetime.now(),'---------------------')
+    else:
+        runParts = part.split() 
+        for i in range(len(runParts)):
+            print(options[runParts[i]])
+            
+        if '3' in runParts and '4' in runParts:
+            runParts.remove('4')
+            
+        print('')
+        print('')
+        print('It takes some time, so sit back and relax!')
+        print('')
+        print('')
 
 
-run_main(outputloc, runParts, numbers)
+        try:
+            os.mkdir(outputloc)
+        except OSError:
+            print('')
 
-print('')
-print('')
-print('--------')
-print('')
-print('')
-print('The pipeline is finished! You can find all plots and reduced data in the following directory:')
-print(str(outputloc))
-print('')
 
-print('')
-print('------------------END:', dt.datetime.now(),'---------------------')
+        run_main(outputloc, runParts, numbers)
+
+        print('')
+        print('')
+        print('--------')
+        print('')
+        print('')
+        print('The pipeline is finished! You can find all plots and reduced data in the following directory:')
+        print(str(outputloc))
+        print('')
+
+        print('')
+        print('------------------END:', dt.datetime.now(),'---------------------')

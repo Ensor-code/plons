@@ -74,8 +74,9 @@ def LoadSetup(run, loc):
         sma           = float(setup[12][2])     # semi-major axis (initial orbital separation)  [au]
         gamma         = float(setup[15][2])     # adiabatic constant        
         ecc           = float(setup[13][2])     # eccentricity
-        period        = pq.getPeriod(massAGB_ini*cgs.Msun_gram(),massComp_ini*cgs.Msun_gram(),sma)  # [s]
-        v_orb         = pq.getOrbitalVelocity(period, sma)*cgs.cms_kms()                            # [km/s]
+        period        = pq.getPeriod(massAGB_ini*cgs.Msun_gram(),massComp_ini*cgs.Msun_gram(),sma)              # [s]
+        v_orb         = pq.getOrbitalVelocity(period, sma)*cgs.cms_kms()                                        # [km/s]
+        Rcap          = pq.getCaptureRadius(massComp_ini*cgs.Msun_gram(), v_ini/cgs.cms_kms())/cgs.AU_cm()      # [au]                                   
         
     if single_star == True:
         gamma         = float(setup[8][2])     # adiabatic constant   
@@ -98,6 +99,7 @@ def LoadSetup(run, loc):
                 'gamma'         : gamma,
                 'rAccrComp'     : rAccrComp,            # [au]
                 'period_ini'    : period,               # [s]
+                'Rcap'          : Rcap                  # [AU]
                                 
                 }
         
