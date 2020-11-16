@@ -70,7 +70,23 @@ Calculate the accretion radius of the companion.
 '''
 def getCaptureRadius(mcomp, vwind):
     Rcap = (2*cgs.G()*mcomp)/(vwind**2)
-    return Rcap
+    return Rcap                         # [cm]
+
+'''
+The epsilon parameter gives an indication of morphological classification:
+    >> 1 : spherically symmetric
+    ~  1 : regular spiral
+    << 1 : complex
+It is defined as the ratio of enery densities: 
+    epsilon = kin_energy / grav_energy 
+            = (v_wind**2 * sma) / ((24 * G**3 * M_comp**2 * M_AGB)^(1/3))
+'''
+def getEpsilon(vwind, sma, mComp, mAGB):
+    epsilon = (vwind**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
+    return epsilon
+    
+    
+    
     
 
 
