@@ -48,7 +48,7 @@ def LoadDump_cgs(run, loc, setup):
         try: 
             print('Converting dump file to ascii...')
             
-            os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
+            os.system("splash to ascii "+runName+"/wind_00"+fileNumber)
             (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
      
         
@@ -174,7 +174,7 @@ def LoadDump_single_cgs(run, loc, setup):
         try:
             print('Converting dump file to ascii...')
             
-            os.system("ssplash to ascii "+runName+"/wind_00"+fileNumber)
+            os.system("splash to ascii "+runName+"/wind_00"+fileNumber)
             x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
         
         except OSError:

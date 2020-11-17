@@ -102,7 +102,7 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
         ax.plot(xcomp,ycomp, 'ro', markersize = 1.5*zoom ,label = 'comp')   
 
     cbar = plt.colorbar(axPlot, ax = ax)
-    cbar.set_label('log density [cm/g$^3$]', fontsize = 25)
+    cbar.set_label('log density [g/cm$^3$]', fontsize = 25)
     cbar.ax.tick_params(labelsize=14)
     ax.set_xlabel('x [AU]', fontsize = 18)
     ax.set_ylabel('y [AU]', fontsize = 18)

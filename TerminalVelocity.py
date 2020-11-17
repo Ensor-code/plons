@@ -5,6 +5,7 @@ import numpy                    as np
 import ConversionFactors_cgs    as cgs
 import GeometricalFunctions     as gf
 import Tools                    as tl
+import PhysicalQuantities       as pq
 # ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -84,15 +85,15 @@ def getTerminalVelocity(setup, dump):
     if single_star == True:
         sma = 100
     
-    if len(twist) != 0 and twist[0] > sma:
-        #print('twist is there')
-        index = tl.find_nearest(r,twist[0]) 
-        r = r[index:]
-        rmin = min(r)
-        rmax = max(r)
-        outerBound = int((round(r[index]))-1)
-    else:
-        index = -1
+    #if len(twist) != 0 and twist[0] > sma:
+        ##print('twist is there')
+        #index = tl.find_nearest(r,twist[0]) 
+        #r = r[index:]
+        #rmin = min(r)
+        #rmax = max(r)
+        #outerBound = int((round(r[index]))-1)
+    #else:
+    index = -1
         
 
     ### TERMINAL VELOCITY ###
@@ -184,7 +185,7 @@ RETURNS:
 def getVelocity_single(binned_term_speed):
         
     # complete this list as one pleases
-    orbSep = [2.5,4,9]
+    orbSep = [2.5,4,6,9]
     
     wind_speed_min  = {}
     wind_speed_mean = {}
@@ -210,6 +211,86 @@ def getVelocity_single(binned_term_speed):
     
     return wind_speed
         
+        
+'''
+Calculates the mass the companion encounters in one orbit.
+This is calculated using a approximated torus at the orbit of 
+the companion of width 2 times the Hill radius (Hill torus)
+        
+INPUT
+    - setup data
+    - dump data
+        
+RETURNS
+    - mass in the Hill torus
+'''
+def getMassHillTorus(setup, dump):
+    
+    if setup['single_star'] == True:
+        sma   = np.array([25,40,60,90])                 # [AU/10]
+        mComp = np.array([1, 0.01]  )*100               # [Msun/100]
+        mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
+        
+        Hill = {}
+        
+        for i in sma:
+            Hill[i] = {}
+            for j in mComp:
+                rHill = pq.getRHill(i* cgs.AU_cm()/10,j* cgs.Msun_gram()/100,mAGB)
+                Hill[i][j] = [rHill]
+                    
+        for key1 in Hill:
+            for key2 in Hill[key1]:
+                
+                sma   = key1 * cgs.AU_cm()               # [cm]
+                rHill = Hill[key1][key2][0]              # [cm]
+                
+                z       = dump['position'].transpose()[2]
+                mass    = dump['mass'    ]                          # [g]
+                
+                
+                mass    = mass      [ z <  rHill ]
+                r       = dump['r'] [ z <  rHill ]
+                z       = z         [ z <  rHill ]
+                mass    = mass      [ z > -rHill ]
+                r       = r         [ z > -rHill ]
+
+                mass    = mass    [ r > sma-rHill ]  
+                r       = r       [ r > sma-rHill ]
+                mass    = mass    [ r < sma+rHill ]
+                r       = r       [ r < sma+rHill ]
+
+            
+                massHill  = sum(mass)                               # [g]
+                Hill[key1][key2].append(massHill)
+                
+        return Hill              
+            
+    
+    if setup['single_star'] == False:
+                
+        rHill   = dump['rHill'   ]                          # [cm]
+        sma     = setup['sma_ini'     ] * cgs.AU_cm()       # [cm]
+        mComp   = setup['massComp_ini'] * cgs.Msun_gram()   # [g]
+        z       = dump['position'].transpose()[2]
+        mass    = dump['mass'    ]                          # [g]
+        mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
+
+        mass    = mass      [ z <  rHill ]
+        r       = dump['r'] [ z <  rHill ]
+        z       = z         [ z <  rHill ]
+        mass    = mass      [ z > -rHill ]
+        r       = r         [ z > -rHill ]
+
+        mass    = mass    [ r > sma-rHill ]  
+        r       = r       [ r > sma-rHill ]
+        mass    = mass    [ r < sma+rHill ]
+        r       = r       [ r < sma+rHill ]
+
+    
+        massHill  = sum(mass)                               # [g]
+    
+        return massHill
         
 '''
 Morphological parameter proposed in Decin et al. (2020)
@@ -238,38 +319,21 @@ RETURNS
     - mass in the Hill torus
     - mean speed at the companion
 '''
-def getQp(setup, dump, wind_comp):
+def getQp(setup, wind_comp, massHill):
     
-    z       = dump['position'].transpose()[2]
-    mass    = dump['mass'    ]                          # [g]
-    rHill   = dump['rHill'   ]                          # [cm]
-    sma     = setup['sma_ini'] * cgs.AU_cm()            # [cm]
+    sma     = setup['sma_ini'     ] * cgs.AU_cm()       # [cm]
     mComp   = setup['massComp_ini'] * cgs.Msun_gram()   # [g]
     mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
 
-    mass    = mass      [ z <  rHill ]
-    r       = dump['r'] [ z <  rHill ]
-    z       = z         [ z <  rHill ]
-    mass    = mass      [ z > -rHill ]
-    r       = r         [ z > -rHill ]
-
-    mass    = mass    [ r > sma-rHill ]  
-    r       = r       [ r > sma-rHill ]
-    mass    = mass    [ r < sma+rHill ]
-    r       = r       [ r < sma+rHill ]
-
-    
-    massHill  = sum(mass)                               # [g]
-    
-
     wind_comp_mean   = np.mean([wind_comp['min'],wind_comp['max']])     # mean wind speed at the location of the compnion
     
-    v_orb    = np.sqrt( cgs.G() * (mComp + mAGB) / (sma) )          # [cm/s]                                        
+    v_orb    = np.sqrt( cgs.G() * (mComp + mAGB) / (sma) )              # [cm/s]                                        
     Qp_1     = ( (mComp * v_orb)/(massHill * wind_comp_mean   ) ) 
     Qp_2     = ( (mComp * v_orb)/(massHill * wind_comp['mean']) ) 
 
         
-    return Qp_1*1e-6, Qp_2*1e-6, massHill, wind_comp_mean
+    return Qp_1*1e-6, Qp_2*1e-6, wind_comp_mean
+
     
     
 '''
@@ -313,15 +377,17 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         print('(4)  Start calculations for morphological parameters eta, Qp and epsilon...')
         print('')
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
-        Qp_1, Qp_2, massHill, wind_comp_mean = getQp(setup, dump, wind_comp)
-        epsilon_1                      = getEpsilon(wind_comp_mean, setup)
-        epsilon_2                      = getEpsilon(wind_comp['mean'], setup)
+        massHill                     = getMassHillTorus(setup, dump)
+        Qp_1, Qp_2, wind_comp_mean   = getQp(setup, dump, wind_comp, massHill)
+        epsilon_1                    = getEpsilon(wind_comp_mean, setup)
+        epsilon_2                    = getEpsilon(wind_comp['mean'], setup)
         
         
         
     if single_star == True:
         terminal_speed, binned_term_speed = getTerminalVelocity(setup, dump)
         wind_speed_single                 = getVelocity_single(binned_term_speed)
+        Hill                              = getMassHillTorus(setup, dump)
         print('')
         print('(4)  No calculations for morphological parameters eta and Qp, as there is no companion')
         print('')
@@ -442,6 +508,13 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write(str(round(wind_speed_single['min' ][key]*cgs.cms_kms(), 2))+'\n')
                 f.write(str(round(wind_speed_single['mean'][key]*cgs.cms_kms(), 2))+'\n')
                 f.write(str(round(wind_speed_single['max' ][key]*cgs.cms_kms(), 2))+'\n')
+                f.write('\n')
+            f.write('\n')
+            f.write('Mass in the Hill torus [Msun] at the different orbital separations:\n')
+            for key in Hill:
+                f.write('At '+str(key/10)+' au:\n')
+                f.write(str(Hill[key][100][1] /cgs.Msun_gram())+'   for a    1 Msun comp\n')
+                f.write(str(Hill[key][1][1]   /cgs.Msun_gram())+'   for a 0.01 Msun comp\n')
                 f.write('\n')
                 
         if single_star == False:
