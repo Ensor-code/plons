@@ -308,7 +308,7 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
     plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
    
-    ax = plt.subplot(111)
+    #ax = plt.subplot(111)
     plt.xlabel('Time[yrs]', fontsize = 14)
     plt.ylabel('Mass accretion rate [Msun/yr]', fontsize = 14)
 
@@ -424,15 +424,26 @@ def orbEv_main(run,loc, sinkData, setup):
         title = loc+str(run)+'_data_OrbitalEvolution.txt'
         with open (title,'a') as f:
             f.write('\n')
-            f.write('To plot mass accretion, orbital velocities, orbital radii and mass accretion rate per year: '+ '\n')
+            f.write('To plot mass accretion rate per year: '+ '\n')
             f.write('\n')
-
-            names = ['Time on x-axis [yrs]', 'Total accr mass comp [g]', 'Orbital Radius comp [cm]','Orbital Radius AGB [cm]', 'Orbital separation [cm]', 'Orbital vel comp [cm/s]', 'Orbital vel AGB [cm/s]', 'Time in years on x-axis [yrs]', 'Mass accretion rates per year [Msun/yr]']
-            f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
+            names = ['Time in years on x-axis [yrs]', 'Mass accretion rates per year [Msun/yr]']
+            f.write("{: <34} {: <34} ".format(*names))
             f.write('\n')
-
-            col_format = "{:<35}" * 9 + "\n"   # 9 left-justfied columns with 15 character width
-            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'],sinkData['v_orbAGB_t'], t_yrs, accrRates ):
+            col_format = "{:<35}" * 2 + "\n"   # 2 left-justfied columns with 35 character width
+            for i in zip(t_yrs, accrRates):
                     f.write(col_format.format(*i))
+                    
+            f.write('\n')
+            f.write('To plot mass accretion, orbital velocities and orbital radii: '+ '\n')
+            f.write('\n')
+
+            names = ['Time on x-axis [yrs]', 'Total accr mass comp [g]', 'Orbital Radius comp [cm]','Orbital Radius AGB [cm]', 'Orbital separation [cm]', 'Orbital vel comp [cm/s]', 'Orbital vel AGB [cm/s]' ]
+            f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} ".format(*names))
+            f.write('\n')
+
+            col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 35 character width
+            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'],sinkData['v_orbAGB_t'] ):
+                    f.write(col_format.format(*i))
+                    
 
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
