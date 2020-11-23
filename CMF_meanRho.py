@@ -28,13 +28,13 @@ Makes sure the arrays are in the correct order to plot them wrt to the angle: pi
 def getEverything(mass, theta, rho): 
     TotalMass        = np.sum(mass)
     
-    # Make array of theta from pi/2 till pi (Orb plane till edge on where z<0)
+    # Make array of theta from pi/2 untill pi (Orb plane untill edge on where z<0)
     indThetaOrdered  = np.argsort(theta)
     thetaOrdered     = theta[indThetaOrdered]
     indPi2Ordered    = tl.find_nearest(thetaOrdered, np.pi/2)
     thetaPi2_Pi      = thetaOrdered[indPi2Ordered:]
     
-    # Make array of theta from pi/2 till 0 (Orb plane till edge on where z>0)
+    # Make array of theta from pi/2 untill 0 (Orb plane untill edge on where z>0)
     indThetaReversed = np.flip(indThetaOrdered)
     thetaReversed    = theta[indThetaReversed]
     indPi2Reversed   = tl.find_nearest(thetaReversed,np.pi/2)
@@ -48,11 +48,11 @@ def getEverything(mass, theta, rho):
     rhoPi2_Pi        = rho[indThetaOrdered][indPi2Ordered:]
     rhoPi2_0         = rho[indThetaReversed][indPi2Reversed:]
         
-    # Make bins of theta values, so for theta going from pi/2 till pi-0 by pi/2+-i.
+    # Make bins of theta values, so for theta going from pi/2 untill pi-0 by pi/2+-i.
     # To have integers, go from pi/2 * 100 = 157 to pi*100 = 314.15.
     # The length of such array is pi/2 *100.
     number_of_bins = int(100 * np.pi/2)
-    # Create the bins from 157 till 314, with width =1, so we bin thetas with width 1/100
+    # Create the bins from 157 untill 314, with width =1, so we bin thetas with width 1/100
     # The created bin is [(157,158),(158,159),...,(313,314)]
     ThetaBins = tl.create_bins(lower_bound=int(100 * np.pi/2), width=1, quantity=number_of_bins )
     # Now we have bins corresponding to the theta values Pi2_Pi
@@ -332,16 +332,16 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('\n')
         f.write('Values:'+'\n')
         f.write('\n')
-        f.write('The ratio of the mean density in the orbital plane to the mean density on the polar axis is: '+ str(round(infoForPlot['meanRhoSm'][0]/infoForPlot['meanRhoSm'][-1],3))+'\n')
+        f.write('The ratio of the mean density on the polar axis to the mean density in the orbital plane is: '+ str(round(infoForPlot['meanRhoSm'][-1]/infoForPlot['meanRhoSm'][0],3))+'\n')
         f.write('This is a usefull ratio to measure the EDE!'+'\n')
         f.write('\n')
         f.write('\n')
         # theta 25%
         f.write('theta(25):\n')
-        f.write('   Full = '+ str(np.round(infoForPlot['theta25']/np.pi ,3))+'pi'+'\n')
+        f.write('   Full = '+ str(np.round(infoForPlot['theta25']/np.pi ,3))+' pi'+'\n')
         if setup['single_star'] == False:
-            f.write('   Apa  = '+ str(np.round(infoForPlotL['theta25']/np.pi ,3))+'pi'+'\n')
-            f.write('   Per  = '+ str(np.round(infoForPlotR['theta25']/np.pi ,3))+'pi'+'\n')
+            f.write('   Apa  = '+ str(np.round(infoForPlotL['theta25']/np.pi ,3))+' pi'+'\n')
+            f.write('   Per  = '+ str(np.round(infoForPlotR['theta25']/np.pi ,3))+' pi'+'\n')
         f.write('theta(25) to plot on x-axis:\n')
         f.write('   Full:  '+str(np.round(theta['25x'],3))+'\n')
         if setup['single_star'] == False:
@@ -355,10 +355,10 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('\n')
         # theta 50%
         f.write('theta(50):\n')
-        f.write('   Full = '+ str(np.round(infoForPlot['theta50']/np.pi ,3))+'pi'+'\n')
+        f.write('   Full = '+ str(np.round(infoForPlot['theta50']/np.pi ,3))+' pi'+'\n')
         if setup['single_star'] == False:
-            f.write('   Apa  = '+ str(np.round(infoForPlotL['theta50']/np.pi ,3))+'pi'+'\n')
-            f.write('   Per  = '+ str(np.round(infoForPlotR['theta50']/np.pi ,3))+'pi'+'\n')
+            f.write('   Apa  = '+ str(np.round(infoForPlotL['theta50']/np.pi ,3))+' pi'+'\n')
+            f.write('   Per  = '+ str(np.round(infoForPlotR['theta50']/np.pi ,3))+' pi'+'\n')
         f.write('theta(50) to plot on x-axis:\n')
         f.write('   Full:  '+str(np.round(theta['50x'],3))+'\n')
         if setup['single_star'] == False:
@@ -372,10 +372,10 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('\n')
         # theta 75%
         f.write('theta(75):\n')
-        f.write('   Full = '+str(np.round(infoForPlot['theta75']/np.pi,3))+'pi'+'\n')
+        f.write('   Full = '+str(np.round(infoForPlot['theta75']/np.pi,3))+' pi'+'\n')
         if setup['single_star'] == False:
-            f.write('    Apa = '+ str(np.round(infoForPlotL['theta75']/np.pi ,3))+'pi'+'\n')
-            f.write('    Per = '+ str(np.round(infoForPlotR['theta75']/np.pi ,3))+'pi'+'\n')
+            f.write('    Apa = '+ str(np.round(infoForPlotL['theta75']/np.pi ,3))+' pi'+'\n')
+            f.write('    Per = '+ str(np.round(infoForPlotR['theta75']/np.pi ,3))+' pi'+'\n')
         f.write('theta(75) to plot on x-axis:\n')
         f.write('   Full:  '+str(np.round(theta['75x'],3))+'\n')
         if setup['single_star'] == False:
