@@ -311,6 +311,12 @@ def CMF_meanRho(run,outloc, data, setup):
     print('     Cummulative mass fraction plot of model',str(run), 'ready and saved!')
 
 
+    # Ratio of mean density in orbital plane to mean density on polar axis:
+    ratioPolAx     = infoForPlot['meanRhoSm'][0]/infoForPlot['meanRhoSm'][-1]
+    # Ratio of mean density in orbital plane to mean density over all angles:
+    meanAllRho     = np.mean(infoForPlot['meanRhoSm'])
+    ratioAll       = infoForPlot['meanRhoSm'][0]/meanAllRho
+
     # Makes text file with all usefull data
     title = outloc+str(run)+'_data_CummulativeMassFraction_meanDensity.txt'
     with open (title,'w') as f:
@@ -332,8 +338,9 @@ def CMF_meanRho(run,outloc, data, setup):
         f.write('\n')
         f.write('Values:'+'\n')
         f.write('\n')
-        f.write('The ratio of the mean density on the polar axis to the mean density in the orbital plane is: '+ str(round(infoForPlot['meanRhoSm'][-1]/infoForPlot['meanRhoSm'][0],3))+'\n')
-        f.write('This is a usefull ratio to measure the EDE!'+'\n')
+        f.write('The ratio of the mean density in the orbital plane to the mean density on the polar axis is: '+ str(round(ratioPolAx,3))+'\n')
+        f.write('The ratio of the mean density in the orbital plane to the mean density over all angles is:   '+ str(round(ratioAll,3))+'\n')
+        f.write('These may be usefull ratios to measure the EDE!'+'\n')
         f.write('\n')
         f.write('\n')
         # theta 25%
