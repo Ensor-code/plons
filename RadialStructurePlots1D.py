@@ -42,8 +42,8 @@ def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMa
     axis.plot((Z/cgs.AU_cm()),parZ, color = 'goldenrod', label = 'z-axis', markersize = 0.2, lw = 0.6)
 
     axis.set_xlim(-bound,bound)
-    axis.vlines(xcomp, parMin, parMax, 'royalblue', linestyle = 'dashed', linewidth = 0.5)
-    axis.vlines(xAGB,  parMin, parMax, 'royalblue', linestyle = 'solid' , linewidth = 0.5)
+    axis.vlines(xcomp, parMin, parMax, 'k', linestyle = 'dashed', linewidth = 0.5)
+    axis.vlines(xAGB,  parMin, parMax, 'k', linestyle = 'solid' , linewidth = 0.5)
     axis.set_ylim(parMin,parMax)
 
 
@@ -59,8 +59,8 @@ def radialStructPlots(run,loc, dumpData, setup):
     xAxis  = mlines.Line2D([],[], color = 'royalblue', label='x-axis')
     yAxis  = mlines.Line2D([],[], color = 'firebrick', label='y-axis')
     zAxis  = mlines.Line2D([],[], color = 'goldenrod', label='z-axis')
-    comp   = mlines.Line2D([],[], color = 'royalblue', linestyle = 'dashed',linewidth = 1, label = 'comp')
-    AGB    = mlines.Line2D([],[], color = 'royalblue', linestyle = 'solid', linewidth = 1, label = 'AGB' )
+    comp   = mlines.Line2D([],[], color = 'k'        , linestyle = 'dashed',linewidth = 1, label = 'comp')
+    AGB    = mlines.Line2D([],[], color = 'k'        , linestyle = 'solid', linewidth = 1, label = 'AGB' )
     handles1 = [xAxis,yAxis,zAxis,AGB, comp]
     handles2 = [xAxis,yAxis,zAxis,AGB]
 
@@ -77,7 +77,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         xAGB  = dumpData['posAGB' ][0]/cgs.AU_cm()
         handl = handles1
     
-    fig = plt.figure(figsize=(6, 9))
+    fig = plt.figure(figsize=(5, 9))
     
     #fig = plt.figure(figsize=(4.5, 10))
     ax1 = plt.subplot(311)
