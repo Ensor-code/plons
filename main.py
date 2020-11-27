@@ -20,7 +20,7 @@ print('')
 options = { '0': '(1) 2D slice plots \n(2) 1D line plots \n(3) Terminal velocity \n(4) Morphological parameters\n(5) Cummulative mass fraction\n(6) Orbital evolution ', 
             '1': '(1) 2D slice plots', 
             '2': '(2) 1D line plots',
-            '3': '(3) Terminal velocity',
+            '3': '(3) velocity related quantities',
             '4': '(4) Morphological parameters',
             '5': '(5) Cummulative mass fraction',
             '6': '(6) Orbital evolution'
@@ -98,7 +98,7 @@ print('This pipeline reduces PHANTOM output to usable plots and datasets.')
 print('It returns:')
 print('     (1) 2D slice plots of the global structure of the last dump of the model.')
 print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
-print('     (3) Information about the terminal velocity of the model.')
+print('     (3) Information about the velocity related quantities of the model.')
 print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
 print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
 print('     (6) Information of the orbital evolution.')
