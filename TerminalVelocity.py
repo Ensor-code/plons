@@ -360,7 +360,14 @@ def getEpsilon(v, setup):
     
     return epsilon
     
-    
+'''
+The angle Bgtan(v_w/v_orb) gives an indication of the flattening towards the orbital plane (maximum angle of spiral with respect to the orbital plane)
+'''
+def flatteningAngle(setup, dump):
+    v_ini     = setup['v_ini']                            # [km/s]
+    vOrb_AGB  = dump['v_orbAGB' ] * cgs.cms_kms()         # [km/s]
+    theta     = math.atan(v_ini/vOrb_AGB) * 180/np.pi     # degrees
+    return theta
     
 
 def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
@@ -378,9 +385,10 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         print('')
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
         massHill                     = getMassHillTorus(setup, dump)
-        Qp_1, Qp_2, wind_comp_mean   = getQp(setup, dump, wind_comp, massHill)
+        Qp_1, Qp_2, wind_comp_mean   = getQp(setup, wind_comp, massHill)
         epsilon_1                    = getEpsilon(wind_comp_mean, setup)
         epsilon_2                    = getEpsilon(wind_comp['mean'], setup)
+        theta                        = flatteningAngle(setup, dump)
         
         
         
@@ -418,6 +426,8 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('Hill radius    / a:        '+str(round((dump['rHill']/cgs.AU_cm())/setup['sma_ini'] , 2))+'  \n')
             f.write('\n')
             f.write('Rhill / Rcapt:             '+str(round((dump['rHill']/cgs.AU_cm())/setup['Rcap'   ] , 2))+'  \n')
+            f.write('\n')
+            f.write('Bgtan(v_ini/v_orbAGB):     '+str(round(theta,2))+ ' deg' + ' \n')
         if single_star == True: 
             f.write('Single star model, so no companion information.\n')
             f.write('\n')
