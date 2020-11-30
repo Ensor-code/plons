@@ -363,10 +363,16 @@ def getEpsilon(v, setup):
 '''
 The angle Bgtan(v_w/v_orb) gives an indication of the flattening towards the orbital plane (maximum angle of spiral with respect to the orbital plane)
 '''
-def flatteningAngle(setup, dump):
-    v_ini     = setup['v_ini']                            # [km/s]
-    vOrb_AGB  = dump['v_orbAGB' ] * cgs.cms_kms()         # [km/s]
-    theta     = math.atan(v_ini/vOrb_AGB) * 180/np.pi     # degrees
+def flatteningAngle(setup, sinkData):
+    v_ini     = setup['v_ini']                                       # [km/s]
+    if setup['ecc'] == 0:
+        vOrb_AGB  = np.mean(sinkData['v_orbAGB_t' ]) *cgs.cms_kms()  # [km/s]
+        theta     = math.atan(v_ini/vOrb_AGB)* 180/np.pi             # degrees
+
+    elif setup['ecc'] > 0:
+        vOrb_AGB  = [min(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), np.mean(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), max(sinkData['v_orbAGB_t' ])*cgs.cms_kms()]  # [km/s]
+        theta     = [math.atan(v_ini/vOrb_AGB[0])* 180/np.pi , math.atan(v_ini/vOrb_AGB[1])* 180/np.pi , math.atan(v_ini/vOrb_AGB[2])* 180/np.pi ]            # degrees
+
     return theta
     
 
@@ -388,7 +394,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         Qp_1, Qp_2, wind_comp_mean   = getQp(setup, wind_comp, massHill)
         epsilon_1                    = getEpsilon(wind_comp_mean, setup)
         epsilon_2                    = getEpsilon(wind_comp['mean'], setup)
-        theta                        = flatteningAngle(setup, dump)
+        theta                        = flatteningAngle(setup, sinkData)
         
         
         
@@ -426,8 +432,16 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('Hill radius    / a:        '+str(round((dump['rHill']/cgs.AU_cm())/setup['sma_ini'] , 2))+'  \n')
             f.write('\n')
             f.write('Rhill / Rcapt:             '+str(round((dump['rHill']/cgs.AU_cm())/setup['Rcap'   ] , 2))+'  \n')
+            f.write('Apastron:                  ' + str(round(theta[0],2))+ ' deg' + ' \n')
+
             f.write('\n')
-            f.write('Bgtan(v_ini/v_orbAGB):     '+str(round(theta,2))+ ' deg' + ' \n')
+            if setup['ecc'] == 0:
+                f.write('Bgtan(v_ini/v_orbAGB):     '+str(round(theta,2))+ ' deg' + ' \n')
+            else:
+                f.write('Bgtan(v_ini/v_orbAGB):     ' + ' \n' )
+                f.write('Apastron:                  ' + str(round(theta[0],2))+ ' deg' + ' \n')
+                f.write('Mean:                      ' + str(round(theta[1],2))+ ' deg' + ' \n')
+                f.write('Periastron:                ' + str(round(theta[2],2))+ ' deg' + ' \n')
         if single_star == True: 
             f.write('Single star model, so no companion information.\n')
             f.write('\n')
