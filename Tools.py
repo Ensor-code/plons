@@ -39,9 +39,14 @@ searches the bin containing the value
 '''
 def find_bin(value, bins):
 
-    if value < bins[0][0]:
-        return 0
-    elif value > bins[-1][1]:
+    try:
+        if value < bins[0][0]:
+            return 0
+    except IndexError:
+        print('!! IndexError')
+        print('value: ',value)
+        print('bins:  ',bins)
+    if value > bins[-1][1]:
         return len(bins) - 1
     
     else:
