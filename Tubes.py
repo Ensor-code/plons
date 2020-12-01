@@ -96,13 +96,13 @@ def getTubeData_orbPlane(setup,data):
     
     pos = data['position'].transpose()
     
-    x   = pos[0]  /cgs.AU_cm()      # [au]    
-    y   = pos[1]  /cgs.AU_cm()      # [au]
-    z   = pos[2]  /cgs.AU_cm()      # [au]
+    x   = np.abs( pos[0]  /cgs.AU_cm() )     # [au]    
+    y   = np.abs( pos[1]  /cgs.AU_cm() )     # [au]
+    z   = np.abs( pos[2]  /cgs.AU_cm() )     # [au]
     
-    xr  = gf.calc_r_2D(y,z)         # [au]
-    yr  = gf.calc_r_2D(x,z)         # [au]
-    zr  = gf.calc_r_2D(x,y)         # [au]
+    xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
+    yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]
+    zr  = np.abs( gf.calc_r_2D(x,y)    )     # [au]
     
     rho = data['rho']
     
@@ -136,13 +136,13 @@ def getTubeData_xy(setup,data):
     
     pos = data['position'].transpose()
     
-    x   = pos[0]  /cgs.AU_cm()      # [au]    
-    y   = pos[1]  /cgs.AU_cm()      # [au]
-    z   = pos[2]  /cgs.AU_cm()      # [au]
+    x   = np.abs( pos[0]  /cgs.AU_cm() )     # [au]    
+    y   = np.abs( pos[1]  /cgs.AU_cm() )     # [au]
+    z   = np.abs( pos[2]  /cgs.AU_cm() )     # [au]
     
-    xr  = gf.calc_r_2D(y,z)         # [au]
-    yr  = gf.calc_r_2D(x,z)         # [au]
-    zr  = gf.calc_r_2D(x,y)         # [au]
+    xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
+    yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]
+    zr  = np.abs( gf.calc_r_2D(x,y)    )     # [au]
     
     rho = data['rho']
     
@@ -213,6 +213,8 @@ def main_tube(run, outloc, setup, data):
     #fig2.tight_layout()
     
     #plt.savefig(outloc+str(run)+'_1D_tube_xy.png', dpi = 200)
+    
+    print('     Plot for radial structure, using tubes, of model '+str(run)+' ready and saved!')
     
     
     
