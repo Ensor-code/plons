@@ -135,7 +135,7 @@ def onePlot(ax, par, mi, ma, smooth, zoom, dumpData, setup, axs, plane):
           'speed': plt.cm.get_cmap('PuBuGn_r')
           }
     # label name per parameter
-    name = {'rho'  : 'log density [cm/g$^3$]',
+    name = {'rho'  : 'log density [g/cm$^3$]',
             'temp' : 'log temperature [K]' ,
             'speed': 'speed [km/s]'
           }

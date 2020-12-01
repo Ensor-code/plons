@@ -40,6 +40,12 @@ def cms_kms():
     kms = 1e-5                      # [cm s^-1]
     return kms
 
+# density: g/cm^3 to kg/m^3
+def gcm3_kgm3():
+    kgm3 = 1e3                      # [g cm^-3]
+    return kgm3
+
+
 
 # --- Conversion factors specific to PHANTOM ---
 '''

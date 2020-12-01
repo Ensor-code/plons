@@ -23,7 +23,7 @@ Finally to get the average 'rho' in a tube, select the data within
 RETURN:
     'tube' is a 2D list containing
         [0] the 'x'   values to plot
-        [1] the 'rho' values to plot
+        [1] the 'rho' values to plot        # density in SI-units
 '''
 def getBinnedTube(rho, x, xr, sma, bound):    
     
@@ -70,7 +70,7 @@ def getBinnedTube(rho, x, xr, sma, bound):
         
     rho_tube_sm = tl.smoothen(rho_tube,2)
         
-    tube = [r_tube, rho_tube_sm]
+    tube = [np.array(r_tube), np.array(rho_tube_sm)*cgs.gcm3_kgm3()]
         
     return tube  
   
@@ -185,7 +185,7 @@ def main_tube(run, outloc, setup, data):
 
     ax1.set_yscale('log')
     ax1.set_xlabel('$r$ [AU]', fontsize = 9)
-    ax1.set_ylabel('density [cm/g$^3$]', fontsize = 9)
+    ax1.set_ylabel('mean density [kg/m$^3$]', fontsize = 9)
     ax1.tick_params(labelsize=7)
 
     ax1.legend(fontsize = 7, loc = 'upper right')
@@ -206,7 +206,7 @@ def main_tube(run, outloc, setup, data):
 
     #ax2.set_yscale('log')
     #ax2.set_xlabel('$r$ [AU]', fontsize = 9)
-    #ax2.set_ylabel('density [cm/g$^3$]', fontsize = 9)
+    #ax2.set_ylabel('mean density [kg/m$^3$]', fontsize = 9)
     #ax2.tick_params(labelsize=7)
 
     #ax2.legend(fontsize = 7, loc = 'upper right')

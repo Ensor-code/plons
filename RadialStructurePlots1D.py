@@ -131,7 +131,7 @@ def radialStructPlots(run,loc, dumpData, setup):
     #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
     
     # Plots
-    oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'density [cm/g$^3$]', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
+    oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'density [g/cm$^3$]', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
     oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, 'speed [km/s]'      , ax2, vmin  , vmax  , xcomp, xAGB, setup['bound'])
     oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'temperature [K]'   , ax3, Tmin  , Tmax  , xcomp, xAGB, setup['bound'])
     
@@ -156,7 +156,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         f.write('Model '+str(run)+'\n')
         f.write('Data to make radial structure plots yourself:')
         f.write('\n')
-        names = ['X [cm]', 'Y[cm]', 'Z[cm]', 'Rho(x) [cm/g$^3$]', 'Rho(y) [cm/g$^3$]', 'Rho(z) [cm/g$^3$]', '|v|(x) [km/s]', '|v|(y) [km/s]', '|v|(z) [km/s]', 'T(x) [K]', 'T(y) [K]', 'T(z) [K]']
+        names = ['X [cm]', 'Y[cm]', 'Z[cm]', 'Rho(x) [g/cm$^3$]', 'Rho(y) [g/cm$^3$]', 'Rho(z) [g/cm$^3$]', '|v|(x) [km/s]', '|v|(y) [km/s]', '|v|(z) [km/s]', 'T(x) [K]', 'T(y) [K]', 'T(z) [K]']
         f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
         col_format = "{:<35}" * 12 + "\n"   # 7 left-justfied columns with 15 character width
         f.write('\n')
