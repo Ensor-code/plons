@@ -111,6 +111,13 @@ def calc_r(x,y,z):
     return r
 
 '''
+Calculate radius from the centre of mass
+'''
+def calc_r_2D(x,y):
+    r = np.sqrt(x**2+y**2)
+    return r
+
+'''
 Calculate azimuthal angle theta
       Returns np.array
 '''

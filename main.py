@@ -12,18 +12,20 @@ import CMF_meanRho                  as cmf
 import OrbitalEvolution             as ov
 import LoadDataPHANTOM              as ld
 import TerminalVelocity             as tmv
+import Tubes                        as tb
 
 
 print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
 
-options = { '0': '(1) 2D slice plots \n(2) 1D line plots \n(3) Terminal velocity \n(4) Morphological parameters\n(5) Cummulative mass fraction\n(6) Orbital evolution ', 
+options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal velocity \n(4) Morphological parameters\n(5) Cummulative mass fraction\n(6) Orbital evolution\n(7) Tube plots ', 
             '1': '(1) 2D slice plots', 
-            '2': '(2) 1D line plots',
+            '2': '(2) 1D line plots & tube plots',
             '3': '(3) velocity related quantities',
             '4': '(4) Morphological parameters',
             '5': '(5) Cummulative mass fraction',
-            '6': '(6) Orbital evolution'
+            '6': '(6) Orbital evolution',
+            '7': '(7) Tube plots'
             }
 
 
@@ -59,6 +61,8 @@ def run_main(outputloc,part,Numbers):
                     cmf.CMF_meanRho(run, saveloc, outerData, setup)
                 # (6) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
+                # (7) tube plots
+                tb.main_tube(run, saveloc, setup, dumpData)
                 
             if part == '1':
                 # (1) 2D slice plots
@@ -82,6 +86,10 @@ def run_main(outputloc,part,Numbers):
             if part == '6':
                 # (6) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
+                
+            if part == '7':
+                # (7) tube plots
+                tb.main_tube(run, saveloc, setup, dumpData)
         print('')
         
         
@@ -102,6 +110,7 @@ print('     (3) Information about the velocity related quantities of the model.'
 print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
 print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
 print('     (6) Information of the orbital evolution.')
+print('     (7) Tube plots for classifying EDEs/flattenings.')
 print('')
 print('')
 

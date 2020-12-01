@@ -59,7 +59,7 @@ def bin_data(data,sortData):
     # The parameter 'sortData' sets the number of bins by its maximum
     nb = max(sortData)
     # create bins
-    number_of_bins = int( round( nb + 1) )
+    number_of_bins = int( round( nb + 1 ) )
     bins = create_bins( lower_bound=0, width=1, quantity=number_of_bins )
 
     # create dictionary with keys: the bin [au] and value: the speed in that bin
