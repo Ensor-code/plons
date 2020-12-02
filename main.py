@@ -146,7 +146,7 @@ else:
     numbers    = runNumbers.split()
     print('')
     print('Which components of the pipeline do you want to run?')
-    print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space (q to quit):')
+    print('Choose from 0 to 7, where 0 means \'all\', split multiple components by a space (q to quit):')
     part = input('  >>>   ')
     if part == 'q':
         print('')
