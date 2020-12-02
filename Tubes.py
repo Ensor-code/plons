@@ -70,7 +70,7 @@ def getBinnedTube(rho, x, xr, sma, bound):
         
     rho_tube_sm = tl.smoothen(rho_tube,2)
         
-    tube = [np.array(r_tube), np.array(rho_tube_sm)*cgs.gcm3_kgm3()]
+    tube = [np.array(r_tube), np.array(rho_tube_sm)] #*cgs.gcm3_kgm3()]
         
     return tube  
   
@@ -100,14 +100,14 @@ def getTubeData_orbPlane(setup,data):
     y   = np.abs( pos[1]  /cgs.AU_cm() )     # [au]
     z   = np.abs( pos[2]  /cgs.AU_cm() )     # [au]
     
-    xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
-    yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]
-    zr  = np.abs( gf.calc_r_2D(x,y)    )     # [au]
+    #xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
+    #yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]
+    zr  = np.abs( gf.calc_r_2D(x,y)    )     # [au]       Distance to polar axis
     
     rho = data['rho']
     
-    z_tube   = getBinnedTube(rho, z, zr, sma, bound)
-    orb_tube = getBinnedTube(rho, zr, z, sma, bound)
+    z_tube   = getBinnedTube(rho, z, zr, sma, bound)      #  Tube  for zr <= 2 sma, binned according to all z (:= r) values
+    orb_tube = getBinnedTube(rho, zr, z, sma, bound)      # 'Tube' for z  <= 2 sma, binned according to all zr(:= r) values
     
     return z_tube, orb_tube
     
@@ -142,7 +142,7 @@ def getTubeData_xy(setup,data):
     
     xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
     yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]
-    zr  = np.abs( gf.calc_r_2D(x,y)    )     # [au]
+    #zr  = np.abs( gf.calc_r_2D(x,y)    )     # [au]
     
     rho = data['rho']
     
@@ -185,7 +185,7 @@ def main_tube(run, outloc, setup, data):
 
     ax1.set_yscale('log')
     ax1.set_xlabel('$r$ [AU]', fontsize = 9)
-    ax1.set_ylabel('mean density [kg/m$^3$]', fontsize = 9)
+    ax1.set_ylabel('mean density [g/cm$^3$]', fontsize = 9)
     ax1.tick_params(labelsize=7)
 
     ax1.legend(fontsize = 7, loc = 'upper right')
@@ -206,7 +206,7 @@ def main_tube(run, outloc, setup, data):
 
     #ax2.set_yscale('log')
     #ax2.set_xlabel('$r$ [AU]', fontsize = 9)
-    #ax2.set_ylabel('mean density [kg/m$^3$]', fontsize = 9)
+    #ax2.set_ylabel('mean density [g/cm$^3$]', fontsize = 9)
     #ax2.tick_params(labelsize=7)
 
     #ax2.legend(fontsize = 7, loc = 'upper right')
