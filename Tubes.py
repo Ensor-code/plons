@@ -229,11 +229,11 @@ def main_tube(run, outloc, setup, data):
         f.write('Model '+str(run)+'\n')
         f.write('Data to make tube plots yourself:')
         f.write('\n')
-        names = ['r [au]', 'Difference rho (OrbPl - PolAx)']
-        f.write("{: <34} {: <34} ".format(*names))
-        col_format = "{:<35}" * 2 + "\n"   # 2 left-justfied columns with 35 character width
+        names = ['r [au]', 'MeanRhoOrbpl [g/cm$^3$]', 'MeanPolAx [g/cm$^3$]' , 'Difference logrho (OrbPl - PolAx)']
+        f.write("{: <34} {: <34} {: <34} {: <34} ".format(*names))
+        col_format = "{:<35}" * 4 + "\n"   # 4 left-justfied columns with 35 character width
         f.write('\n')
-        for i in zip(z_tube[0], (np.log(orb_tube[1]) - np.log(z_tube[1])) ):
+        for i in zip(z_tube[0], orb_tube[1], z_tube[1], (np.log(orb_tube[1]) - np.log(z_tube[1])) ):
             f.write(col_format.format(*i))
        
     
