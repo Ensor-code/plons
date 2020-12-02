@@ -202,11 +202,6 @@ def main_tube(run, outloc, setup, data):
     ax1.set_xlim([orb_tube[0][0],orb_tube[0][-1]])
     ax1.set_ylabel('mean density [g/cm$^3$]', fontsize = 8)
     ax1.tick_params(labelsize=7)
-    #ax1.set_ylim(rhoMin,rhoMax)
-    
-    ax_extra = ax1.twinx()
-    ax_extra.plot(z_tube[0],  (np.log(orb_tube[1]) - np.log(z_tube[1])) ,c='r', ls = '-'  , lw = 0.8, label = 'niet log')
-
 
     ax1.legend(fontsize = 7, loc = 'upper right')
     fig1.tight_layout()
