@@ -182,16 +182,60 @@ def main_tube(run, outloc, setup, data):
 
     ax1.plot(orb_tube[0], orb_tube[1] ,c='k', ls = '--'  , lw = 0.8, label = 'orbital plane')
     ax1.plot(z_tube[0]  , z_tube[1]   ,c='c',              lw = 0.8, label = 'polar axis')
+    
+        
+    Mdot  = setup['Mdot' ]
+    #Select ylimits as in 1Dplots
+    #if   Mdot <= 5e-7:
+        #rhoMin = 10**(-21)  
+        #rhoMax = 10**(-14)  
+        
+    #elif Mdot >= 1e-5:
+        #rhoMin = 10**(-18.5)  
+        #rhoMax = 10**(-11.5)  
+        
+    #elif 5e-7 < Mdot < 1e-5:
+        #rhoMin = 10**(-20)  
+        #rhoMax = 10**(-13)  
 
     ax1.set_yscale('log')
     ax1.set_xlabel('$r$ [AU]', fontsize = 9)
     ax1.set_ylabel('mean density [g/cm$^3$]', fontsize = 9)
     ax1.tick_params(labelsize=7)
+    ax1.set_ylim(rhoMin,rhoMax)
 
     ax1.legend(fontsize = 7, loc = 'upper right')
     fig1.tight_layout()
     
     plt.savefig(outloc+str(run)+'_1D_tube_orb.png', dpi = 200)
+    
+    
+    #print(len(orb_tube[1]), len(z_tube[1]))    
+    fig2 = plt.figure(figsize=(4,3.5))
+    ax2  = plt.subplot(111)
+    ax2.plot(z_tube[0],  (np.log(orb_tube[1]) - np.log(z_tube[1])) ,c='r', ls = '-'  , lw = 0.8, label = 'niet log')
+
+
+    ax2.set_xlabel('$r$ [AU]', fontsize = 9)
+    ax2.set_title('Mean density orb plane - mean density polar axis [g/cm$^3$]', fontsize = 9)
+    ax2.tick_params(labelsize=7)
+
+    fig2.tight_layout()
+    
+    plt.savefig(outloc+str(run)+'_1D_tube_difference.png', dpi = 200)
+    
+    title = outloc+str(run)+'_data_1D_tube.txt'
+    with open (title,'w') as f:
+        f.write('Model '+str(run)+'\n')
+        f.write('Data to make tube plots yourself:')
+        f.write('\n')
+        names = ['r [au]', 'Difference rho (OrbPl - PolAx)']
+        f.write("{: <34} {: <34} ".format(*names))
+        col_format = "{:<35}" * 2 + "\n"   # 2 left-justfied columns with 35 character width
+        f.write('\n')
+        for i in zip(z_tube[0], (np.log(orb_tube[1]) - np.log(z_tube[1])) ):
+            f.write(col_format.format(*i))
+       
     
     
     ### --- fig using mean of the x and y tube
