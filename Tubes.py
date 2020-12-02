@@ -244,7 +244,7 @@ def main_tube(run, outloc, setup, data):
     ### --- fig using the orb plane 'tube' ONLY plotting the difference
     fig3 = plt.figure(figsize=(4,3.5))
     ax3  = plt.subplot(111)
-    ax3.plot(z_tube[0],  (np.log(orb_tube[1]) - np.log(z_tube[1])) ,c='r', ls = '-'  , lw = 0.8, label = 'niet log')
+    ax3.plot(r,  diff ,c='r', ls = '-'  , lw = 0.8, label = 'niet log')
 
     ax3.set_xlabel('$r$ [AU]', fontsize = 9)
     ax3.set_title('Mean density orb plane - mean density polar axis [g/cm$^3$]', fontsize = 9)
