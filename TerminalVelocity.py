@@ -361,7 +361,10 @@ def getEpsilon(v, setup):
     return epsilon
     
 '''
-The angle Bgtan(v_w/v_orb) gives an indication of the flattening towards the orbital plane (maximum angle of spiral with respect to the orbital plane)
+The angle Bgtan(v_w/v_orb), ratio v_w/(v_orb+v_w) and EllipsEcc give an indication of the flattening towards the orbital plane 
+Theta is maximum angle of spiral with respect to the orbital plane
+flRatio is the ratio of the maximal height / maximal distance in the orbital plane travelled by an orbital motion spiral structure wind particle.
+EllipsEcc gives the eccentricity of the elliptic morphology formed by the spirals caused by the orbital motion
 '''
 def flattening(setup, sinkData):
     v_ini     = setup['v_ini']                                       # [km/s]
@@ -376,19 +379,12 @@ def flattening(setup, sinkData):
     elif setup['ecc'] > 0:
         vOrb_AGB  = np.array([min(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), np.mean(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), max(sinkData['v_orbAGB_t' ])*cgs.cms_kms()])  # [km/s]
         theta     = [math.atan(v_ini/vOrb_AGB[0])* 180/np.pi , math.atan(v_ini/vOrb_AGB[1])* 180/np.pi , math.atan(v_ini/vOrb_AGB[2])* 180/np.pi ]            # degrees
-
         a         = vOrb_AGB + v_ini
-        print(a)
         b         = v_ini
-        print(b)
         flRatio   = np.divide(b,a)
-        print(flRatio)
-        EllipsEcc = np.divide(np.sqrt(np.subtract(np.float_power(a, 2), np.float_power(b,2))), a)
-        print(np.sqrt(a[1]**2 - b**2)/a[1])
-        print(EllipsEcc)
+        EllipsEcc = np.divide(np.sqrt(np.subtract(np.float_power(a, 2), np.float_power(b,2))), a)   
         
-        
-        
+    
     return theta, flRatio, EllipsEcc
     
 
