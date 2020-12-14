@@ -13,7 +13,7 @@ import OrbitalEvolution             as ov
 import LoadDataPHANTOM              as ld
 import TerminalVelocity             as tmv
 import Tubes                        as tb
-
+import userSettings                 as us
 
 print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
@@ -29,19 +29,21 @@ options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal vel
             }
 
 
-def run_main(outputloc,part,Numbers):
-    for run in Numbers:
+def run_main(outputloc,runParts,numbers, models):
+    for number in numbers:
+        run = models[int(number)][1][1:]
         print('---- MODEL '+run+' ----')
-        saveloc = outputloc+run+'/' 
-        
+        saveloc = os.path.join(outputloc, run)
         try:
-            os.mkdir(outputloc+run+'/')
+            os.makedirs(os.path.join(saveloc, 'png'))
+            os.makedirs(os.path.join(saveloc, 'txt'))
+            os.makedirs(os.path.join(saveloc, 'pdf'))
         except OSError:
-            print('')
+            pass
             
         print('')
         print('Data is loading...')
-        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound)
+        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound, userSettingsDictionary)
         print('All data is loaded and ready to use.')
         print('')
         
@@ -56,9 +58,9 @@ def run_main(outputloc,part,Numbers):
                 tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
                 # (5) cummulative mass fraction
                 if setup['single_star'] == True:
-                    cmf.CMF_meanRho(run, saveloc, dumpData, setup)
+                    cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
                 else:
-                    cmf.CMF_meanRho(run, saveloc, outerData, setup)
+                    cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
                 # (6) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
                 # (7) tube plots
@@ -79,9 +81,9 @@ def run_main(outputloc,part,Numbers):
             if part == '5':
                 # (5) cummulative mass fraction
                 if setup['single_star'] == True:
-                    cmf.CMF_meanRho(run, saveloc, dumpData, setup)
+                    cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
                 else:
-                    cmf.CMF_meanRho(run, saveloc, outerData, setup)
+                    cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
                     
             if part == '6':
                 # (6) orbital evolution
@@ -91,11 +93,16 @@ def run_main(outputloc,part,Numbers):
                 # (7) tube plots
                 tb.main_tube(run, saveloc, setup, dumpData)
         print('')
-        
-        
-    
 
-    
+def searchModels(loc, prefix):
+    result = []
+    for path, directories, files in os.walk(loc):
+        dumpFiles = list(filter(lambda x: prefix in x, files))
+        if len(dumpFiles) != 0:
+            slicedString = path.replace(loc, "")
+            result.append([path, slicedString])
+
+    return result
 
 print('')
 print('-------------------------------------------------------')
@@ -103,66 +110,76 @@ print('     Welcome to the very first PHANTOM pipeline!'        )
 print('-------------------------------------------------------')
 print('')
 print('This pipeline reduces PHANTOM output to usable plots and datasets.')
-print('It returns:')
-print('     (1) 2D slice plots of the global structure of the last dump of the model.')
-print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
-print('     (3) Information about the velocity related quantities of the model.')
-print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
-print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
-print('     (6) Information of the orbital evolution.')
-print('     (7) Tube plots for classifying EDEs/flattenings.')
+#print('It returns:')
+#print('     (1) 2D slice plots of the global structure of the last dump of the model.')
+#print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
+#print('     (3) Information about the velocity related quantities of the model.')
+#print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
+#print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
+#print('     (6) Information of the orbital evolution.')
+#print('     (7) Tube plots for classifying EDEs/flattenings.')
 print('')
-print('')
 
 
-loc         = None
-outputloc   = None
-factor      = 3   # the without inner, is without r< factor * sma
-bound       = None
+# Initialise user settings or load them
+userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
+if not os.path.isfile(userSettingsFilePath): us.create(userSettingsFilePath)
 
-
-if loc == None or outputloc == None:
-    print(' !! Before you start, give the directory where: ')
-    print('     - the PHANTOM output of the models is saved   (LoadDataPHANTOM.py, line 109)')
-    print('     - the output of the pipeline should be saved  (LoadDataPHANTOM.py, line 110)')
-    print('')
-    print('------------------END:', dt.datetime.now(),'---------------------')
-    sys.exit()
+userSettingsDictionary = us.load(userSettingsFilePath)
+prefix = userSettingsDictionary["prefix"]
+loc = userSettingsDictionary["data_location"]
+outputloc = userSettingsDictionary["pipeline_output_location"]
 
 
 # Which parts do you want to run?
-
-print('Which models do you want to run this for? ')
-print('Give the number, split multiple models by a space (q to quit):')
-runNumbers = str(input( '  >>>   '))
-if runNumbers == 'q':
+factor      = 3   # the without inner, is without r< factor * sma
+bound       = None
+foundModels = searchModels(loc, prefix)
+print("The following models within %s "
+      "have been found based on the prefix '%s.' "%(loc, prefix))
+print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q to quit):')
+for i in range(len(foundModels)):
+    if foundModels[i][1] =="": print("\t(%d) %s"%(i, foundModels[i][0]))
+    else: print("\t(%d) /...%s"%(i, foundModels[i][1]))
+print()
+runModels = str(input( '  >>>   '))
+if runModels == 'q':
     print('')
     print('Program is stopped by the user!!')
     print('')
-    
+
     print('')
     print('------------------END:', dt.datetime.now(),'---------------------')
 else:
-    numbers    = runNumbers.split()
+    models    = runModels.split()
     print('')
     print('Which components of the pipeline do you want to run?')
+    print()
+    print('     (1) 2D slice plots of the global structure of the last dump full of the model.')
+    print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
+    print('     (3) Information about the velocity related quantities of the model.')
+    print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
+    print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
+    print('     (6) Information of the orbital evolution.')
+    print('     (7) Tube plots for classifying EDEs/flattenings.')
+    print()
     print('Choose from 0 to 7, where 0 means \'all\', split multiple components by a space (q to quit):')
     part = input('  >>>   ')
     if part == 'q':
         print('')
         print('Program is stopped by the user!!')
         print('')
-        
+
         print('')
         print('------------------END:', dt.datetime.now(),'---------------------')
     else:
-        runParts = part.split() 
+        runParts = part.split()
         for i in range(len(runParts)):
             print(options[runParts[i]])
-            
+
         if '3' in runParts and '4' in runParts:
             runParts.remove('4')
-            
+
         print('')
         print('')
         print('It takes some time, so sit back and relax!')
@@ -171,12 +188,11 @@ else:
 
 
         try:
-            os.mkdir(outputloc)
+            os.makedirs(outputloc)
         except OSError:
-            print('')
+            pass
 
-
-        run_main(outputloc, runParts, numbers)
+        run_main(outputloc, runParts, models, foundModels)
 
         print('')
         print('')

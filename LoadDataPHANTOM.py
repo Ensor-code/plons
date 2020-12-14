@@ -3,7 +3,6 @@ import math                     as math
 import os
 # own scripts
 import PhysicalQuantities       as pq
-import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadDump                 as dmp
 import LoadSink                 as snk
@@ -23,18 +22,18 @@ Load the data for a general model
         - 'sinkData'        data of the two sink particles in function of time
         - 'outerData'       data from the last dump in a chosen range (None for a single model)
 '''
-def LoadData_cgs(run, loc, factor, bound):
+def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary):
     
-    setup       = stp.LoadSetup(run, loc)
+    setup       = stp.LoadSetup(run, loc, userSettingsDictionary)
     single_star = setup['single_star']
     
     if single_star == False:
-        dumpData, sinkData, outerData = LoadData_binary_cgs(run, loc, factor, bound, setup)
+        dumpData, sinkData, outerData = LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary)
         
         return setup, dumpData, sinkData, outerData
         
     if single_star == True:
-        dumpData, sinkData = LoadData_single_cgs(run, loc, setup)
+        dumpData, sinkData = LoadData_single_cgs(run, loc, setup, userSettingsDictionary)
         
         return setup, dumpData, sinkData, None
     
@@ -43,10 +42,10 @@ def LoadData_cgs(run, loc, factor, bound):
 '''
 Load the data for a binary star model
 '''
-def LoadData_binary_cgs(run, loc, factor, bound, setup):
+def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary):
     
-    dumpData  = dmp.LoadDump_cgs(run, loc, setup)
-    sinkData  = snk.LoadSink_cgs(run, loc, setup)
+    dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary)
+    sinkData  = snk.LoadSink_cgs(run, loc, setup, userSettingsDictionary)
     if bound == None:
         bound = setup['bound']
     outerData = dmp.LoadDump_outer_cgs(run, loc, factor, bound, setup, dumpData)

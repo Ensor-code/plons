@@ -91,8 +91,7 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
     ax.axis('equal')
     ax.set_facecolor('k')
     axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(),smooth[zoom]['y_z']/cgs.AU_cm(),s=5,c=np.log10(smooth[zoom]['smooth_z']['rho']),cmap=cm_rho,vmin=rhoMin, vmax = rhoMax)
-        
-    
+
     if setup['single_star']== False:
         xAGB  = dumpData['posAGB' ][0] / cgs.AU_cm()
         yAGB  = dumpData['posAGB' ][1] / cgs.AU_cm()
@@ -107,13 +106,14 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc):
     ax.set_xlabel('x [AU]', fontsize = 18)
     ax.set_ylabel('y [AU]', fontsize = 18)
       
-    lim = (setup['bound']-30)/zoom
+    lim = (setup['bound']*np.sqrt(2)/2)/zoom
     ax.axis([-lim,lim,-lim,lim])
     ax.tick_params(labelsize=14)
 
     fig.tight_layout()
-    fig.savefig(loc+str(run)+'_2Dplot_density_zoom'+str(zoom)+'.png',dpi = 300)
-    
+    fig.savefig(os.path.join(loc, 'png/2Dplot_density_zoom'+str(zoom)) + ".png",dpi = 300)
+    fig.savefig(os.path.join(loc, 'pdf/2Dplot_density_zoom'+str(zoom)) + ".pdf")
+
     print('         Density slice plot (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 
@@ -237,11 +237,10 @@ def allPlots(smooth, zoom, rhoMin, rhoMax, vmax, dumpData, setup, run, loc):
     
     fig.tight_layout()
     fig.subplots_adjust(wspace = 0.2,hspace = 0.005)
-    
-    fig.savefig(loc +str(run)+'_2Dplot_DensSpeedTemp_zoom'+str(zoom)+'.png',dpi = 300)
-    
-    print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
+    fig.savefig(os.path.join(loc, 'png/2Dplot_DensSpeedTemp_zoom'+str(zoom)) + '.png',dpi = 300)
+    fig.savefig(os.path.join(loc, 'pdf/2Dplot_DensSpeedTemp_zoom'+str(zoom)) + '.pdf')
+    print('         Slice plots (zoom factor = '+str(zoom)+') model '+str(run)+' ready and saved!')
 
 
 '''
@@ -253,7 +252,9 @@ def SlicePlots(run,loc, dumpData, setup):
 
     # Make sliceplots
     Mdot  = setup['Mdot']
-    bound = setup['bound']   
+    bound = setup['bound']
+    rhoMin = 0
+    rhoMax = 0
 
     #Set the limits of the density plot colorbars, scales exactly with Mdot if no cooling is included
     if Mdot > 1e-5:

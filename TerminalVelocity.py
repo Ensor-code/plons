@@ -419,7 +419,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         print('')
         
 
-    title = outputloc+run+'_data_terminalVelocity_eta_Qp.txt'
+    title = os.path.join(outputloc, 'txt/data_terminalVelocity_eta_Qp.txt')
     with open (title,'w') as f:
         f.write('Model '+run+'\n')
         f.write('---------\n')

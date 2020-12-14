@@ -6,7 +6,7 @@ import PhysicalQuantities       as pq
 import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadSetup                as stp
-
+import sys
 
 '''
 Loads the final full dump of a phantom model, given the number, in cgs-units 
@@ -21,43 +21,46 @@ INPUT:
 RETURNS
     a dictionary containing the data from the dump (all units in cgs)
 '''
-def LoadDump_cgs(run, loc, setup):
-    
-    runName = loc + run
-    
+def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
+    runName = os.path.join(loc,run)
+    userPrefix = userSettingsDictionary["prefix"]
 
-    fileNInt   = int(setup['tmax'])
-    fileNumber = str(fileNInt)
+    # Pick last file from model
+    lastFullDumpIndexInt = findLastFullDump(userPrefix, setup, runName)
+    lastFullDumpIndexStr = str(lastFullDumpIndexInt)
 
-    if fileNInt  < 100:
-        fileNumber = str(0) + fileNumber
+    if lastFullDumpIndexInt  < 100:
+        lastFullDumpIndexStr = str(0) + lastFullDumpIndexStr
 
     # make ascii file of this filenumber    
-    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
-    
-    # load the dump file wind_00xxx
+    fileName  = runName+'/%s_00'%userPrefix + lastFullDumpIndexStr +'.ascii'
+
+    # load the dump file prefix_00xxx
+    x, y, z, mass, h, rho, vx, vy, vz, u = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     try:
         '''
         We don't need the information about the AGB star and companion star (two last rows of the dumps).
-        To efficiently skips these rows, we load only one parameter, to get the length. All other parameters
+        To efficiently skip these rows, we load only one parameter, to get the length. All other parameters
         are loaded after without the two last rows.
         '''
-        (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
+        (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
      
     except OSError:
         try: 
             print('Converting dump file to ascii...')
             
-            os.system("splash to ascii "+runName+"/wind_00"+fileNumber)
-            (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
+            os.system("splash to ascii "+ os.path.join(runName, "%s_00%s"%(userPrefix,lastFullDumpIndexStr)))
+            (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
      
         
         except OSError:
-            print(' ERROR: No dump file found for this model in the current directory!')
+            print()
+            print(' ERROR: No full dump file found for this model in the current directory!')
+            sys.exit()
             
             
     #rows = len(x)       
-    #(x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-2, unpack=True)
+    #(x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/prefix_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-2, unpack=True)
         
     
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
@@ -120,7 +123,7 @@ def LoadDump_cgs(run, loc, setup):
             'speed'         : speed[:-2],            # [cm/s]
             'mach'          : mach[:-2],             
             'vtvv'          : vtvv[:-2],
-            'fileNumber'    : fileNumber,
+            'fileNumber'    : lastFullDumpIndexStr,
             'r'             : r[:-2],                # [cm]
             'phi'           : phi[:-2],
             'theta'         : theta[:-2],
@@ -152,36 +155,38 @@ INPUT:
 RETURNS
     a dictionary containing the data from the dump (all units in cgs)
 '''
-def LoadDump_single_cgs(run, loc, setup):
-    
-    runName = loc + run
+def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
 
-    fileNInt   = int(setup['tmax'])
-    fileNumber = str(fileNInt)
+    runName = os.path.join(loc, run)
+    userPrefix = userSettingsDictionary["prefix"]
 
-    if fileNInt  < 100:
-        fileNumber = str(0) + fileNumber
+    # Pick last file from model
+    lastFullDumpIndexInt = findLastFullDump(userPrefix, setup, runName)
+    lastFullDumpIndexStr = str(lastFullDumpIndexInt)
 
-    # make ascii file of this filenumber    
-    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
-    
-    # load the dump file wind_00xxx
+    if lastFullDumpIndexInt  < 100:
+        lastFullDumpIndexStr = str(0) + lastFullDumpIndexStr
+
+    fileName  = runName + '/%s_00'%userPrefix + lastFullDumpIndexStr + '.ascii'
+
+    # Check whether an .ascii file exists of the full dump
     try:
     # to calculate period, we need masses and sma, so coordinates, we call the parameters xI, I stands for input
-        x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
+        x = np.loadtxt(fileName, skiprows=14, usecols=(0), unpack=True)
 
     except OSError:
         try:
             print('Converting dump file to ascii...')
             
-            os.system("splash to ascii "+runName+"/wind_00"+fileNumber)
-            x = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0), unpack=True)
+            os.system("splash to ascii " + os.path.splitext(fileName)[0])
+            x = np.loadtxt(fileName, skiprows=14, usecols=(0), unpack=True)
         
         except OSError:
-            print(' ERROR: No dump file found for this model in the current directory!')
+            print(' ERROR: No dump file found for this model in the current directory! Shutting down the pipeline.')
+            sys.exit()
         
     rows = len(x)       
-    (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/wind_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-1, unpack=True)
+    (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-1, unpack=True)
     
 
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
@@ -223,7 +228,7 @@ def LoadDump_single_cgs(run, loc, setup):
             'speed'         : speed,          # [cm/s]
             'mach'          : mach,           
             'vtvv'          : vtvv,
-            'fileNumber'    : fileNumber,
+            'fileNumber'    : lastFullDumpIndexStr,
             'r'             : r,              # [cm]
             'phi'           : phi,            
             'theta'         : theta,
@@ -251,9 +256,7 @@ RETURNS
     a dictionary containing the data from the dump of a chosen outer range (all units in cgs)
 '''
 def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
-    
 
-    
     position = dump['position'].transpose()
     velocity = dump['velocity'].transpose()
     
@@ -328,11 +331,15 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'phi'           : phi,           
             'theta'         : theta,         
             'cs'            : cs             # [cm]
-            }                                
-                                             
-    
-
+            }
     
     return data
 
-
+# Pick last full dump file from model
+def findLastFullDump(userPrefix, setup, runName):
+    lastFile = np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not ".asc" in x), os.listdir(runName))))[-1]
+    lastDumpIndex = int(lastFile.lstrip("%s_0" % userPrefix))
+   
+    # Nearest full dump to max
+    lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump']) 
+    return lastFullDumpIndex

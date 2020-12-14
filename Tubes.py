@@ -206,8 +206,8 @@ def main_tube(run, outloc, setup, data):
     ax1.legend(fontsize = 7, loc = 'upper right')
     fig1.tight_layout()
     
-    plt.savefig(outloc+str(run)+'_1D_tube_orb.png', dpi = 200)
-    
+    plt.savefig(os.path.join(outloc, 'png/1D_tube_orb.png'), dpi = 200)
+    plt.savefig(os.path.join(outloc, 'pdf/1D_tube_orb.pdf'))
     
     ### --- fig using the orb plane 'tube' & plotting the difference
     diff = []
@@ -233,8 +233,9 @@ def main_tube(run, outloc, setup, data):
     # ax_extra.legend(fontsize = 5, loc = 'upper right')
     fig1.tight_layout()
 
-    plt.savefig(outloc+str(run)+'_1D_tube_orb_diff.png', dpi = 200)
-    
+    plt.savefig(os.path.join(outloc, 'png/1D_tube_orb_diff.png'), dpi = 200)
+    plt.savefig(os.path.join(outloc, 'pdf/1D_tube_orb_diff.pdf'))
+
     
     ### --- fig using the orb plane 'tube' ONLY plotting the difference
     fig3 = plt.figure(figsize=(4,3.5))
@@ -247,12 +248,12 @@ def main_tube(run, outloc, setup, data):
 
     fig3.tight_layout()
     
-    plt.savefig(outloc+str(run)+'_1D_tube_difference.png', dpi = 200)
-    
+    plt.savefig(os.path.join(outloc, 'png/1D_tube_difference.png'), dpi = 200)
+    plt.savefig(os.path.join(outloc, 'pdf/1D_tube_difference.pdf'))
     
     
     ### --- put data in a text file    
-    title = outloc+str(run)+'_data_1D_tube.txt'
+    title = os.path.join(outloc, 'txt/data_1D_tube.txt')
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('Data to make tube plots yourself:')
@@ -284,8 +285,8 @@ def main_tube(run, outloc, setup, data):
     #ax2.legend(fontsize = 7, loc = 'upper right')
     #fig2.tight_layout()
     
-    #plt.savefig(outloc+str(run)+'_1D_tube_xy.png', dpi = 200)
-    
+    #plt.savefig(os.path.join(outloc, 'png/1D_tube_xy.png'), dpi = 200)
+    # plt.savefig(os.path.join(outloc, 'pdf/1D_tube_xy.pdf'))
     print('     Plot for radial structure, using tubes, of model '+str(run)+' ready and saved!')
     
     

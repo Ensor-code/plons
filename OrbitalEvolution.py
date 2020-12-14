@@ -192,10 +192,10 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
     ax.legend(handles = handles1, fontsize = 12)
     fig.tight_layout()
 
-    plt.savefig(loc+str(run)+'_evolution_OrbitalSeparation')
+    plt.savefig(os.path.join(loc, 'evolution_OrbitalSeparation.pdf'))
     
     # Write text file with usefull info
-    title = loc+str(run)+'_data_OrbitalEvolution.txt'
+    title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
     with open (title,'a') as f:
         f.write('\n')
         if setup['ecc']>0:
@@ -254,7 +254,9 @@ def plotMassAccr(setup, sinkData, run, loc):
     plt.title('Total accreted mass by the companion', fontsize = 18)
     plt.legend(handles = handles_ap)
     fig.tight_layout()
-    plt.savefig(loc+str(run)+'_evolution_Maccr_companion')
+
+    plt.savefig(os.path.join(loc, 'png/evolution_Maccr_companion.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_Maccr_companion.pdf'))
 
 
 
@@ -315,7 +317,9 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     plt.title('Mass accretion rate by the companion', fontsize = 18)
     plt.legend(handles = handles_ap)
     fig.tight_layout()
-    plt.savefig(loc+str(run)+'_evolution_MaccrRate_companion')
+
+    plt.savefig(os.path.join(loc, 'png/evolution_MaccrRate_companion.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion.pdf'))
     
     return(t_yrs[:-1], accrRates)
 
@@ -337,7 +341,9 @@ def plotOrbVel(sinkData, run, loc):
           
     plt.legend()
     fig.tight_layout()
-    plt.savefig(loc+str(run)+'_evolution_OrbitalVelocity')
+
+    plt.savefig(os.path.join(loc, 'png/evolution_OrbitalVelocity.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_OrbitalVelocity.pdf'))
 
 
 
@@ -359,7 +365,9 @@ def plotOrbRad(sinkData, run, loc):
 
     plt.legend()
     fig.tight_layout()
-    plt.savefig(loc+str(run)+'_evolution_rComp_rAGB_orbSep')
+
+    plt.savefig(os.path.join(loc, 'png/evolution_rComp_rAGB_orbSep.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep.pdf'))
 
 
 
@@ -384,7 +392,7 @@ def orbEv_main(run,loc, sinkData, setup):
         info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
 
         # Write text file with this info
-        title = loc+str(run)+'_data_OrbitalEvolution.txt'
+        title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
         with open (title,'w') as f:
             f.write('\n')
             f.write('Model '+str(run)+'\n')
@@ -402,7 +410,9 @@ def orbEv_main(run,loc, sinkData, setup):
         ax.axis('equal')
         ax.legend(fontsize = 15, loc = 'center right')
         fig.tight_layout()
-        plt.savefig(loc+str(run)+'_Orbit')
+
+        plt.savefig(os.path.join(loc, 'png/orbit.png'))
+        plt.savefig(os.path.join(loc, 'pdf/orbit.pdf'))
 
 
         # Calculate orbital separation and time in apastron and periastron passages
@@ -421,7 +431,7 @@ def orbEv_main(run,loc, sinkData, setup):
 
 
         # Write text file with usefull info
-        title = loc+str(run)+'_data_OrbitalEvolution.txt'
+        title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
         with open (title,'a') as f:
             f.write('\n')
             f.write('To plot mass accretion rate per year: '+ '\n')

@@ -6,7 +6,7 @@ import PhysicalQuantities       as pq
 import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadSetup                as stp
-
+import sys
 
 
 
@@ -27,25 +27,22 @@ RETURN:
     a dictionary containing the data from the sink files (all units in cgs)
     
 '''
-def LoadSink_cgs(run, loc, setup):
+def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
     
-    runName = loc + run
+    runName = os.path.join(loc, run)
+    userPrefix = userSettingsDictionary["prefix"]
 
-    fileNInt   = int(setup['tmax'])
-    fileNumber = str(fileNInt)
+    fileName_sink11 = os.path.join(runName, '%sSink0001N01.ev'%userPrefix)
+    fileName_sink21 = os.path.join(runName, '%sSink0002N01.ev'%userPrefix)
 
-    if fileNInt  < 100:
-        fileNumber = str(0) + fileNumber
-
-    # make ascii file of this filenumber    
-    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
-    
     # load the dump file wind_00xxx
+    t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    t2, x2, y2, z2, mass2, vx2, vy2, vz2, maccr2 = 0, 0, 0, 0, 0, 0, 0, 0, 0
     try:
     # to calculate period, we need masses and sma, so coordinates, we call the parameters xI, I stands for input
-        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(runName+'/windSink0001N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-        (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(runName+'/windSink0002N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(fileName_sink11, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(fileName_sink21, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
         
     except OSError:
 
@@ -53,13 +50,18 @@ def LoadSink_cgs(run, loc, setup):
         
     
     '''
-    Uncommand this part of the code when your simmulation has been paused and restarted.
+    Uncommand this part of the code when your simulation has been paused and restarted.
     Give the model's name.
     '''
+    fileName_sink12 = os.path.join(runName, '%sSink0001N02.ev'%userPrefix)
+    fileName_sink22 = os.path.join(runName, '%sSink0002N02.ev'%userPrefix)
+    t1e, x1e, y1e, z1e, mass1e, vx1e, vy1e, vz1e, maccr1e = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    t2e, x2e, y2e, z2e, mass2e, vx2e, vy2e, vz2e, maccr2e = 0, 0, 0, 0, 0, 0, 0, 0, 0
     if run == '59' or run == '52' or run == '48' or run == '41':
+
         try:
-            (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(runName+'/windSink0001N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-            (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(runName+'/windSink0002N02.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+            (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(fileName_sink12, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+            (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(fileName_sink22, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
         except OSError:
 
             print(' ERROR: No extra sink files found for this model.')
@@ -147,13 +149,7 @@ def LoadSink_cgs(run, loc, setup):
             'rHill_t'     : rHill                   # [cm]
             }
 
-
-    
     return data
-
-
-
-
 
 
 '''
@@ -163,30 +159,23 @@ Load the .ev-files from a phantom model of a SINGLE star
       - Only suited for a single model
       - Units in cgs
 '''
-def LoadSink_single_cgs(run, loc, setup):
+def LoadSink_single_cgs(run, loc, setup, userSettingsDictionary):
 
-    runName = loc + run
+    runName = os.path.join(loc,run)
+    userPrefix = userSettingsDictionary["prefix"]
+    fileName = os.path.join(runName, '%sSink0001N01.ev'%userPrefix)
 
-    fileNInt   = int(setup['tmax'])    
-    fileNumber = str(fileNInt)
-
-    if fileNInt  < 100:
-        fileNumber = str(0) + fileNumber
-
-    # make ascii file of this filenumber    
-    fileName  = runName+'/wind_00'+fileNumber +'.ascii'
-    
-    # load the dump file wind_00xxx
+    # load the dump file prefix_00xxx
+    t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = 0, 0, 0, 0, 0, 0, 0, 0, 0
     try:
-       (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(runName+'/windSink0001N01.ev', skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+       (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(fileName, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
         
-        
+
     except OSError:
 
         print(' ERROR: No sink file found for this model in the current directory!')
-        
+        sys.exit()
 
-   
 
     # AGB star
 
@@ -218,5 +207,3 @@ def LoadSink_single_cgs(run, loc, setup):
 
     
     return data
-
-

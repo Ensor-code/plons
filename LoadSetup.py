@@ -9,7 +9,7 @@ import ConversionFactors_cgs    as cgs
 
 
 '''
-Only load the wind.in and wind.setup files to get general information about the phantom model
+Only load the prefix.in and prefix.setup files to get general information about the phantom model
       Suited for binary and single model
       
 INPUT:
@@ -21,32 +21,32 @@ RETURNS
         (!! check units, they are not all in SI or cgs)
 
 '''
-def LoadSetup(run, loc):
-    
-    runName = loc+run
-    
-    # load the wind.in & wind.setup file
+def LoadSetup(run, loc, userSettingsDictionary):
+    runName = os.path.join(loc, run)
+    userPrefix = userSettingsDictionary["prefix"]
+
+    # load the prefix.in & prefix.setup file
     try:  
-        with open(runName+'/wind.setup', 'r') as f:
+        with open(os.path.join(runName,'%s.setup'%userPrefix), 'r') as f:
             lines = f.readlines()  
             setup = []
             for i in range(len(lines)):
                 setup.append(lines[i].split())
     except FileNotFoundError:
         print('')
-        print(" ERROR: No wind.setup file found!")
+        print(" ERROR: No %s.setup file found!"%userPrefix)
         print('')
         exit()
 
     try:
-        with open(runName+'/wind.in', 'r') as f:
+        with open(os.path.join(runName,'%s.in'%userPrefix), 'r') as f:
             lines = f.readlines()  
             infile = []
             for i in range(len(lines)):
                 infile.append(lines[i].split())
     except FileNotFoundError:
         print('')
-        print(" ERROR: No wind.setup file found!")
+        print(" ERROR: No %s.setup file found!"%userPrefix)
         print('')
         exit()
     
@@ -58,8 +58,9 @@ def LoadSetup(run, loc):
     if is_single == 1:
         single_star = False
 
-        
+
     tmax          = float(infile[9][2])         # last dump in code units
+    nfulldump     = float(infile[16][2])        # Every time full dump is produced
     v_ini         = float(infile[58][2])        # initial wind velocity                         [km/s]
     mu            = float(infile[38][2])        # mean molecular weight of the gas
     Mdot          = float(infile[62][2])        # mass loss rate                                [M_sun/yr]
@@ -92,6 +93,7 @@ def LoadSetup(run, loc):
                 'bound'         : bound,                # [au]
                 'v_orb'         : v_orb,                # [km/s]
                 'tmax'          : tmax,
+                'nfulldump'     : nfulldump,
                 'mu'            : mu,
                 'Mdot'          : Mdot,                 # [Msun/yr]
                 'massAGB_ini'   : massAGB_ini,          # [Msun]

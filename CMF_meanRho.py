@@ -281,7 +281,9 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         ax.set_title('Model '+ str(run)+': Mean density without '+str(factor)+'a', fontsize = 15)
         ax.legend(handles = handles, loc = 'lower right',  fontsize = 8)
         fig.tight_layout()
-        plt.savefig(outloc+str(run)+'_MeanDensityPlot_without_'+str(factor)+'a')
+
+        plt.savefig(os.path.join(outloc, 'png/MeanDensityPlot_without_' + str(factor) + 'a' + ".png"))
+        plt.savefig(os.path.join(outloc, 'pdf/MeanDensityPlot_without_'+str(factor)+'a' + ".pdf"))
         print('     Mean density plot of model',str(run),'ready and saved!')    
 
 
@@ -322,7 +324,9 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     plt.ylabel('$M[\\theta]/M_{tot}$', fontsize = 13)
     plt.title('Model '+ str(run) + ': Cumulative mass fraction without'+str(factor)+'a', fontsize = 15)
     fig.tight_layout()
-    plt.savefig(outloc+str(run)+'_CummulativeMassFractionPlot_without_'+str(factor)+'a')
+
+    plt.savefig(os.path.join(outloc, 'png/CummulativeMassFractionPlot_without_' + str(factor) + 'a' + ".png"))
+    plt.savefig(os.path.join(outloc, 'pdf/CummulativeMassFractionPlot_without_' + str(factor) + 'a' + ".pdf"))
     print('     Cummulative mass fraction plot of model',str(run), 'ready and saved!')
 
 
@@ -333,7 +337,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     ratioAll       = infoForPlot['meanRho'][0]/meanAllRho
 
     # Makes text file with all usefull data
-    title = outloc+str(run)+'_data_CummulativeMassFraction_meanDensity_without_'+str(factor)+'a.txt'
+    title = os.path.join(outloc,'data_CummulativeMassFraction_meanDensity_without_'+str(factor)+'a.txt')
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('\n')
