@@ -24,12 +24,20 @@ def create(userSettingsFilePath):
                 continue
             break
 
+        if (loc[-1] == '/' or loc[-1] == '\\'):
+            loc = loc[:-1]
+
         outputloc = str(input("Enter the path where the pipeline output should be saved: "))
+        if not os.path.isdir(outputloc):
+            os.makedirs(outputloc)
         while True:
             if " " in outputloc:
                 outputloc = str(input("Path contains spaces, please remove them: "))
                 continue
             break
+
+        if (outputloc[-1] == '/' or outputloc[-1] == '\\'):
+            outputloc = outputloc[:-1]
 
         file.write("prefix = " + prefix + "\n")
         file.write("data_location = " + loc + "\n")
