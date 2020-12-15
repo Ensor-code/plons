@@ -377,7 +377,7 @@ def flattening(setup, sinkData):
         EllipsEcc = np.sqrt(a**2 - b**2) / a
 
     elif setup['ecc'] > 0:
-        vOrb_AGB  = np.array([min(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), np.mean(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), max(sinkData['v_orbAGB_t' ])*cgs.cms_kms()])  # [km/s]
+        vOrb_AGB  = np.array([max(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), np.mean(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), min(sinkData['v_orbAGB_t' ])*cgs.cms_kms()])  # [km/s]
         theta     = [math.atan(v_ini/vOrb_AGB[0])* 180/np.pi , math.atan(v_ini/vOrb_AGB[1])* 180/np.pi , math.atan(v_ini/vOrb_AGB[2])* 180/np.pi ]            # degrees
         a         = vOrb_AGB + v_ini
         b         = v_ini
