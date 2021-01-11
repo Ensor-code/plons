@@ -26,14 +26,8 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
     userPrefix = userSettingsDictionary["prefix"]
 
     # Pick last file from model
-    lastFullDumpIndexInt = findLastFullDump(userPrefix, setup, runName)
-    lastFullDumpIndexStr = str(lastFullDumpIndexInt)
-
-    if lastFullDumpIndexInt  < 100:
-        lastFullDumpIndexStr = str(0) + lastFullDumpIndexStr
-
-    # make ascii file of this filenumber    
-    fileName  = runName+'/%s_00'%userPrefix + lastFullDumpIndexStr +'.ascii'
+    lastFullDumpIndex = findLastFullDump(userPrefix, setup, runName)
+    fileName  = os.path.join(runName, '%s_%05d.ascii'%(userPrefix, lastFullDumpIndex))
 
     # load the dump file prefix_00xxx
     x, y, z, mass, h, rho, vx, vy, vz, u = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -49,7 +43,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
         try: 
             print('Converting dump file to ascii...')
             
-            os.system("splash to ascii "+ os.path.join(runName, "%s_00%s"%(userPrefix,lastFullDumpIndexStr)))
+            os.system("splash to ascii " + os.path.splitext(fileName)[0])
             (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
      
         
@@ -161,13 +155,8 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     userPrefix = userSettingsDictionary["prefix"]
 
     # Pick last file from model
-    lastFullDumpIndexInt = findLastFullDump(userPrefix, setup, runName)
-    lastFullDumpIndexStr = str(lastFullDumpIndexInt)
-
-    if lastFullDumpIndexInt  < 100:
-        lastFullDumpIndexStr = str(0) + lastFullDumpIndexStr
-
-    fileName  = runName + '/%s_00'%userPrefix + lastFullDumpIndexStr + '.ascii'
+    lastFullDumpIndex = findLastFullDump(userPrefix, setup, runName)
+    fileName  = os.path.join(runName,'%s_%05d.ascii'%(userPrefix, lastFullDumpIndex))
 
     # Check whether an .ascii file exists of the full dump
     try:
