@@ -117,7 +117,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
             'speed'         : speed[:-2],            # [cm/s]
             'mach'          : mach[:-2],             
             'vtvv'          : vtvv[:-2],
-            'fileNumber'    : lastFullDumpIndexStr,
+            'fileNumber'    : str(lastFullDumpIndex),
             'r'             : r[:-2],                # [cm]
             'phi'           : phi[:-2],
             'theta'         : theta[:-2],
