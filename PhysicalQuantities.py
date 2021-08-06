@@ -6,6 +6,19 @@ import GeometricalFunctions     as gf
 
 # --- Physical Quantities in cgs ---
 
+
+'''
+Returns the input density of the wind, given the initial velocity [km/s] and input mass loss rate Mdot [Msun/yr].
+'''
+def getInputDensity(velocity, Mdot):
+    r    = 1        * cgs.AU_cm()                          # [cm]
+    Mdot = Mdot     * (cgs.Msun_gram()*cgs.sec_year())     # [gram/s]
+    v    = velocity * cgs.cms_kms()                        # [cm/s]
+    dens = Mdot / (4*np.pi * v * r**2)
+    return dens                                            # [g/cm^3]
+    
+
+
 '''
 Returns the pressure of a particle, given by the specific internal energy u [erg/g], gamma and density [g/cm^3] in 10^-1 Pa = barye = Ba = g cm^-1 s^-2
 '''
@@ -83,7 +96,7 @@ It is defined as the ratio of enery densities:
 '''
 def getEpsilon(vwind, sma, mComp, mAGB):
     epsilon = (vwind**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
-    return epsilon
+    return 1/epsilon
     
     
     
