@@ -21,13 +21,19 @@ INPUT:
 RETURNS
     a dictionary containing the data from the dump (all units in cgs)
 '''
-def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
+def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     runName = os.path.join(loc,run)
     userPrefix = userSettingsDictionary["prefix"]
 
-    # Pick last file from model
-    lastFullDumpIndex = findLastFullDump(userPrefix, setup, runName)
-    fileName  = os.path.join(runName, '%s_%05d.ascii'%(userPrefix, lastFullDumpIndex))
+    # Pick either last dump file or user chosen file
+    index = 0
+    if number == -1: index = findLastFullDumpIndex(userPrefix, setup, runName)
+    else: index = number
+
+
+    # make ascii file of this filenumber
+    fileName       = runName+'/{0:s}_{1:05d}'.format(userPrefix, index)
+    fileNameAscii  = fileName + ".ascii"
 
     # load the dump file prefix_00xxx
     x, y, z, mass, h, rho, vx, vy, vz, u = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -37,14 +43,14 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
         To efficiently skip these rows, we load only one parameter, to get the length. All other parameters
         are loaded after without the two last rows.
         '''
-        (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
+        (x, y, z, mass, h, rho, vx, vy, vz, u) = np.loadtxt(fileNameAscii, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
      
     except OSError:
         try: 
             print('Converting dump file to ascii...')
             
-            os.system("splash to ascii " + os.path.splitext(fileName)[0])
-            (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
+            os.system("splash to ascii " + fileName)
+            (x, y, z, mass, h, rho, vx, vy, vz, u) = np.loadtxt(fileNameAscii, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
      
         
         except OSError:
@@ -61,15 +67,15 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
     x     = x     [h > 0.0] * cgs.AU_cm()                       # position coordinates          [cm]
     y     = y     [h > 0.0] * cgs.AU_cm()       
     z     = z     [h > 0.0] * cgs.AU_cm()      
-    mass  = mass  [h > 0.0] * cgs.Msun_gram()                   # mass of sph particles         [g]
-    vx    = vx    [h > 0.0] * cgs.cu_vel()                      # velocity components           [cm/s]
-    vy    = vy    [h > 0.0] * cgs.cu_vel()
-    vz    = vz    [h > 0.0] * cgs.cu_vel()
-    u     = u     [h > 0.0] * cgs.cu_e()                        # specific internal density     [erg/g]
-    rho   = rho   [h > 0.0] * cgs.cu_dens()                     # density                       [g/cm^3]
+    mass  = mass  [h > 0.0]                                     # mass of sph particles         [g]
+    vx    = vx    [h > 0.0]                                     # velocity components           [cm/s]
+    vy    = vy    [h > 0.0]
+    vz    = vz    [h > 0.0]
+    u     = u     [h > 0.0]                                     # specific internal density     [erg/g]
+    rho   = rho   [h > 0.0]                                     # density                       [g/cm^3]
     h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
-    temp  = pq.getTemp(p, rho, setup['mu'])                     # temperature                   [K]
+    temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -117,7 +123,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
             'speed'         : speed[:-2],            # [cm/s]
             'mach'          : mach[:-2],             
             'vtvv'          : vtvv[:-2],
-            'fileNumber'    : str(lastFullDumpIndex),
+            'fileNumber'    : index,
             'r'             : r[:-2],                # [cm]
             'phi'           : phi[:-2],
             'theta'         : theta[:-2],
@@ -128,7 +134,10 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary):
             'posComp'       : posComp,          # [cm]
             'rComp'         : rComp,            # [cm]
             'massComp'      : massComp,         # [g]
-            'rHill'         : rHill             # [cm]
+            'rHill'         : rHill,            # [cm]
+            'vx'            : vx,               # [cm/s]
+            'vy'            : vy,               # [cm/s]
+            'vz'            : vz                # [cm/s]
             }
     
 
@@ -155,8 +164,9 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     userPrefix = userSettingsDictionary["prefix"]
 
     # Pick last file from model
-    lastFullDumpIndex = findLastFullDump(userPrefix, setup, runName)
-    fileName  = os.path.join(runName,'%s_%05d.ascii'%(userPrefix, lastFullDumpIndex))
+    lastFullDumpIndexInt = findLastFullDumpIndex(userPrefix, setup, runName)
+
+    fileName  = runName+'/{0:s}_{1:05d}.ascii'.format(userPrefix, lastFullDumpIndex)
 
     # Check whether an .ascii file exists of the full dump
     try:
@@ -217,7 +227,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'speed'         : speed,          # [cm/s]
             'mach'          : mach,           
             'vtvv'          : vtvv,
-            'fileNumber'    : str(lastFullDumpIndex),
+            'fileNumber'    : lastFullDumpIndex,
             'r'             : r,              # [cm]
             'phi'           : phi,            
             'theta'         : theta,
@@ -289,7 +299,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     
     
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
-    temp  = pq.getTemp(p, rho, setup['mu'])                     # temperature                   [K]
+    temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -325,10 +335,21 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     return data
 
 # Pick last full dump file from model
-def findLastFullDump(userPrefix, setup, runName):
-    lastFile = np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not ".asc" in x), os.listdir(runName))))[-1]
+def findLastFullDumpIndex(userPrefix, setup, runName):
+    listDumps = sortedDumpList(userPrefix, runName)
+    lastFile = listDumps[-1]
     lastDumpIndex = int(lastFile.lstrip("%s_0" % userPrefix))
    
     # Nearest full dump to max
     lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump']) 
     return lastFullDumpIndex
+
+def findAllFullDumpIndices(userSettingsDictionary, setup, runName):
+    userPrefix = userSettingsDictionary['prefix']
+    listDumps = sortedDumpList(userPrefix, runName)
+    lastFullDumpIndex = findLastFullDumpIndex(userPrefix, setup, runName)
+    fullDumpLists = np.arange(0, lastFullDumpIndex + 1, setup['nfulldump'], dtype=int)
+    return fullDumpLists
+
+def sortedDumpList(userPrefix, runName):
+    return np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not ".asc" in x), os.listdir(runName))))

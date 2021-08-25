@@ -6,19 +6,6 @@ import GeometricalFunctions     as gf
 
 # --- Physical Quantities in cgs ---
 
-
-'''
-Returns the input density of the wind, given the initial velocity [km/s] and input mass loss rate Mdot [Msun/yr].
-'''
-def getInputDensity(velocity, Mdot):
-    r    = 1        * cgs.AU_cm()                          # [cm]
-    Mdot = Mdot     * (cgs.Msun_gram()*cgs.sec_year())     # [gram/s]
-    v    = velocity * cgs.cms_kms()                        # [cm/s]
-    dens = Mdot / (4*np.pi * v * r**2)
-    return dens                                            # [g/cm^3]
-    
-
-
 '''
 Returns the pressure of a particle, given by the specific internal energy u [erg/g], gamma and density [g/cm^3] in 10^-1 Pa = barye = Ba = g cm^-1 s^-2
 '''
@@ -28,8 +15,10 @@ def getPressure(density, u, gamma):
 '''
 Returns the temperature, given the pressure [Ba] and density [g/cm^3] in K (via Ideal Gas Law)
 '''
-def getTemp(pressure, density, mu):
-    temp = ((pressure*mu*cgs.mH())/(density*cgs.kB()))
+def getTemp(pressure, density, mu, u):
+    #temp = ((pressure*mu*cgs.mH())/(density*cgs.kB()))
+    gamma = 1.4
+    temp = (gamma-1.) * mu * u * cgs.mH() / cgs.kB()
     return temp
 
 '''
@@ -77,7 +66,6 @@ def getRHill(orbSep, mcomp, mAGB):
     rH = orbSep * ((mcomp/(3*mAGB))**(1./3.))
     return rH
 
-
 '''
 Calculate the accretion radius of the companion.
 '''
@@ -96,9 +84,28 @@ It is defined as the ratio of enery densities:
 '''
 def getEpsilon(vwind, sma, mComp, mAGB):
     epsilon = (vwind**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
-    return 1/epsilon
-    
-    
+    return epsilon
+
+
+'''
+Calculate the polar angle of the companion w.r.t. the x-axis
+'''
+def getPolarAngleCompanion(x, y):
+    theta = np.abs(np.arctan(y/x))
+
+    # Second Quadrant
+    if x < 0. and y > 0.:
+        theta = np.pi - theta
+
+    # Third Quadrant
+    elif x < 0. and y < 0.:
+        theta = np.pi + theta
+
+    # Fourth Quadrant
+    elif x > 0. and y < 0.:
+        theta = 2.*np.pi - theta
+
+    return theta
     
     
 

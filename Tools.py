@@ -140,6 +140,8 @@ def format_func2(value, tick_number):
         return r"${0}\pi/4$".format(N)
     else:
         return r"${0}\pi$".format(N // 4)
-    
+
+
+
 
 

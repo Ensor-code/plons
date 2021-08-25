@@ -54,7 +54,8 @@ Get a 2D array containing the [x,y,z]-components of all pixels
           shape == 'y' --> xz-plane
 '''
 def getPixels(shape, n, r, data, bound):
-    
+
+    pixCoord = np.zeros(n)
     # for a spherical slice --> use healpy
     if shape == 'r':
         # define the amount of pixels for the spherical plot: always of the form 12*n**2
@@ -93,7 +94,7 @@ def getPixels(shape, n, r, data, bound):
         pixCoord = []
         for i in range(len(pix)):
             for j in range(len(pix)):
-                pixCoord.append([pix[i],0,pix[j]])
+                pixCoord.append([pix[i], 0, pix[j]])
 
         pixCoord = np.array(pixCoord)
         #print(pixCoord)
@@ -122,7 +123,7 @@ def getPixels(shape, n, r, data, bound):
 
         pixCoord = np.array(pixCoord)
     
-    # z-line (y=0=x7)
+    # z-line (y=posAGB=x)
     if shape == 'line_z':
         pix = np.linspace(-bound,bound, n)
         # pix_y = np.linspace(-r,r,n)
@@ -130,7 +131,7 @@ def getPixels(shape, n, r, data, bound):
         pixCoord = []
         for i in range(len(pix)):
             # for j in range(len(pix_y)):
-            pixCoord.append([0,0,pix[i]])
+            pixCoord.append([data['posAGB'][0], data['posAGB'][1], pix[i]])
 
         pixCoord = np.array(pixCoord)
 
@@ -145,22 +146,27 @@ Get the values on a healpy sphere for n pixels, 'neighbours' neighbours for a li
       'r'       is a string with the radius of the wanted sphere
                 if 'comp', take the radius up to the companion, else, float('r') --> radius
       'shape' to specify which kind of slice
+      'theta' is the angle between the x-axis and companion
 '''
-def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound):
-    
+def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta, mesh=False, vec=False):
+
     rho = data['rho']
     mass = data['mass']
-    
+
     mPrho = mass/rho
-    
-    pixCoord = getPixels(shape, n, r, data, bound)
-    
+
+    pixCoord    = getPixels(shape, n, r, data, bound)
+
+    # Rotate the plane/line to align with companion
+    if shape != 'line_z':
+        pixCoord = rotatePixCoordAroundZ(theta, pixCoord)
+
     # define all nearest neighbours
-    tree = cKDTree(data['position'])    
-    
+    tree = cKDTree(data['position'])
+
     # for every pixel in the spherical slice (sphere), get its 60 nearest neighbours
     (distances, closest_points) = tree.query(pixCoord, neighbours)
-    
+
     '''
     get values of certain parameters in the grid for the nearest neighbours
         gives the position (x,y,z) for all the indices of the closest neighbours (closest_closest_points_60)
@@ -171,7 +177,7 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound):
     position_closest_points = data['position'][closest_points]
     h_closest_points        = data['h'       ][closest_points]
     mPrho_closest_points    = mPrho[closest_points]
-    
+
     # Get the smoothing kernel W_ab for all nearest neighbours for every pixel in 'sphere'
     W_ab = []
     for i in range(len(pixCoord)):
@@ -187,9 +193,89 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound):
     
     if shape == 'z' or shape == 'y' or shape == 'line_x' or shape == 'line_y' or shape == 'line_z':
         pixCoord = np.array(pixCoord).transpose()
-        return results, pixCoord[0], pixCoord[1], pixCoord[2]
-    
-    
-    
-    
-    
+
+        if ('line' not in shape) and (mesh == True):
+            X, Y, Z, results = convertToMesh(n, pixCoord[0], pixCoord[1], pixCoord[2], results, params, theta)
+
+            if (shape == 'z'):
+                X, Y, Z = rotateOrbitalPlaneAroundZ(theta, X, Y, Z)
+
+            if vec == True:
+                vecx, vecy, vecz = rotateOrbitalPlaneAroundZ(theta, results[params[0]], results[params[1]], results[params[2]])
+                results[params[0]] = vecx
+                results[params[1]] = vecy
+                results[params[2]] = vecz
+
+            return results, X, Y, Z
+
+        else:
+            return results, pixCoord[0], pixCoord[1], pixCoord[2]
+'''
+Transform one dimensional arrays to a 2D mesh. 
+    'n' is the length of the arrays
+    'x', 'y' and 'z' are the regular one dimensional arrays
+    params is a list of strings for the parameters of interest
+    data_params is a dictionary for the data of params
+'''
+def convertToMesh(n, x, y, z, data_params, params, theta):
+    X = np.zeros(shape=(n, n))
+    Y = np.zeros(shape=(n, n))
+    Z = np.zeros(shape=(n, n))
+
+    if theta == 0.:
+        x_cut = x[::n]
+        y_cut = y[:n]
+        z_cut = z[:n]
+
+        X, Y  = np.meshgrid(x_cut, y_cut)
+        X, Z  = np.meshgrid(x_cut, z_cut)
+
+    else:
+        i0 = 0
+        i1 = n
+        for i in range(n):
+            X[:n, i] = np.transpose(x[i0: i1])
+            Y[:n, i] = np.transpose(y[i0: i1])
+            Z[:n, i] = np.transpose(z[i0: i1])
+            i0 += n
+            i1 += n
+
+    for param in params:
+        temp_mesh = np.zeros(shape=(n, n))
+        i0 = 0
+        i1 = n
+        for i in range(n):
+            temp_mesh[:n, i] = np.transpose(data_params[param][i0:i1])
+            i0 += n
+            i1 += n
+        data_params[param] = temp_mesh
+
+
+    return [X, Y, Z, data_params]
+
+def rotatePixCoordAroundZ(theta, pixCoord):
+    n = len(pixCoord)
+    x = pixCoord[:, 0]
+    y = pixCoord[:, 1]
+    z = pixCoord[:, 2]
+
+    x_rot = x * np.cos(theta) - y * np.sin(theta)
+    y_rot = x * np.sin(theta) + y * np.cos(theta)
+    z_rot = z
+
+    rotatedArray = np.zeros(shape=(n, 3))
+    rotatedArray[:, 0] = x_rot
+    rotatedArray[:, 1] = y_rot
+    rotatedArray[:, 2] = z_rot
+
+    return rotatedArray
+
+def rotateOrbitalPlaneAroundZ(theta, X, Y, Z):
+    # Subtract the angle of the companion from the orbital plane
+    theta = -theta
+
+    X_rot = X * np.cos(theta) - Y * np.sin(theta)
+    Y_rot = X * np.sin(theta) + Y * np.cos(theta)
+    Z_rot = Z
+
+    return [X_rot, Y_rot, Z_rot]

@@ -14,6 +14,7 @@ import LoadDataPHANTOM              as ld
 import TerminalVelocity             as tmv
 import Tubes                        as tb
 import userSettings                 as us
+import LoadDump                     as lodu
 
 print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
@@ -25,7 +26,8 @@ options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal vel
             '4': '(4) Morphological parameters',
             '5': '(5) Cummulative mass fraction',
             '6': '(6) Orbital evolution',
-            '7': '(7) Tube plots'
+            '7': '(7) Tube plots',
+            '8': '(8) Animation 2D slice plots'
             }
 
 
@@ -38,6 +40,7 @@ def run_main(outputloc,runParts,numbers, models):
             os.makedirs(os.path.join(saveloc, 'png'))
             os.makedirs(os.path.join(saveloc, 'txt'))
             os.makedirs(os.path.join(saveloc, 'pdf'))
+            os.makedirs(os.path.join(saveloc, 'animation'))
         except OSError:
             pass
             
@@ -61,6 +64,7 @@ def run_main(outputloc,runParts,numbers, models):
                     cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
                 else:
                     cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
+
                 # (6) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
                 # (7) tube plots
@@ -123,7 +127,7 @@ print('')
 
 # Initialise user settings or load them
 userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
-if not os.path.isfile(userSettingsFilePath): us.create(userSettingsFilePath)
+if not os.path.isfile(userSettingsFilePath) or os.stat(userSettingsFilePath).st_size == 0: us.create(userSettingsFilePath)
 
 userSettingsDictionary = us.load(userSettingsFilePath)
 prefix = userSettingsDictionary["prefix"]
@@ -139,8 +143,9 @@ print("The following models within %s "
       "have been found based on the prefix '%s.' "%(loc, prefix))
 print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q to quit):')
 for i in range(len(foundModels)):
-    if foundModels[i][1] =="": print("\t(%d) %s"%(i, foundModels[i][0]))
+    if foundModels[i][1] == "": print("\t(%d) %s"%(i, foundModels[i][0]))
     else: print("\t(%d) /...%s"%(i, foundModels[i][1]))
+
 print()
 runModels = str(input( '  >>>   '))
 if runModels == 'q':

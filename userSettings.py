@@ -14,7 +14,7 @@ def create(userSettingsFilePath):
         prefix = str(input("Please enter the prefix that has been used to name all the PHANTOM data files \n"
                            "(e.g. the name of the .in and .setup files): "))
 
-        loc = str(input("Enter the path where the PHANTOM output of the models is saved: "))
+        loc = str(input("Enter the path where the PHANTOM outputs of the models are saved: "))
         while True:
             if not os.path.isdir(loc):
                 loc = str(input("Path does not exist, please try again: "))

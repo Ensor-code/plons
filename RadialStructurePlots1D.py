@@ -6,26 +6,35 @@ import os
 # import own scripts
 import SmoothingKernelScript    as sk
 import ConversionFactors_cgs    as cgs
+import PhysicalQuantities       as pq
+import SlicePlots2D             as sp
 
 # import certain things from packages
 from matplotlib                 import colors
 from astropy                    import constants
 from mpl_toolkits.axes_grid1    import AxesGrid
 from matplotlib                 import rcParams, rc
-# Change the matplotlib default parameters
-rcParams.update({'font.size':   11})
-rcParams.update({'figure.dpi': 200})
-#rc('font', family='serif')
-#rc('text', usetex=True)
+from matplotlib.ticker          import MultipleLocator
 
 # ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
 
+n_grid = 10000
+round_bounds = False
     
-def getParamsLine(results_line,rR, minT):
+def getParamsLine(results_line, vec1, minT, gamma, vec2 = [], dumpData = None):
     indicesToKeep = np.where(np.log10(results_line['temp']) > minT)
-    R     = rR[indicesToKeep]
+
+    if gamma <= 1.:
+        indicesToKeep = np.where(results_line['rho'] > 0.)
+
+    R     = vec1[indicesToKeep]
+    if len(vec2) != 0:
+        x_comp = dumpData['posComp'][0]
+        y_comp = dumpData['posComp'][1]
+        R = lineCoordinates(len(indicesToKeep[0]), vec1[indicesToKeep], vec2[indicesToKeep], x_comp, y_comp)
+
     temp  = (results_line['temp' ][indicesToKeep])
     speed = (results_line['speed'][indicesToKeep]) * cgs.cms_kms()
     rho   = (results_line['rho'  ][indicesToKeep])
@@ -35,135 +44,231 @@ def getParamsLine(results_line,rR, minT):
 '''
 definition used in plotParR, plots radial structure of given parameter (log(rho)/|v|/T) on the x- and y-axis
 '''
-def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMax, xcomp, xAGB, bound):
+def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMax, xcomp, xAGB, bound, limX):
 
-    axis.plot((X/cgs.AU_cm()),parX, color = 'royalblue', label = 'x-axis', markersize = 0.2, lw = 0.6)
-    axis.plot((Y/cgs.AU_cm()),parY, color = 'firebrick', label = 'y-axis', markersize = 0.2, lw = 0.6)
-    axis.plot((Z/cgs.AU_cm()),parZ, color = 'goldenrod', label = 'z-axis', markersize = 0.2, lw = 0.6)
+    axis.set_xlim(limX, bound)
+    axis.vlines(xcomp, parMin, parMax, 'black', linestyle='--', linewidth=1., label=r"$x_\mathrm{comp}$", zorder = 10)
 
-    axis.set_xlim(-bound,bound)
-    axis.vlines(xcomp, parMin, parMax, 'k', linestyle = 'dashed', linewidth = 0.5)
-    axis.vlines(xAGB,  parMin, parMax, 'k', linestyle = 'solid' , linewidth = 0.5)
+    axis.plot(X/cgs.AU_cm(), parX, color = 'C0', label = '$x$-axis', lw = 1)
+    axis.plot((Z/cgs.AU_cm()), parZ, color = 'C1', label = '$z$-axis', lw = 1)
+
     axis.set_ylim(parMin,parMax)
 
-
-    axis.set_ylabel(parName, fontsize = 13)
-    axis.tick_params(labelsize=10)
-
+    axis.set_ylabel(parName, fontsize=22)
+    axis.tick_params(labelsize=18)
+    axis.tick_params(axis='x', pad=9)
 
 def radialStructPlots(run,loc, dumpData, setup):
     print('')
     print('(2)  Start calculations for the radial structure plots.')
 
-    # Define legend
-    xAxis  = mlines.Line2D([],[], color = 'royalblue', label='x-axis')
-    yAxis  = mlines.Line2D([],[], color = 'firebrick', label='y-axis')
-    zAxis  = mlines.Line2D([],[], color = 'goldenrod', label='z-axis')
-    comp   = mlines.Line2D([],[], color = 'k'        , linestyle = 'dashed',linewidth = 1, label = 'comp')
-    AGB    = mlines.Line2D([],[], color = 'k'        , linestyle = 'solid', linewidth = 1, label = 'AGB' )
-    handles1 = [xAxis,yAxis,zAxis,AGB, comp]
-    handles2 = [xAxis,yAxis,zAxis,AGB]
-
-
     #plots radial structure of log(rho), |v| and T on the x- and y-axis
-        
-    if setup['single_star'] == True:
-        xcomp = 0
-        xAGB  = 0
-        handl = handles2
-        
-    else:       
+
+    xcomp = 0.
+    xAGB  = 0.
+    if setup['single_star'] == False:
         xcomp = dumpData['posComp'][0]/cgs.AU_cm()
         xAGB  = dumpData['posAGB' ][0]/cgs.AU_cm()
-        handl = handles1
-    
-    fig = plt.figure(figsize=(5, 9))
-    
-    #fig = plt.figure(figsize=(4.5, 10))
-    ax1 = plt.subplot(311)
-    ax2 = plt.subplot(312)
-    ax3 = plt.subplot(313)
-    
-    
-    #Remove data of AGB and companion
-    dataToUse = {}
-    dataToUse['rho'     ] = dumpData['rho'     ][:-2]       
-    dataToUse['temp'    ] = dumpData['temp'    ][:-2]      
-    dataToUse['speed'   ] = dumpData['speed'   ][:-2]     
-    dataToUse['mass'    ] = dumpData['mass'    ][:-2]
-    dataToUse['position'] = dumpData['position'][:-2]
-    dataToUse['h'       ] = dumpData['h'       ][:-2]
-    
-    #calculate smoothed data around one axis
-    results_line_X,xX,yX,zX = sk.getSmoothingKernelledPix(10000,20,dataToUse,['rho','temp','speed'], 'comp','line_x',setup['bound']*cgs.AU_cm())
-    results_line_Y,xY,yY,zY = sk.getSmoothingKernelledPix(10000,20,dataToUse,['rho','temp','speed'], 'comp','line_y',setup['bound']*cgs.AU_cm())
-    results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(10000,20,dataToUse,['rho','temp','speed'], 'comp','line_z',setup['bound']*cgs.AU_cm())
 
-    
-    parX = getParamsLine(results_line_X, xX,2.3)
-    parY = getParamsLine(results_line_Y, yY,1.8)
-    parZ = getParamsLine(results_line_Z, zZ,1)
-    X = parX[3]
-    Y = parY[3]
-    Z = parZ[3]
-    
-    
-    Mdot  = setup['Mdot' ]
-    vini  = setup['v_ini'] 
-    
-    #Select limits 
-    if   Mdot <= 1e-5:
-        rhoMin = 10**(-22.5)
-        rhoMax = 10**(-13)
-    elif Mdot >= 5e-7:
-        rhoMin = 10**(-18.5)
-        rhoMax = 10**(-11.5)
-    elif 5e-7 < Mdot < 1e-5:
-        rhoMin = 10**(-23)
-        rhoMax = 10**(-12)
+    fig = None
+    gamma = setup["gamma"]
 
-    vmin = 0
-    vmax = 40
-    Tmin = 1e1
-    Tmax = 1e6
+    if gamma <= 1.:
+        fig = plt.figure(figsize=(10, 10))
+
+        # fig = plt.figure(figsize=(4.5, 10))
+        ax1 = plt.subplot(311)
+        ax2 = plt.subplot(312)
+
+        # Remove data of AGB and companion
+        dataToUse = {}
+        dataToUse['rho'] = dumpData['rho'][:-2]
+        dataToUse['temp'] = dumpData['temp'][:-2]
+        dataToUse['speed'] = dumpData['speed'][:-2]
+        dataToUse['mass'] = dumpData['mass'][:-2]
+        dataToUse['position'] = dumpData['position'][:-2]
+        dataToUse['h'] = dumpData['h'][:-2]
+
+        # calculate smoothed data around one axis
+        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+
+        results_line_X, xX, yX, zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'temp', 'speed'], 'comp',
+                                                                 'line_x', setup['bound'] * cgs.AU_cm(), theta)
+        results_line_Z, xZ, yZ, zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'temp', 'speed'], 'comp',
+                                                                 'line_z', setup['bound'] * cgs.AU_cm(), theta)
+
+        parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
+        parY = np.zeros_like(parX)
+        parZ = getParamsLine(results_line_Z, zZ, 1., gamma)
+
+        X = parX[3]
+        Y = np.zeros_like(X)
+        Z = parZ[3]
+
+        Mdot = setup['Mdot']
+        vini = setup['v_ini']
+
+        # Bounds
+        rhoMinX, rhoMaxX = np.min(parX[0]), np.max(parX[0])
+        rhoMinZ, rhoMaxZ = np.min(parZ[0]), np.max(parZ[0])
+        rhoMin = min(rhoMinX, rhoMinZ)
+        rhoMax = 10 * max(rhoMaxX, rhoMaxZ)
+
+        vMinX, vMaxX = np.min(parX[1]), np.max(parX[1])
+        vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
+        vMin = min(vMinX, vMinZ)
+        vMin = max(0., vMin)
+        vMax = 1.1 * max(vMaxX, vMaxZ)
+
+        TMinX, TMaxX = np.min(parX[2]), np.max(parX[2])
+        TMinZ, TMaxZ = np.min(parZ[2]), np.max(parZ[2])
+        TMin = 0.9 * min(TMinX, TMinZ)
+        TMax = 1.1 * max(TMaxX, TMaxZ)
+
+        # ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
+        # Plots
+        limX = setup['wind_inject_radius']
+        posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
+        X += posAGB
+        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1]) + posAGB) / cgs.AU_cm()
+        bound = setup['bound']
+
+        oneRadialStructurePlot(parX[0], parY[0], parZ[0], X, Y, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax,
+                               posComp, xAGB, bound, limX)
+        oneRadialStructurePlot(parX[1], parY[1], parZ[1], X, Y, Z, r'$v$ [km/s]', ax2, vMin, vMax, posComp, xAGB, bound,
+                               limX)
+
+        # Plot make up
+        ax1.xaxis.set_major_locator(MultipleLocator(bound / 5.))
+        ax1.xaxis.set_minor_locator(MultipleLocator(bound / 30.))
+        ax2.xaxis.set_major_locator(MultipleLocator(bound / 5.))
+        ax2.xaxis.set_minor_locator(MultipleLocator(bound / 30.))
+
+        ax1.legend(loc='upper center', ncol=5, bbox_to_anchor=[0., 0.3, 1., 1.], prop={'size': 20}, labelspacing=2)
+        ax1.set_yscale('log')
+        ax2.set_yscale('log')
+        ax2.set_xlabel('$r$ [AU]', fontsize=22)
+        ax1.set_xticklabels([])
+
+        # Make text file with info to make plots
+        title = os.path.join(loc, 'txt/data_1D_radialStructure.txt')
+        with open(title, 'w') as f:
+            f.write('Model ' + str(run) + '\n')
+            f.write('Data to make radial structure plots yourself:')
+            f.write('\n')
+            names = ['X [cm]', 'Z[cm]', 'Rho(x) [g/cm$^3$]', 'Rho(z) [g/cm$^3$]', '|v|(x) [km/s]', '|v|(z) [km/s]',
+                     'T(x) [K]', 'T(z) [K]']
+            f.write("{: <34} {: <34} {: <34}  {: <34} {: <34} {: <34}".format(*names))
+            col_format = "{:<35}" * 6 + "\n"  # 7 left-justfied columns with 15 character width
+            f.write('\n')
+            for i in zip(X, Z, parX[0], parZ[0], parX[1], parZ[1]):
+                f.write(col_format.format(*i))
 
 
-    #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
-    
-    # Plots
-    oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, 'density [g/cm$^3$]', ax1, rhoMin, rhoMax, xcomp, xAGB, setup['bound'])
-    oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, 'speed [km/s]'      , ax2, vmin  , vmax  , xcomp, xAGB, setup['bound'])
-    oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, 'temperature [K]'   , ax3, Tmin  , Tmax  , xcomp, xAGB, setup['bound'])
-    
-    # Plot make up
-    ax1.legend(handles = handl, fontsize = 12, loc = 'upper right')
-    ax1.set_yscale('log')
-    ax3.set_yscale('log')
-    ax1.axes.get_xaxis().set_visible(False)
-    ax2.axes.get_xaxis().set_visible(False)
-    ax3.set_xlabel('$r$ [AU]', fontsize = 16)
+    else:
+        fig = plt.figure(figsize=(15,10))
 
-    
-    fig.tight_layout()
-    fig.subplots_adjust(wspace = 0.005,hspace = 0.01)
-    
-    fig.savefig(os.path.join(loc, 'png/1Dplot_radialStructure.png'))
-    fig.savefig(os.path.join(loc, 'pdf/1Dplot_radialStructure.pdf'))
-    
-    # Make text file with info to make plots
-    title = os.path.join(loc, 'txt/data_1D_radialStructure.txt')
-    with open (title,'w') as f:
-        f.write('Model '+str(run)+'\n')
-        f.write('Data to make radial structure plots yourself:')
-        f.write('\n')
-        names = ['X [cm]', 'Y[cm]', 'Z[cm]', 'Rho(x) [g/cm$^3$]', 'Rho(y) [g/cm$^3$]', 'Rho(z) [g/cm$^3$]', '|v|(x) [km/s]', '|v|(y) [km/s]', '|v|(z) [km/s]', 'T(x) [K]', 'T(y) [K]', 'T(z) [K]']
-        f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
-        col_format = "{:<35}" * 12 + "\n"   # 7 left-justfied columns with 15 character width
-        f.write('\n')
-        for i in zip(X,Y,Z,parX[0],parY[0],parZ[0],parX[1],parY[1],parZ[1],parX[2],parY[2],parZ[2]):
-            f.write(col_format.format(*i))
-    
+        #fig = plt.figure(figsize=(4.5, 10))
+        ax1 = plt.subplot(311)
+        ax2 = plt.subplot(312)
+        ax3 = plt.subplot(313)
+
+        #Remove data of AGB and companion
+        dataToUse = {}
+        dataToUse['rho'     ] = dumpData['rho'     ][:-2]
+        dataToUse['temp'    ] = dumpData['temp'    ][:-2]
+        dataToUse['speed'   ] = dumpData['speed'   ][:-2]
+        dataToUse['mass'    ] = dumpData['mass'    ][:-2]
+        dataToUse['position'] = dumpData['position'][:-2]
+        dataToUse['h'       ] = dumpData['h'       ][:-2]
+
+        #calculate smoothed data around one axis
+        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+
+        results_line_X,xX,yX,zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','temp','speed'], 'comp','line_x',setup['bound']*cgs.AU_cm(), theta)
+        results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(n_grid,20, dumpData, ['rho','temp','speed'], 'comp','line_z',setup['bound']*cgs.AU_cm(), theta)
+
+        gamma = setup["gamma"]
+        parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
+        parY = np.zeros_like(parX)
+        parZ = getParamsLine(results_line_Z, zZ, 1., gamma)
+
+
+        X = parX[3]
+        Y = np.zeros_like(X)
+        Z = parZ[3]
+
+        Mdot  = setup['Mdot' ]
+        vini  = setup['v_ini']
+
+        # Bounds
+        rhoMinX, rhoMaxX = np.min(parX[0]), np.max(parX[0])
+        rhoMinZ, rhoMaxZ = np.min(parZ[0]), np.max(parZ[0])
+        rhoMin           = min(rhoMinX, rhoMinZ)
+        rhoMax           = 10 * max(rhoMaxX, rhoMaxZ)
+
+        vMinX, vMaxX = np.min(parX[1]), np.max(parX[1])
+        vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
+        vMin         = min(vMinX, vMinZ)
+        vMin         = max(0., vMin)
+        vMax         = 1.1*max(vMaxX, vMaxZ)
+
+        TMinX, TMaxX = np.min(parX[2]), np.max(parX[2])
+        TMinZ, TMaxZ = np.min(parZ[2]), np.max(parZ[2])
+        TMin         = 0.9 * min(TMinX, TMinZ)
+        TMax         = 1.1 * max(TMaxX, TMaxZ)
+
+        #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
+        # Plots
+        limX = setup['wind_inject_radius']
+        posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
+        X += posAGB
+        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1]) + posAGB) / cgs.AU_cm()
+        bound = setup['bound']
+
+        oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax, posComp, xAGB, bound, limX)
+        oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, r'$v$ [km/s]', ax2, vMin  , vMax  , posComp, xAGB, bound, limX)
+        oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, r'$T$ [K]', ax3, TMin  , TMax  , posComp, xAGB, bound, limX)
+
+        # Plot make up
+        ax1.xaxis.set_major_locator(MultipleLocator(bound / 5.))
+        ax1.xaxis.set_minor_locator(MultipleLocator(bound / 30.))
+        ax2.xaxis.set_major_locator(MultipleLocator(bound / 5.))
+        ax2.xaxis.set_minor_locator(MultipleLocator(bound / 30.))
+        ax3.xaxis.set_major_locator(MultipleLocator(bound / 5.))
+        ax3.xaxis.set_minor_locator(MultipleLocator(bound / 30.))
+
+        ax1.legend(loc = 'upper center', ncol=5, bbox_to_anchor=[0., 0.3, 1., 1.], prop={'size': 20}, labelspacing=2)
+        ax1.set_yscale('log')
+        ax2.set_yscale('log')
+        ax3.set_yscale('log')
+        ax3.set_xlabel('$r$ [AU]', fontsize=22)
+        ax1.set_xticklabels([])
+        ax2.set_xticklabels([])
+
+        # Make text file with info to make plots
+        title = os.path.join(loc, 'txt/data_1D_radialStructure.txt')
+        with open (title,'w') as f:
+            f.write('Model '+str(run)+'\n')
+            f.write('Data to make radial structure plots yourself:')
+            f.write('\n')
+            names = ['X [cm]', 'Z[cm]', 'Rho(x) [g/cm$^3$]', 'Rho(z) [g/cm$^3$]', '|v|(x) [km/s]', '|v|(z) [km/s]', 'T(x) [K]', 'T(z) [K]']
+            f.write("{: <34} {: <34} {: <34}  {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
+            col_format = "{:<35}" * 8 + "\n"   # 7 left-justfied columns with 15 character width
+            f.write('\n')
+            for i in zip(X,Z,parX[0],parZ[0],parX[1],parZ[1],parX[2],parZ[2]):
+                f.write(col_format.format(*i))
+
     print('     Radial structure plot model '+str(run)+' ready and saved!')
 
+    fig.subplots_adjust(wspace=0.1, hspace=0.1)
+    fig.savefig(os.path.join(loc, 'png/1Dplot_radialStructure.png'), bbox_inches="tight")
+    fig.savefig(os.path.join(loc, 'pdf/1Dplot_radialStructure.pdf'), bbox_inches="tight")
 
+def lineCoordinates(n, x, y, x_comp, y_comp):
+    r = np.zeros(shape=(n))
+    dot_product = x * x_comp + y * y_comp
+    r[dot_product < 0] = -np.hypot(x[dot_product < 0], y[dot_product < 0])
+    r[dot_product >= 0] = np.hypot(x[dot_product >= 0], y[dot_product >= 0])
 
+    return r

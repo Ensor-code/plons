@@ -26,12 +26,33 @@ def LoadSetup(run, loc, userSettingsDictionary):
     userPrefix = userSettingsDictionary["prefix"]
 
     # load the prefix.in & prefix.setup file
+    setup = {}
     try:  
         with open(os.path.join(runName,'%s.setup'%userPrefix), 'r') as f:
-            lines = f.readlines()  
-            setup = []
-            for i in range(len(lines)):
-                setup.append(lines[i].split())
+            lines = f.readlines()
+            for string in lines:
+                line = string.split()
+                if len(line) != 0:
+                    if line[0] != '#':
+                        stringName = line[0]
+
+                        # Boolean
+                        if stringName == 'icompanion_star':
+                            stringName = 'single_star'
+                            if int(line[2]) == 0: setup[stringName] = True
+                            else: setup[stringName] = False
+
+                        # Floats
+                        else:
+                            if stringName == 'primary_mass': stringName = 'massAGB_ini'
+                            elif stringName == 'secondary_mass': stringName = 'massComp_ini'
+                            elif stringName == 'semi_major_axis': stringName = 'sma_ini'
+                            elif stringName == 'wind_gamma' or stringName == "temp_exponent": stringName = 'gamma'
+                            elif stringName == 'eccentricity': stringName = 'ecc'
+                            elif stringName == 'secondary_racc': stringName = 'rAccrComp'
+
+                            setup[stringName] = float(line[2])
+
     except FileNotFoundError:
         print('')
         print(" ERROR: No %s.setup file found!"%userPrefix)
@@ -40,10 +61,26 @@ def LoadSetup(run, loc, userSettingsDictionary):
 
     try:
         with open(os.path.join(runName,'%s.in'%userPrefix), 'r') as f:
-            lines = f.readlines()  
-            infile = []
-            for i in range(len(lines)):
-                infile.append(lines[i].split())
+            lines = f.readlines()
+            for string in lines:
+                line = string.split()
+                if len(line) != 0:
+                    if line[0] != '#':
+                        stringName = line[0]
+
+                        # Strings
+                        if stringName == 'logfile': setup[stringName] = str(line[2])
+                        elif stringName == 'dumpfile': setup[stringName] = str(line[2])
+                        elif stringName == 'twallmax': setup[stringName] = str(line[2])
+                        elif stringName == 'dtwallmax': setup[stringName] = str(line[2])
+
+                        # Floats
+                        else:
+                            if stringName == 'wind_velocity': stringName = 'v_ini'
+                            elif stringName == 'outer_boundary': stringName = 'bound'
+                            elif stringName == 'wind_mass_rate': stringName = 'Mdot'
+                            setup[stringName] = float(line[2])
+
     except FileNotFoundError:
         print('')
         print(" ERROR: No %s.setup file found!"%userPrefix)
@@ -51,70 +88,18 @@ def LoadSetup(run, loc, userSettingsDictionary):
         exit()
     
     
-    # Get specifics about the model
-    is_single   = int(setup[6][2])
-    if is_single == 0:
-        single_star = True
-    if is_single == 1:
-        single_star = False
+    # Additional Parameters
+    massAGB_ini = setup["massAGB_ini"]
+    massComp_ini = setup["massComp_ini"]
+    sma = setup["sma_ini"]
+    v_ini = setup["v_ini"]
+    period = pq.getPeriod(massAGB_ini * cgs.Msun_gram(), massComp_ini * cgs.Msun_gram(), sma)           # [s]
+    v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                                          # [km/s]
+    Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun_gram(), v_ini / cgs.cms_kms()) / cgs.AU_cm()     # [au]
 
-
-    tmax          = float(infile[9][2])         # last dump in code units
-    nfulldump     = float(infile[16][2])        # Every time full dump is produced
-    v_ini         = float(infile[58][2])        # initial wind velocity                         [km/s]
-    mu            = float(infile[38][2])        # mean molecular weight of the gas
-    Mdot          = float(infile[62][2])        # mass loss rate                                [M_sun/yr]
-    # !! phantom error: the mass of the sph particles is wrong with a factor 2, to 'make up' for this, the mass loss rate Mdot can be multiplied by 2
-    bound         = float(infile[69][2])        # outer boundary of the model                   [au] 
-    massAGB_ini   = float(setup[1][2])          # initial mass of the AGB star                  [Msun]
-    
-    
-    if single_star == False:
-        massComp_ini  = float(setup[7][2])      # initial mass of the companion                 [Msun]
-        rAccrComp     = float(setup[8][2])      # accretion radius of companion                 [au]
-        sma           = float(setup[12][2])     # semi-major axis (initial orbital separation)  [au]
-        gamma         = float(setup[15][2])     # adiabatic constant        
-        ecc           = float(setup[13][2])     # eccentricity
-        period        = pq.getPeriod(massAGB_ini*cgs.Msun_gram(),massComp_ini*cgs.Msun_gram(),sma)              # [s]
-        v_orb         = pq.getOrbitalVelocity(period, sma)*cgs.cms_kms()                                        # [km/s]
-        Rcap          = pq.getCaptureRadius(massComp_ini*cgs.Msun_gram(), v_ini/cgs.cms_kms())/cgs.AU_cm()      # [au]                                   
-        
-    if single_star == True:
-        gamma         = float(setup[8][2])     # adiabatic constant   
-    
-
-    
-    # output
-    if single_star == False:
-        setup = {'v_ini'        : v_ini,                # [km/s]
-                'massComp_ini'  : massComp_ini,         # [Msun]
-                'sma_ini'       : sma,                  # [au]
-                'single_star'   : single_star,          # boolean
-                'bound'         : bound,                # [au]
-                'v_orb'         : v_orb,                # [km/s]
-                'tmax'          : tmax,
-                'nfulldump'     : nfulldump,
-                'mu'            : mu,
-                'Mdot'          : Mdot,                 # [Msun/yr]
-                'massAGB_ini'   : massAGB_ini,          # [Msun]
-                'ecc'           : ecc,
-                'gamma'         : gamma,
-                'rAccrComp'     : rAccrComp,            # [au]
-                'period_ini'    : period,               # [s]
-                'Rcap'          : Rcap                  # [AU]
-                                
-                }
-        
-    if single_star == True:
-        setup = {'v_ini'        : v_ini,               # [km/s]
-                'single_star'   : single_star,
-                'bound'         : bound,                # [au]
-                'mu'            : mu,
-                'Mdot'          : Mdot,                 # [Msun/yr]
-                'massAGB_ini'   : massAGB_ini,          # [Msun]
-                'tmax'          : tmax,
-                'gamma'         : gamma
-                }
+    setup["period"] = period
+    setup["Rcap"] = Rcap
+    setup["v_orb"] = v_orb
 
     
     return setup

@@ -22,13 +22,13 @@ Load the data for a general model
         - 'sinkData'        data of the two sink particles in function of time
         - 'outerData'       data from the last dump in a chosen range (None for a single model)
 '''
-def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary):
+def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
     
     setup       = stp.LoadSetup(run, loc, userSettingsDictionary)
     single_star = setup['single_star']
     
     if single_star == False:
-        dumpData, sinkData, outerData = LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary)
+        dumpData, sinkData, outerData = LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, number)
         
         return setup, dumpData, sinkData, outerData
         
@@ -42,9 +42,9 @@ def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary):
 '''
 Load the data for a binary star model
 '''
-def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary):
+def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, number):
     
-    dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary)
+    dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary, number)
     sinkData  = snk.LoadSink_cgs(run, loc, setup, userSettingsDictionary)
     if bound == None:
         bound = setup['bound']

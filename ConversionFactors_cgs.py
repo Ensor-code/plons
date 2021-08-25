@@ -58,22 +58,26 @@ given below.
 # Converts the time unit to years
 def cu_time():
     timeUnit        = 1.5916423E-01     # [yrs]
-    return timeUnit
+    #return timeUnit
+    return 1.
 
 # Converts the velocity in code units to cm s^-1
 def cu_vel():
     factor_velocity = 2.9784608E+06     # [cm s^-1]
-    return factor_velocity
-    
+    #return factor_velocity
+    return 1.
+
 # Converts the specific energy in code units to erg/g
 def cu_e():
     factor_energy   = 8.8712277E+12     # [erg/g]
-    return factor_energy
+    #return factor_energy
+    return 1.
 
 # Converts density in code units to g cm^-3
 def cu_dens():
     factor_density  = 5.9410314E-07     # [g cm^-3]
-    return factor_density
+    #return factor_density
+    return 1.
 
 
 

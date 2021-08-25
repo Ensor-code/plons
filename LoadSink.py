@@ -29,7 +29,6 @@ RETURN:
 '''
 def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
-    
     runName = os.path.join(loc, run)
     userPrefix = userSettingsDictionary["prefix"]
 
@@ -42,7 +41,8 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     try:
     # to calculate period, we need masses and sma, so coordinates, we call the parameters xI, I stands for input
         (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(fileName_sink11, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-        (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(fileName_sink21, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        n_file = len(t1)
+        (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(fileName_sink21, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
         
     except OSError:
 
@@ -61,7 +61,9 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
         try:
             (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(fileName_sink12, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-            (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(fileName_sink22, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+
+            n_file = len(t1e)
+            (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(fileName_sink22, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
         except OSError:
 
             print(' ERROR: No extra sink files found for this model.')
@@ -117,7 +119,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     vz2    = vz2    *  cgs.cu_vel()
     maccr2 = maccr2 *  cgs.Msun_gram()                 # accreted mass              [g]
 
-    r2 = gf.calc_r(x2, y2, z2)                            # [cm]
+    r2 = gf.calc_r(x2, y2, z2)                         # [cm]
 
     position2 = np.array((x2, y2, z2 )).transpose()
     velocity2 = np.array((vx2,vy2,vz2)).transpose()
@@ -125,10 +127,10 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     
     # orbital information 
     
-    period          = pq.getPeriod(mass1, mass2, (r1 + r2) /cgs.AU_cm()  )
-    orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.AU_cm()  )
-    orbitalVel_comp = pq.getOrbitalVelocity(period, r2     /cgs.AU_cm()  )
-    rHill           = pq.getRHill( abs(r1 + r2), mass2, mass1            )         # [cm]
+    period          = pq.getPeriod(mass1, mass2, (r1 + r2) /cgs.AU_cm() )
+    orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.AU_cm() )
+    orbitalVel_comp = pq.getOrbitalVelocity(period, r2     /cgs.AU_cm() )
+    rHill           = pq.getRHill( abs(r1 + r2), mass2, mass1           )         # [cm]
     
     # output
     #    "_t" stands for the fact that these values are in function of the evolution time, not from the last dump in function of location
