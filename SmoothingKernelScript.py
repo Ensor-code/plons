@@ -164,7 +164,7 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta
     # define all nearest neighbours
     tree = cKDTree(data['position'])
 
-    # for every pixel in the spherical slice (sphere), get its 60 nearest neighbours
+    # for every pixel in the spherical slice (sphere), get its "neighbor" nearest neighbours
     (distances, closest_points) = tree.query(pixCoord, neighbours)
 
     '''

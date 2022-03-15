@@ -6,6 +6,7 @@ import PhysicalQuantities       as pq
 import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadSetup                as stp
+import AddTau                   as at
 import sys
 
 '''
@@ -36,21 +37,23 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     fileNameAscii  = fileName + ".ascii"
 
     # load the dump file prefix_00xxx
-    x, y, z, mass, h, rho, vx, vy, vz, u = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    x, y, z, mass, h, rho, temp, vx, vy, vz, u, tau = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     try:
         '''
         We don't need the information about the AGB star and companion star (two last rows of the dumps).
         To efficiently skip these rows, we load only one parameter, to get the length. All other parameters
         are loaded after without the two last rows.
         '''
-        (x, y, z, mass, h, rho, vx, vy, vz, u) = np.loadtxt(fileNameAscii, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
-     
+        print('Converting dump file to ascii...')
+        os.system("splash to ascii " + fileName)
+        at.addTau(fileName)
+        (x, y, z, mass, h, rho, temp, vx, vy, vz, u, tau) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,14), unpack=True)
     except OSError:
         try: 
             print('Converting dump file to ascii...')
             
             os.system("splash to ascii " + fileName)
-            (x, y, z, mass, h, rho, vx, vy, vz, u) = np.loadtxt(fileNameAscii, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9),  unpack=True)
+            (x, y, z, mass, h, rho, temp, vx, vy, vz, u, tau) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,14),  unpack=True)
      
         
         except OSError:
@@ -67,15 +70,17 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     x     = x     [h > 0.0] * cgs.AU_cm()                       # position coordinates          [cm]
     y     = y     [h > 0.0] * cgs.AU_cm()       
     z     = z     [h > 0.0] * cgs.AU_cm()      
-    mass  = mass  [h > 0.0]                                     # mass of sph particles         [g]
+    mass  = mass  [h > 0.0] * cgs.Msun_gram()                   # mass of sph particles         [g]
     vx    = vx    [h > 0.0]                                     # velocity components           [cm/s]
     vy    = vy    [h > 0.0]
     vz    = vz    [h > 0.0]
     u     = u     [h > 0.0]                                     # specific internal density     [erg/g]
     rho   = rho   [h > 0.0]                                     # density                       [g/cm^3]
+    temp  = temp  [h > 0.0]                                     # temperature                   [K]
+    tau   = tau   [h > 0.0]                                     # optical depth                 
     h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
-    temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
+    # temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -119,7 +124,8 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
             'mass'          : mass[:-2],             # [g]
             'rho'           : rho[:-2],              # [g/cm^3]
             'u'             : u[:-2],                # [erg/g]
-            'temp'          : temp[:-2],             # [K]    
+            'temp'          : temp[:-2],             # [K] 
+            'tau'           : tau[:-2],              
             'speed'         : speed[:-2],            # [cm/s]
             'mach'          : mach[:-2],             
             'vtvv'          : vtvv[:-2],
@@ -128,16 +134,16 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
             'phi'           : phi[:-2],
             'theta'         : theta[:-2],
             'cs'            : cs[:-2],               # [cm]
-            'posAGB'        : posAGB,           # [cm]
-            'rAGB'          : rAGB,             # [cm]
-            'massAGB'       : massAGB,          # [g]
-            'posComp'       : posComp,          # [cm]
-            'rComp'         : rComp,            # [cm]
-            'massComp'      : massComp,         # [g]
-            'rHill'         : rHill,            # [cm]
-            'vx'            : vx,               # [cm/s]
-            'vy'            : vy,               # [cm/s]
-            'vz'            : vz                # [cm/s]
+            'posAGB'        : posAGB,                # [cm]
+            'rAGB'          : rAGB,                  # [cm]
+            'massAGB'       : massAGB,               # [g]
+            'posComp'       : posComp,               # [cm]
+            'rComp'         : rComp,                 # [cm]
+            'massComp'      : massComp,              # [g]
+            'rHill'         : rHill,                 # [cm]
+            'vx'            : vx,                    # [cm/s]
+            'vy'            : vy,                    # [cm/s]
+            'vz'            : vz                     # [cm/s]
             }
     
 
@@ -166,7 +172,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     # Pick last file from model
     lastFullDumpIndexInt = findLastFullDumpIndex(userPrefix, setup, runName)
 
-    fileName  = runName+'/{0:s}_{1:05d}.ascii'.format(userPrefix, lastFullDumpIndex)
+    fileName  = runName+'/{0:s}_{1:05d}.ascii'.format(userPrefix, lastFullDumpIndexInt)
 
     # Check whether an .ascii file exists of the full dump
     try:
@@ -227,7 +233,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'speed'         : speed,          # [cm/s]
             'mach'          : mach,           
             'vtvv'          : vtvv,
-            'fileNumber'    : lastFullDumpIndex,
+            'fileNumber'    : lastFullDumpIndexInt,
             'r'             : r,              # [cm]
             'phi'           : phi,            
             'theta'         : theta,
@@ -268,6 +274,8 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     vz    = velocity[2]
     u     = dump['u']
     rho   = dump['rho']
+    temp  = dump['temp']
+    tau   = dump['tau']
     h     = dump['h']
     r     = dump['r']
 
@@ -281,6 +289,8 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     vz    = vz    [r > factor * setup['sma_ini'] * cgs.AU_cm() ]               
     u     = u     [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # erg/g
     rho   = rho   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # g/cm^3
+    temp  = temp  [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # K
+    tau   = tau   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 
     h     = h     [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # cm
     r     = r     [r > factor * setup['sma_ini'] * cgs.AU_cm() ] 
     
@@ -294,12 +304,14 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     vz    = vz    [r < bound * cgs.AU_cm()]               
     u     = u     [r < bound * cgs.AU_cm()]                                 # erg/g
     rho   = rho   [r < bound * cgs.AU_cm()]                                 # g/cm^3
+    temp  = temp  [r < bound * cgs.AU_cm()]                                 # K
+    tau   = tau   [r < bound * cgs.AU_cm()]                                 # K
     h     = h     [r < bound * cgs.AU_cm()]                                 # cm
     r     = r     [r < bound * cgs.AU_cm()] 
     
     
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
-    temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
+    # temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -323,6 +335,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'rho'           : rho,           # [g/cm^3]
             'u'             : u,             # [erg/g]
             'temp'          : temp,          # [K]    
+            'tau'          : tau,        
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          
             'vtvv'          : vtvv,

@@ -1,4 +1,5 @@
 import datetime                     as dt
+from distutils.command.config import dump_file
 import numpy                        as np
 import sys
 import os
@@ -49,9 +50,7 @@ def run_main(outputloc,runParts,numbers, models):
         [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound, userSettingsDictionary)
         print('All data is loaded and ready to use.')
         print('')
-        
         for part in runParts:
-
             if part == '0':
                 # (1) 2D slice plots
                 sl.SlicePlots(run, saveloc, dumpData, setup)
@@ -64,7 +63,6 @@ def run_main(outputloc,runParts,numbers, models):
                     cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
                 else:
                     cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-
                 # (6) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
                 # (7) tube plots
@@ -101,7 +99,7 @@ def run_main(outputloc,runParts,numbers, models):
 def searchModels(loc, prefix):
     result = []
     for path, directories, files in os.walk(loc):
-        dumpFiles = list(filter(lambda x: prefix in x, files))
+        dumpFiles = list(filter(lambda x: prefix+'_' in x, files))
         if len(dumpFiles) != 0:
             slicedString = path.replace(loc, "")
             result.append([path, slicedString])
@@ -114,14 +112,6 @@ print('     Welcome to the very first PHANTOM pipeline!'        )
 print('-------------------------------------------------------')
 print('')
 print('This pipeline reduces PHANTOM output to usable plots and datasets.')
-#print('It returns:')
-#print('     (1) 2D slice plots of the global structure of the last dump of the model.')
-#print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
-#print('     (3) Information about the velocity related quantities of the model.')
-#print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
-#print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
-#print('     (6) Information of the orbital evolution.')
-#print('     (7) Tube plots for classifying EDEs/flattenings.')
 print('')
 
 
@@ -140,7 +130,7 @@ factor      = 3   # the without inner, is without r< factor * sma
 bound       = None
 foundModels = searchModels(loc, prefix)
 print("The following models within %s "
-      "have been found based on the prefix '%s.' "%(loc, prefix))
+      "have been found based on the prefix '%s' "%(loc, prefix))
 print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q to quit):')
 for i in range(len(foundModels)):
     if foundModels[i][1] == "": print("\t(%d) %s"%(i, foundModels[i][0]))

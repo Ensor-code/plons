@@ -79,6 +79,7 @@ def LoadSetup(run, loc, userSettingsDictionary):
                             if stringName == 'wind_velocity': stringName = 'v_ini'
                             elif stringName == 'outer_boundary': stringName = 'bound'
                             elif stringName == 'wind_mass_rate': stringName = 'Mdot'
+                            if line[2]=='F': line[2] = 0
                             setup[stringName] = float(line[2])
 
     except FileNotFoundError:
