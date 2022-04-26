@@ -6,7 +6,6 @@ import PhysicalQuantities       as pq
 import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadSetup                as stp
-import AddTau                   as at
 import sys
 
 '''
@@ -37,7 +36,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     fileNameAscii  = fileName + ".ascii"
 
     # load the dump file prefix_00xxx
-    x, y, z, mass, h, rho, temp, vx, vy, vz, u, tau = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    x, y, z, mass, h, rho, vx, vy, vz, u, tau, temp = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     try:
         '''
         We don't need the information about the AGB star and companion star (two last rows of the dumps).
@@ -46,14 +45,13 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
         '''
         print('Converting dump file to ascii...')
         os.system("splash to ascii " + fileName)
-        at.addTau(fileName)
-        (x, y, z, mass, h, rho, temp, vx, vy, vz, u, tau) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,14), unpack=True)
+        (x, y, z, mass, h, rho, vx, vy, vz, u, tau, temp) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
     except OSError:
         try: 
             print('Converting dump file to ascii...')
             
             os.system("splash to ascii " + fileName)
-            (x, y, z, mass, h, rho, temp, vx, vy, vz, u, tau) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,14),  unpack=True)
+            (x, y, z, mass, h, rho, vx, vy, vz, u, tau, temp) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,11),  unpack=True)
      
         
         except OSError:
@@ -191,7 +189,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             sys.exit()
         
     rows = len(x)       
-    (x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-1, unpack=True)
+    (x,y,z,mass, h, rho, vx,vy,vz, u, tau, temp) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), max_rows = rows-1, unpack=True)
     
 
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
@@ -206,12 +204,12 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     rho   = rho   [h > 0.0] * cgs.cu_dens()                     # density                       [g/cm^3]
     h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
-    temp  = pq.getTemp(p, rho, setup['mu'])                     # temperature                   [K]
+    temp  = temp  [h > 0.0]                                     # temperature                   [K]
+    tau   = tau   [h > 0.0]                                     # optical depth                 
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
 
-    
     
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -230,6 +228,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'rho'           : rho,            # [g/cm^3]
             'u'             : u,              # [erg/g]
             'temp'          : temp,           # [K]    
+            'tau'           : tau,              
             'speed'         : speed,          # [cm/s]
             'mach'          : mach,           
             'vtvv'          : vtvv,
@@ -237,7 +236,10 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'r'             : r,              # [cm]
             'phi'           : phi,            
             'theta'         : theta,
-            'cs'            : cs              # [cm]
+            'cs'            : cs,             # [cm]
+            'vx'            : vx,             # [cm/s]
+            'vy'            : vy,             # [cm/s]
+            'vz'            : vz              # [cm/s]
             }                                 
 
     
@@ -365,4 +367,4 @@ def findAllFullDumpIndices(userSettingsDictionary, setup, runName):
     return fullDumpLists
 
 def sortedDumpList(userPrefix, runName):
-    return np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not ".asc" in x), os.listdir(runName))))
+    return np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not (".asc" in x or ".dat" in x)), os.listdir(runName))))

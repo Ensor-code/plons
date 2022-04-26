@@ -56,22 +56,39 @@ def smoothData(dumpData, setup, theta, zoom=1):
     results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, ['rho', 'temp', 'speed', 'tau'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
 
-    xcomp = dumpData['posComp'][0]
-    ycomp = dumpData['posComp'][1]
-    smooth = {'smooth_z'     :  results_sph_sl_z,
+    if (setup['single_star']):
+        xcomp, ycomp = 0,0
+        smooth = {  'smooth_z'     :  results_sph_sl_z,
+                    'x_z'          :  x1,
+                    'y_z'          :  y1,
+                    'smooth_y'     :  results_sph_sl_y,
+                    'x_y'          :  x2,
+                    'z_y'          :  z2
+                    }
+
+        smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
+                        'x_z'      :  x1_vec,
+                        'y_z'      :  y1_vec,
+                        'smooth_y' :  results_sph_sl_y_vec,
+                        'x_y'      :  x2_vec,
+                        'z_y'      :  z2_vec
+                        }
+    else:
+        xcomp = dumpData['posComp'][0]
+        ycomp = dumpData['posComp'][1]
+        smooth = {  'smooth_z'     :  results_sph_sl_z,
                     'x_z'          :  x1,
                     'y_z'          :  y1,
                     'smooth_y'     :  results_sph_sl_y,
                     'x_y'          :  planeCoordinates(n_grid, x2, y2, xcomp, ycomp),
                     'z_y'          :  z2
                     }
-
-    smooth_vec = {'smooth_z': results_sph_sl_z_vec,
-                        'x_z': x1_vec,
-                        'y_z': y1_vec,
-                        'smooth_y': results_sph_sl_y_vec,
-                        'x_y': planeCoordinates(n_grid_vec, x2_vec, y2_vec, xcomp, ycomp),
-                        'z_y': z2_vec
+        smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
+                        'x_z'      :  x1_vec,
+                        'y_z'      :  y1_vec,
+                        'smooth_y' :  results_sph_sl_y_vec,
+                        'x_y'      :  planeCoordinates(n_grid_vec, x2_vec, y2_vec, xcomp, ycomp),
+                        'z_y'      :  z2_vec
                         }
 
     return smooth, smooth_vec
@@ -114,9 +131,10 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc, rAccCom
         ycomp = dumpData['posComp'][1] / cgs.AU_cm()
 
         circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
-        circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
-        ax.add_artist(circleComp)
+        if setup['single_star'] == False:
+            circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+            ax.add_artist(circleComp)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -417,9 +435,13 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
     Mdot = setup['Mdot']
     bound = setup['bound']
 
-    theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
-    rAccComp = setup['rAccrComp']
-    if rAccComp <= 0.05 * radius_AGB: rAccComp = 0.05 * radius_AGB
+    if setup["single_star"]==True:
+        theta=0
+        rAccComp = 0
+    else:
+        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        rAccComp = setup['rAccrComp']
+        if rAccComp <= 0.05 * radius_AGB: rAccComp = 0.05 * radius_AGB
 
     rhoMin = {}
     rhoMax = {}

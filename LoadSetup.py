@@ -91,16 +91,17 @@ def LoadSetup(run, loc, userSettingsDictionary):
     
     # Additional Parameters
     massAGB_ini = setup["massAGB_ini"]
-    massComp_ini = setup["massComp_ini"]
-    sma = setup["sma_ini"]
     v_ini = setup["v_ini"]
-    period = pq.getPeriod(massAGB_ini * cgs.Msun_gram(), massComp_ini * cgs.Msun_gram(), sma)           # [s]
-    v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                                          # [km/s]
-    Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun_gram(), v_ini / cgs.cms_kms()) / cgs.AU_cm()     # [au]
+    if setup["single_star"] == False:
+        massComp_ini = setup["massComp_ini"]
+        sma = setup["sma_ini"]
+        period = pq.getPeriod(massAGB_ini * cgs.Msun_gram(), massComp_ini * cgs.Msun_gram(), sma)           # [s]
+        v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                                          # [km/s]
+        Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun_gram(), v_ini / cgs.cms_kms()) / cgs.AU_cm()     # [au]
 
-    setup["period"] = period
-    setup["Rcap"] = Rcap
-    setup["v_orb"] = v_orb
+        setup["period"] = period
+        setup["Rcap"] = Rcap
+        setup["v_orb"] = v_orb
 
     
     return setup

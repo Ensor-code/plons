@@ -6,6 +6,12 @@ import PhysicalQuantities       as pq
 import LoadDataPHANTOM          as ld
 #import LoadSink                 as snk
 import TerminalVelocity         as tmv
+import sys
+sys.path.append('/home/mats/codes/phantom/scripts')
+sys.path.append('/home/matse/codes/phantom/scripts')
+from readPhantomDump import *
+
+
 
 #print(pq.getTemp(10e10,10e3,1.43))
 #print(pq.getPeriod(1.5*cgs.Msun_gram(),1*cgs.Msun_gram(),3)*cgs.sec_year())
@@ -13,9 +19,9 @@ import TerminalVelocity         as tmv
 #print('')
 
 
-loc = '/home/silke/Documents/Univ/Master/THESIS/Models/phantom_Masterthesis/desktop_run'
-run = '39'
-outputloc = '/home/silke/Documents/Univ/PhD/Pipeline/testOutput/'
+# loc = '/home/silke/Documents/Univ/Master/THESIS/Models/phantom_Masterthesis/desktop_run'
+# run = '39'
+# outputloc = '/home/silke/Documents/Univ/PhD/Pipeline/testOutput/'
 
 '''
 Test load data
@@ -23,9 +29,9 @@ Test load data
 #print('Binary star')
 #print('')
 #print('data from model '+run+' is loading.')
-print('Load data')
-print('')
-setup, dump, sink, outer = ld.LoadData_cgs(run,loc, 5, 200)
+# print('Load data')
+# print('')
+# setup, dump, sink, outer = ld.LoadData_cgs(run,loc, 5, 200)
 #print('loading model complete.')
 #print('')
 #print(setup['sma_ini'])
@@ -56,9 +62,9 @@ setup, dump, sink, outer = ld.LoadData_cgs(run,loc, 5, 200)
 #print(dump['posAGB'])
 #print(sink['posAGB'][-1])
 
-'''
-Test terminal velocities
-'''
+# '''
+# Test terminal velocities
+# '''
 
-tmv.main_terminalVelocity(setup, dump, outputloc, run)
+# tmv.main_terminalVelocity(setup, dump, outputloc, run)
 
