@@ -49,9 +49,11 @@ Load the smoothing kernel data
 def smoothData(dumpData, setup, theta, zoom=1):
     nneighb = 20
     print('          Calculating zoom = '+str(zoom), end='\r')
-    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, ['rho', 'temp', 'speed', 'tau'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
+    if "tau" in dumpData: observables = ['rho', 'temp', 'speed', 'tau']
+    else: observables = ['rho', 'temp', 'speed']
+    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
-    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, ['rho', 'temp', 'speed', 'tau'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
+    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
 
     if (setup['single_star']):
@@ -368,6 +370,45 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
         ax3.set_xlabel(r"$x$ [AU]", fontsize=22)
         ax4.set_xlabel(r"$x$ [AU]", fontsize=22)
 
+    elif "tau" not in smooth[zoom]['smooth_z']:
+        fig = plt.figure(figsize=(10 + 0.35*5, 15))
+
+        spec = fig.add_gridspec(ncols=2, nrows=3, width_ratios=[1., 1.], height_ratios=[1, 1, 1])
+
+        ax1 = fig.add_subplot(spec[0, 0])
+        ax2 = fig.add_subplot(spec[0, 1])
+        ax3 = fig.add_subplot(spec[1, 0])
+        ax4 = fig.add_subplot(spec[1, 1])
+        ax5 = fig.add_subplot(spec[2, 0])
+        ax6 = fig.add_subplot(spec[2, 1])
+
+        axs = {1: ax1,
+               2: ax2,
+               3: ax3,
+               4: ax4,
+               5: ax5,
+               6: ax6
+               }
+
+        # the temperature colorbar limits may have to be changed...
+        onePlot(fig, ax1, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax2, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax3, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax4, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax5, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax6, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+
+        ax2.set_yticklabels([])
+        ax4.set_yticklabels([])
+        ax6.set_yticklabels([])
+
+        ax1.set_xticklabels([])
+        ax2.set_xticklabels([])
+        ax3.set_xticklabels([])
+        ax4.set_xticklabels([])
+        ax5.set_xlabel(r"$x$ [AU]", fontsize=22)
+        ax6.set_xlabel(r"$x$ [AU]", fontsize=22)
+
     else:
         fig = plt.figure(figsize=(10 + 0.35*5, 15))
 
@@ -519,15 +560,17 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
             vMin[zoom], vMax[zoom] = findBounds(smooth[zoom]['smooth_y']["speed"] * cgs.cms_kms(), log=False, round=round_bounds)
             vMin[zoom] = max(vMin[zoom], 0.)
             TMin[zoom], TMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["temp"]), log=True, round=round_bounds)
-            tauMin[zoom], tauMax[zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
-            tauMin[zoom] = 0
+            if "tau" in smooth[zoom]['smooth_y']:
+                tauMin[zoom], tauMax[zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
+                tauMin[zoom] = 0
 
         if printRanges:
             print("          Ranges of Parameters: zoom = "+str(zoom))
             print("          rhoMin, rhoMax = {0:10.5f}, {1:10.5f}".format(rhoMin[zoom], rhoMax[zoom]))
             print("          vMin  , vMax   = {0:10.5f}, {1:10.5f}".format(vMin[zoom], vMax[zoom]))
             print("          TMin  , TMax   = {0:10.5f}, {1:10.5f}".format(TMin[1], TMax[1]))
-            print("          tauMin, tauMax = {0:10.5f}, {1:10.5f}".format(tauMin[1], tauMax[1]))
+            if "tau" in smooth[zoom]['smooth_y']:
+                print("          tauMin, tauMax = {0:10.5f}, {1:10.5f}".format(tauMin[1], tauMax[1]))
 
         # Make plots
         densityPlot(smooth, zoom, rhoMin[zoom], rhoMax[zoom], dumpData, setup, run, loc, rAccComp, number = number)
@@ -545,7 +588,7 @@ def findBounds(data, log = False, round = False):
             min = minInfLog
             max = maxInfLog
 
-        filtered_data = filtered_data[np.logical_and(minInfLog <= data, data <= maxInfLog)]
+        filtered_data = filtered_data[np.logical_and(min <= data, data <= max)]
 
     if np.nan in data:
         filtered_data = filtered_data[not np.isnan(data)]

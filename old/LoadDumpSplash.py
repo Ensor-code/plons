@@ -7,9 +7,6 @@ import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadSetup                as stp
 import sys
-sys.path.append('/home/mats/codes/phantom/scripts')
-sys.path.append('/home/matse/codes/phantom/scripts')
-from readPhantomDump import read_dump
 
 '''
 Loads the final full dump of a phantom model, given the number, in cgs-units 
@@ -34,44 +31,54 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     else: index = number
 
 
-    # make filename of this filenumber
+    # make ascii file of this filenumber
     fileName       = runName+'/{0:s}_{1:05d}'.format(userPrefix, index)
+    fileNameAscii  = fileName + ".ascii"
 
-    # reading the dumpfile
-    dump = read_dump(fileName)
-    
-    if "tau" in dump["blocks"][0]["data"]: containsTau = True
-    else: containsTau=False
-    if "Tdust" in dump["blocks"][0]["data"]: containsTemp = True
-    else: containsTemp=False
-
-    x = dump["blocks"][0]["data"]["x"]
-    y = dump["blocks"][0]["data"]["y"]
-    z = dump["blocks"][0]["data"]["z"]
-    h = dump["blocks"][0]["data"]["h"]
-    mass = np.ones(len(h))*dump["quantities"]["massoftype"][0]
-    vx = dump["blocks"][0]["data"]["vx"]
-    vy = dump["blocks"][0]["data"]["vy"]
-    vz = dump["blocks"][0]["data"]["vz"]
-    u = dump["blocks"][0]["data"]["u"]
-    if containsTau:  tau  = dump["blocks"][0]["data"]["tau"]
-    if containsTemp: temp = dump["blocks"][0]["data"]["Tdust"]
+    # load the dump file prefix_00xxx
+    x, y, z, mass, h, rho, vx, vy, vz, u, tau, temp = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    try:
+        '''
+        We don't need the information about the AGB star and companion star (two last rows of the dumps).
+        To efficiently skip these rows, we load only one parameter, to get the length. All other parameters
+        are loaded after without the two last rows.
+        '''
+        print('Converting dump file to ascii...')
+        os.system("splash to ascii " + fileName)
+        (x, y, z, mass, h, rho, vx, vy, vz, u, tau, temp) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
+    except OSError:
+        try: 
+            print('Converting dump file to ascii...')
+            
+            os.system("splash to ascii " + fileName)
+            (x, y, z, mass, h, rho, vx, vy, vz, u, tau, temp) = np.loadtxt(fileNameAscii, skiprows=12, usecols=(0,1,2,3,4,5,6,7,8,9,10,11),  unpack=True)
+     
+        
+        except OSError:
+            print()
+            print(' ERROR: No full dump file found for this model in the current directory!')
+            sys.exit()
+            
+            
+    #rows = len(x)       
+    #(x,y,z,mass, h, rho, vx,vy,vz, u) = np.loadtxt(runName+'/prefix_00'+str(fileNumber)+'.ascii', skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9), max_rows = rows-2, unpack=True)
+        
     
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
-    x     = x                     [h > 0.0] * cgs.AU_cm()       # position coordinates          [cm]
-    y     = y                     [h > 0.0] * cgs.AU_cm()       
-    z     = z                     [h > 0.0] * cgs.AU_cm()      
-    mass  = mass                  [h > 0.0] * cgs.Msun_gram()   # mass of sph particles         [g]
-    vx    = vx                    [h > 0.0]                     # velocity components           [cm/s]
-    vy    = vy                    [h > 0.0]
-    vz    = vz                    [h > 0.0]
-    u     = u                     [h > 0.0]                     # specific internal density     [erg/g]
-    if containsTemp: temp = temp  [h > 0.0]                     # temperature                   [K]
-    else:            temp = pq.getTemp(p, rho, setup['mu'], u)
-    if containsTau: tau   = tau   [h > 0.0]                     # optical depth                 
-    h     = h                     [h > 0.0] * cgs.AU_cm()       # smoothing length              [cm]
-    rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
+    x     = x     [h > 0.0] * cgs.AU_cm()                       # position coordinates          [cm]
+    y     = y     [h > 0.0] * cgs.AU_cm()       
+    z     = z     [h > 0.0] * cgs.AU_cm()      
+    mass  = mass  [h > 0.0] * cgs.Msun_gram()                   # mass of sph particles         [g]
+    vx    = vx    [h > 0.0]                                     # velocity components           [cm/s]
+    vy    = vy    [h > 0.0]
+    vz    = vz    [h > 0.0]
+    u     = u     [h > 0.0]                                     # specific internal density     [erg/g]
+    rho   = rho   [h > 0.0]                                     # density                       [g/cm^3]
+    temp  = temp  [h > 0.0]                                     # temperature                   [K]
+    tau   = tau   [h > 0.0]                                     # optical depth                 
+    h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
+    # temp  = pq.getTemp(p, rho, setup['mu'], u)                  # temperature                   [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -79,20 +86,20 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     
     # Data of the two stars
     # AGB star
-    xAGB     = dump["blocks"][1]["data"]["x"][0]
-    yAGB     = dump["blocks"][1]["data"]["y"][0]
-    zAGB     = dump["blocks"][1]["data"]["z"][0]
+    xAGB     = x[-2]
+    yAGB     = y[-2]
+    zAGB     = z[-2]
     posAGB   = [xAGB, yAGB, zAGB]
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
-    massAGB  = dump["blocks"][1]["data"]["m"][0]
+    massAGB  = mass[-2] 
     
     # companion
-    xComp    = dump["blocks"][1]["data"]["x"][1]
-    yComp    = dump["blocks"][1]["data"]["y"][1]
-    zComp    = dump["blocks"][1]["data"]["z"][1]
+    xComp    = x[-1]
+    yComp    = y[-1]
+    zComp    = z[-1]
     posComp  = [xComp, yComp, zComp]
     rComp    = gf.calc_r(xComp, yComp, zComp)
-    massComp = dump["blocks"][1]["data"]["m"][1]
+    massComp = mass[-1]
     
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -109,21 +116,22 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
 
     
     # output
-    data = {'position'      : position,              # [cm]
-            'velocity'      : velocity,              # [cm/s]
-            'h'             : h,                     # [cm]
-            'mass'          : mass,                  # [g]
-            'rho'           : rho,                   # [g/cm^3]
-            'u'             : u,                     # [erg/g]
-            'temp'          : temp,                  # [K] 
-            'speed'         : speed,                 # [cm/s]
-            'mach'          : mach,                  
-            'vtvv'          : vtvv,     
+    data = {'position'      : position[:-2],         # [cm]
+            'velocity'      : velocity[:-2],         # [cm/s]
+            'h'             : h[:-2],                # [cm]
+            'mass'          : mass[:-2],             # [g]
+            'rho'           : rho[:-2],              # [g/cm^3]
+            'u'             : u[:-2],                # [erg/g]
+            'temp'          : temp[:-2],             # [K] 
+            'tau'           : tau[:-2],              
+            'speed'         : speed[:-2],            # [cm/s]
+            'mach'          : mach[:-2],             
+            'vtvv'          : vtvv[:-2],
             'fileNumber'    : index,
-            'r'             : r,                     # [cm]
-            'phi'           : phi,     
-            'theta'         : theta,     
-            'cs'            : cs,                    # [cm]
+            'r'             : r[:-2],                # [cm]
+            'phi'           : phi[:-2],
+            'theta'         : theta[:-2],
+            'cs'            : cs[:-2],               # [cm]
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
             'massAGB'       : massAGB,               # [g]
@@ -135,7 +143,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz                     # [cm/s]
             }
-    if containsTau: data["tau"] = tau
+    
 
     
     return data
@@ -162,44 +170,38 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     # Pick last file from model
     lastFullDumpIndexInt = findLastFullDumpIndex(userPrefix, setup, runName)
 
-    # make filename of this filenumber
-    fileName  = runName+'/{0:s}_{1:05d}'.format(userPrefix, lastFullDumpIndexInt)
+    fileName  = runName+'/{0:s}_{1:05d}.ascii'.format(userPrefix, lastFullDumpIndexInt)
 
-    # reading the dumpfile
-    dump = read_dump(fileName)
+    # Check whether an .ascii file exists of the full dump
+    try:
+    # to calculate period, we need masses and sma, so coordinates, we call the parameters xI, I stands for input
+        (x,y,z,mass, h, rho, vx,vy,vz, u, tau, temp) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
 
-    if "tau" in dump["blocks"][0]["data"]: containsTau = True
-    else: containsTau=False
-    if "Tdust" in dump["blocks"][0]["data"]: containsTemp = True
-    else: containsTemp=False
-
-    x = dump["blocks"][0]["data"]["x"]
-    y = dump["blocks"][0]["data"]["y"]
-    z = dump["blocks"][0]["data"]["z"]
-    h = dump["blocks"][0]["data"]["h"]
-    mass = np.ones(len(h))*dump["quantities"]["massoftype"][0]
-    vx = dump["blocks"][0]["data"]["vx"]
-    vy = dump["blocks"][0]["data"]["vy"]
-    vz = dump["blocks"][0]["data"]["vz"]
-    u = dump["blocks"][0]["data"]["u"]
-    if containsTau:  tau  = dump["blocks"][0]["data"]["tau"]
-    if containsTemp: temp = dump["blocks"][0]["data"]["Tdust"]
+    except OSError:
+        try:
+            print('Converting dump file to ascii...')
+            
+            os.system("splash to ascii " + os.path.splitext(fileName)[0])
+            (x,y,z,mass, h, rho, vx,vy,vz, u, tau, temp) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
+        
+        except OSError:
+            print(' ERROR: No dump file found for this model in the current directory! Shutting down the pipeline.')
+            sys.exit()
         
     
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
-    x     = x                     [h > 0.0] * cgs.AU_cm()       # position coordinates          [cm]
-    y     = y                     [h > 0.0] * cgs.AU_cm()       
-    z     = z                     [h > 0.0] * cgs.AU_cm()      
-    mass  = mass                  [h > 0.0] * cgs.Msun_gram()   # mass of sph particles         [g]
-    vx    = vx                    [h > 0.0] * cgs.cu_vel()      # velocity components           [cm/s]
-    vy    = vy                    [h > 0.0] * cgs.cu_vel()
-    vz    = vz                    [h > 0.0] * cgs.cu_vel()
-    u     = u                     [h > 0.0] * cgs.cu_e()        # specific internal density     [erg/g]
-    if containsTemp: temp = temp  [h > 0.0]                     # temperature                   [K]
-    else:            temp = pq.getTemp(p, rho, setup['mu'], u)
-    if containsTau: tau   = tau   [h > 0.0]                     # optical depth                 
-    h     = h                     [h > 0.0] * cgs.AU_cm()       # smoothing length              [cm]
-    rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
+    x     = x     [h > 0.0] * cgs.AU_cm()                       # position coordinates          [cm]
+    y     = y     [h > 0.0] * cgs.AU_cm()       
+    z     = z     [h > 0.0] * cgs.AU_cm()      
+    mass  = mass  [h > 0.0] * cgs.Msun_gram()                   # mass of sph particles         [g]
+    vx    = vx    [h > 0.0] * cgs.cu_vel()                      # velocity components           [cm/s]
+    vy    = vy    [h > 0.0] * cgs.cu_vel()
+    vz    = vz    [h > 0.0] * cgs.cu_vel()
+    u     = u     [h > 0.0] * cgs.cu_e()                        # specific internal density     [erg/g]
+    rho   = rho   [h > 0.0] * cgs.cu_dens()                     # density                       [g/cm^3]
+    temp  = temp  [h > 0.0]                                     # temperature                   [K]
+    tau   = tau   [h > 0.0]                                     # optical depth                 
+    h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
@@ -223,6 +225,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'rho'           : rho,            # [g/cm^3]
             'u'             : u,              # [erg/g]
             'temp'          : temp,           # [K]    
+            'tau'           : tau,              
             'speed'         : speed,          # [cm/s]
             'mach'          : mach,           
             'vtvv'          : vtvv,
@@ -234,8 +237,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'vx'            : vx,             # [cm/s]
             'vy'            : vy,             # [cm/s]
             'vz'            : vz              # [cm/s]
-            }                    
-    if containsTau: data["tau"] = tau             
+            }                                 
 
     
     return data
@@ -272,7 +274,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     u     = dump['u']
     rho   = dump['rho']
     temp  = dump['temp']
-    if "tau" in dump: tau   = dump['tau']
+    tau   = dump['tau']
     h     = dump['h']
     r     = dump['r']
 
@@ -287,7 +289,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     u     = u     [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # erg/g
     rho   = rho   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # g/cm^3
     temp  = temp  [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # K
-    if "tau" in dump: tau = tau   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 
+    tau   = tau   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 
     h     = h     [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # cm
     r     = r     [r > factor * setup['sma_ini'] * cgs.AU_cm() ] 
     
@@ -302,7 +304,7 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     u     = u     [r < bound * cgs.AU_cm()]                                 # erg/g
     rho   = rho   [r < bound * cgs.AU_cm()]                                 # g/cm^3
     temp  = temp  [r < bound * cgs.AU_cm()]                                 # K
-    if "tau" in dump: tau = tau   [r < bound * cgs.AU_cm()]                                 # K
+    tau   = tau   [r < bound * cgs.AU_cm()]                                 # K
     h     = h     [r < bound * cgs.AU_cm()]                                 # cm
     r     = r     [r < bound * cgs.AU_cm()] 
     
@@ -331,7 +333,8 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
             'u'             : u,             # [erg/g]
-            'temp'          : temp,          # [K]  
+            'temp'          : temp,          # [K]    
+            'tau'          : tau,        
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          
             'vtvv'          : vtvv,
@@ -340,7 +343,6 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'theta'         : theta,         
             'cs'            : cs             # [cm]
             }
-    if "tau" in dump: data["tau"] = tau
     
     return data
 
