@@ -175,23 +175,20 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     # Check whether an .ascii file exists of the full dump
     try:
     # to calculate period, we need masses and sma, so coordinates, we call the parameters xI, I stands for input
-        x = np.loadtxt(fileName, skiprows=14, usecols=(0), unpack=True)
+        (x,y,z,mass, h, rho, vx,vy,vz, u, tau, temp) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
 
     except OSError:
         try:
             print('Converting dump file to ascii...')
             
             os.system("splash to ascii " + os.path.splitext(fileName)[0])
-            x = np.loadtxt(fileName, skiprows=14, usecols=(0), unpack=True)
+            (x,y,z,mass, h, rho, vx,vy,vz, u, tau, temp) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
         
         except OSError:
             print(' ERROR: No dump file found for this model in the current directory! Shutting down the pipeline.')
             sys.exit()
         
-    rows = len(x)       
-    (x,y,z,mass, h, rho, vx,vy,vz, u, tau, temp) = np.loadtxt(fileName, skiprows=14, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), max_rows = rows-1, unpack=True)
     
-
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x     [h > 0.0] * cgs.AU_cm()                       # position coordinates          [cm]
     y     = y     [h > 0.0] * cgs.AU_cm()       
@@ -202,10 +199,10 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     vz    = vz    [h > 0.0] * cgs.cu_vel()
     u     = u     [h > 0.0] * cgs.cu_e()                        # specific internal density     [erg/g]
     rho   = rho   [h > 0.0] * cgs.cu_dens()                     # density                       [g/cm^3]
-    h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
-    p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     temp  = temp  [h > 0.0]                                     # temperature                   [K]
     tau   = tau   [h > 0.0]                                     # optical depth                 
+    h     = h     [h > 0.0] * cgs.AU_cm()                       # smoothing length              [cm]
+    p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates

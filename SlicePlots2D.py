@@ -27,7 +27,6 @@ matplotlib.use("Agg")
 import warnings
 warnings.filterwarnings("ignore")
 
-radius_AGB      = 2.37686663#1.15 #AU
 n_grid          = 500
 n_grid_vec      = 50
 mesh            = True
@@ -48,7 +47,6 @@ sigma_bounds_l  = 2.
 Load the smoothing kernel data
 '''
 def smoothData(dumpData, setup, theta, zoom=1):
-        #comment the ones you don't need, it takes long to run, so don't run if not nescessary
     nneighb = 20
     print('          Calculating zoom = '+str(zoom), end='\r')
     results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, ['rho', 'temp', 'speed', 'tau'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
@@ -130,7 +128,7 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc, rAccCom
         xcomp = dumpData['posComp'][0] / cgs.AU_cm()
         ycomp = dumpData['posComp'][1] / cgs.AU_cm()
 
-        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
+        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
         if setup['single_star'] == False:
             circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -188,9 +186,9 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     name = {'rho': r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
             'speed': '$v$ [km/s]',
             'temp': r'$\log \, T$ [K]',
-            'tau': r'$\log \, \tau$ [/]'#r'$\tau [/]$',#
+            'tau': r'$\tau [/]$',#
             }
-    logtau = True
+    logtau = False
 
     xAGB = dumpData['posAGB'][0] / cgs.AU_cm()
     yAGB = dumpData['posAGB'][1] / cgs.AU_cm()
@@ -253,7 +251,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     if gamma <= 1.:
         if ax == axs[2] or ax == axs[4]:
             ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black",
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black",
                                    zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
@@ -270,7 +268,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black",
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black",
                                    zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
@@ -281,7 +279,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     else:
         if ax == axs[2] or ax == axs[4] or ax == axs[6]:
             ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -296,7 +294,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3] or ax == axs[5]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -414,7 +412,7 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
     if number == -1:
         plt.savefig(os.path.join(loc, 'png/2Dplot_DensTempTau_zoom{0:01d}.png'.format(zoom)), dpi=200, bbox_inches="tight")
         fig.savefig(os.path.join(loc, 'pdf/2Dplot_DensTempTau_zoom{0:01d}.pdf'.format(zoom)), bbox_inches="tight")
-        print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!')
+        print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
 
     else:
         fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
@@ -431,17 +429,13 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
     print('')
     print('(1)  Start calculations for slice plots...')
 
-    # Make sliceplots
-    Mdot = setup['Mdot']
-    bound = setup['bound']
-
     if setup["single_star"]==True:
         theta=0
         rAccComp = 0
     else:
         theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
         rAccComp = setup['rAccrComp']
-        if rAccComp <= 0.05 * radius_AGB: rAccComp = 0.05 * radius_AGB
+        if rAccComp <= 0.05 * setup["primary_Reff"]: rAccComp = 0.05 * setup["primary_Reff"]
 
     rhoMin = {}
     rhoMax = {}
@@ -525,7 +519,8 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
             vMin[zoom], vMax[zoom] = findBounds(smooth[zoom]['smooth_y']["speed"] * cgs.cms_kms(), log=False, round=round_bounds)
             vMin[zoom] = max(vMin[zoom], 0.)
             TMin[zoom], TMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["temp"]), log=True, round=round_bounds)
-            tauMin[zoom], tauMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["tau"]), log=True, round=round_bounds)
+            tauMin[zoom], tauMax[zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
+            tauMin[zoom] = 0
 
         if printRanges:
             print("          Ranges of Parameters: zoom = "+str(zoom))

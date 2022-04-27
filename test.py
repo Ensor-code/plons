@@ -11,7 +11,7 @@ sys.path.append('/home/mats/codes/phantom/scripts')
 sys.path.append('/home/matse/codes/phantom/scripts')
 from readPhantomDump import *
 
-
+read_dump('./Wind/Full/wind_00010')
 
 #print(pq.getTemp(10e10,10e3,1.43))
 #print(pq.getPeriod(1.5*cgs.Msun_gram(),1*cgs.Msun_gram(),3)*cgs.sec_year())
