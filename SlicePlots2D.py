@@ -27,7 +27,6 @@ matplotlib.use("Agg")
 import warnings
 warnings.filterwarnings("ignore")
 
-radius_AGB      = 2.37686663#1.15 #AU
 n_grid          = 500
 n_grid_vec      = 50
 mesh            = True
@@ -48,30 +47,48 @@ sigma_bounds_l  = 2.
 Load the smoothing kernel data
 '''
 def smoothData(dumpData, setup, theta, zoom=1):
-        #comment the ones you don't need, it takes long to run, so don't run if not nescessary
     nneighb = 20
     print('          Calculating zoom = '+str(zoom), end='\r')
-    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, ['rho', 'temp', 'speed', 'tau'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
+    if "tau" in dumpData: observables = ['rho', 'temp', 'speed', 'tau']
+    else: observables = ['rho', 'temp', 'speed']
+    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
-    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, ['rho', 'temp', 'speed', 'tau'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
+    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
 
-    xcomp = dumpData['posComp'][0]
-    ycomp = dumpData['posComp'][1]
-    smooth = {'smooth_z'     :  results_sph_sl_z,
+    if (setup['single_star']):
+        xcomp, ycomp = 0,0
+        smooth = {  'smooth_z'     :  results_sph_sl_z,
+                    'x_z'          :  x1,
+                    'y_z'          :  y1,
+                    'smooth_y'     :  results_sph_sl_y,
+                    'x_y'          :  x2,
+                    'z_y'          :  z2
+                    }
+
+        smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
+                        'x_z'      :  x1_vec,
+                        'y_z'      :  y1_vec,
+                        'smooth_y' :  results_sph_sl_y_vec,
+                        'x_y'      :  x2_vec,
+                        'z_y'      :  z2_vec
+                        }
+    else:
+        xcomp = dumpData['posComp'][0]
+        ycomp = dumpData['posComp'][1]
+        smooth = {  'smooth_z'     :  results_sph_sl_z,
                     'x_z'          :  x1,
                     'y_z'          :  y1,
                     'smooth_y'     :  results_sph_sl_y,
                     'x_y'          :  planeCoordinates(n_grid, x2, y2, xcomp, ycomp),
                     'z_y'          :  z2
                     }
-
-    smooth_vec = {'smooth_z': results_sph_sl_z_vec,
-                        'x_z': x1_vec,
-                        'y_z': y1_vec,
-                        'smooth_y': results_sph_sl_y_vec,
-                        'x_y': planeCoordinates(n_grid_vec, x2_vec, y2_vec, xcomp, ycomp),
-                        'z_y': z2_vec
+        smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
+                        'x_z'      :  x1_vec,
+                        'y_z'      :  y1_vec,
+                        'smooth_y' :  results_sph_sl_y_vec,
+                        'x_y'      :  planeCoordinates(n_grid_vec, x2_vec, y2_vec, xcomp, ycomp),
+                        'z_y'      :  z2_vec
                         }
 
     return smooth, smooth_vec
@@ -113,10 +130,11 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc, rAccCom
         xcomp = dumpData['posComp'][0] / cgs.AU_cm()
         ycomp = dumpData['posComp'][1] / cgs.AU_cm()
 
-        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
-        circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
-        ax.add_artist(circleComp)
+        if setup['single_star'] == False:
+            circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+            ax.add_artist(circleComp)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -170,9 +188,9 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     name = {'rho': r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
             'speed': '$v$ [km/s]',
             'temp': r'$\log \, T$ [K]',
-            'tau': r'$\log \, \tau$ [/]'#r'$\tau [/]$',#
+            'tau': r'$\tau [/]$',#
             }
-    logtau = True
+    logtau = False
 
     xAGB = dumpData['posAGB'][0] / cgs.AU_cm()
     yAGB = dumpData['posAGB'][1] / cgs.AU_cm()
@@ -235,7 +253,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     if gamma <= 1.:
         if ax == axs[2] or ax == axs[4]:
             ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black",
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black",
                                    zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
@@ -252,7 +270,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black",
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black",
                                    zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
@@ -263,7 +281,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     else:
         if ax == axs[2] or ax == axs[4] or ax == axs[6]:
             ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -278,7 +296,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3] or ax == axs[5]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), radius_AGB, transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -352,6 +370,45 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
         ax3.set_xlabel(r"$x$ [AU]", fontsize=22)
         ax4.set_xlabel(r"$x$ [AU]", fontsize=22)
 
+    elif "tau" not in smooth[zoom]['smooth_z']:
+        fig = plt.figure(figsize=(10 + 0.35*5, 15))
+
+        spec = fig.add_gridspec(ncols=2, nrows=3, width_ratios=[1., 1.], height_ratios=[1, 1, 1])
+
+        ax1 = fig.add_subplot(spec[0, 0])
+        ax2 = fig.add_subplot(spec[0, 1])
+        ax3 = fig.add_subplot(spec[1, 0])
+        ax4 = fig.add_subplot(spec[1, 1])
+        ax5 = fig.add_subplot(spec[2, 0])
+        ax6 = fig.add_subplot(spec[2, 1])
+
+        axs = {1: ax1,
+               2: ax2,
+               3: ax3,
+               4: ax4,
+               5: ax5,
+               6: ax6
+               }
+
+        # the temperature colorbar limits may have to be changed...
+        onePlot(fig, ax1, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax2, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax3, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax4, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax5, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax6, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+
+        ax2.set_yticklabels([])
+        ax4.set_yticklabels([])
+        ax6.set_yticklabels([])
+
+        ax1.set_xticklabels([])
+        ax2.set_xticklabels([])
+        ax3.set_xticklabels([])
+        ax4.set_xticklabels([])
+        ax5.set_xlabel(r"$x$ [AU]", fontsize=22)
+        ax6.set_xlabel(r"$x$ [AU]", fontsize=22)
+
     else:
         fig = plt.figure(figsize=(10 + 0.35*5, 15))
 
@@ -396,7 +453,7 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
     if number == -1:
         plt.savefig(os.path.join(loc, 'png/2Dplot_DensTempTau_zoom{0:01d}.png'.format(zoom)), dpi=200, bbox_inches="tight")
         fig.savefig(os.path.join(loc, 'pdf/2Dplot_DensTempTau_zoom{0:01d}.pdf'.format(zoom)), bbox_inches="tight")
-        print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!')
+        print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
 
     else:
         fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
@@ -413,13 +470,13 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
     print('')
     print('(1)  Start calculations for slice plots...')
 
-    # Make sliceplots
-    Mdot = setup['Mdot']
-    bound = setup['bound']
-
-    theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
-    rAccComp = setup['rAccrComp']
-    if rAccComp <= 0.05 * radius_AGB: rAccComp = 0.05 * radius_AGB
+    if setup["single_star"]==True:
+        theta=0
+        rAccComp = 0
+    else:
+        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        rAccComp = setup['rAccrComp']
+        if rAccComp <= 0.05 * setup["primary_Reff"]: rAccComp = 0.05 * setup["primary_Reff"]
 
     rhoMin = {}
     rhoMax = {}
@@ -503,14 +560,17 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
             vMin[zoom], vMax[zoom] = findBounds(smooth[zoom]['smooth_y']["speed"] * cgs.cms_kms(), log=False, round=round_bounds)
             vMin[zoom] = max(vMin[zoom], 0.)
             TMin[zoom], TMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["temp"]), log=True, round=round_bounds)
-            tauMin[zoom], tauMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["tau"]), log=True, round=round_bounds)
+            if "tau" in smooth[zoom]['smooth_y']:
+                tauMin[zoom], tauMax[zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
+                tauMin[zoom] = 0
 
         if printRanges:
             print("          Ranges of Parameters: zoom = "+str(zoom))
             print("          rhoMin, rhoMax = {0:10.5f}, {1:10.5f}".format(rhoMin[zoom], rhoMax[zoom]))
             print("          vMin  , vMax   = {0:10.5f}, {1:10.5f}".format(vMin[zoom], vMax[zoom]))
             print("          TMin  , TMax   = {0:10.5f}, {1:10.5f}".format(TMin[1], TMax[1]))
-            print("          tauMin, tauMax = {0:10.5f}, {1:10.5f}".format(tauMin[1], tauMax[1]))
+            if "tau" in smooth[zoom]['smooth_y']:
+                print("          tauMin, tauMax = {0:10.5f}, {1:10.5f}".format(tauMin[1], tauMax[1]))
 
         # Make plots
         densityPlot(smooth, zoom, rhoMin[zoom], rhoMax[zoom], dumpData, setup, run, loc, rAccComp, number = number)
@@ -528,7 +588,7 @@ def findBounds(data, log = False, round = False):
             min = minInfLog
             max = maxInfLog
 
-        filtered_data = filtered_data[np.logical_and(minInfLog <= data, data <= maxInfLog)]
+        filtered_data = filtered_data[np.logical_and(min <= data, data <= max)]
 
     if np.nan in data:
         filtered_data = filtered_data[not np.isnan(data)]

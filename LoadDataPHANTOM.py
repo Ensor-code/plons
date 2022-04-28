@@ -86,11 +86,11 @@ def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, 
 '''
 Load the data for a single star model
 '''
-def LoadData_single_cgs(run, loc, setup):
+def LoadData_single_cgs(run, loc, setup, userSettingsDictionary):
     
-    setup    = stp.LoadSetup(run, loc)
-    dumpData = dmp.LoadDump_single_cgs(run, loc, setup)
-    sinkData = snk.LoadSink_single_cgs(run, loc, setup)
+    setup    = stp.LoadSetup(run, loc, userSettingsDictionary)
+    dumpData = dmp.LoadDump_single_cgs(run, loc, setup, userSettingsDictionary)
+    sinkData = snk.LoadSink_single_cgs(run, loc, setup, userSettingsDictionary)
     
     # save the final specifics of the AGB star and companion to dumpData
     dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
