@@ -3,8 +3,11 @@
 """
 Created on Wed Sep 22 09:26:15 2021
 
-@author: siess
+@author: Ward Homan, Lionel Siess
+
+Make sure that the path in the sys.append points to the scripts directory of phantom
 """
+
 
 import matplotlib.pyplot as plt
 from numpy import *
@@ -113,7 +116,7 @@ def plot1D (data, i, second=False):
             else:
               ax1[i][0].plot(data[xAxis]/x_ref, data['v_esc']/v_ref, color='blue',  linestyle='-',  label='escape vel')
         else:
-            ax1[i][0].plot(data[xAxis]/x_ref, data['v']/v_ref,    color='black', linestyle='-')
+            ax1[i][0].plot(data[xAxis]/x_ref, data['v']/v_ref,    color='black', linestyle='--')
         ax1[i][0].set_ylabel(r'$v$ [km s$^{-1}$]')
 
     if whichPlot == 'temp':
@@ -298,6 +301,8 @@ def GaussianSigma(data1D,data3D,xaxis):
   print('Standard deviation of '+str(quantity)+'_sph w.r.t. '+str(quantity)+'_1D = ' +str(round(STD,2))+' km/s')
   print('===============')  
 
+
+# Work in progress
 def Dustcooling(data1D):
   
   Tprofile = loadtxt('temperatureprofile_AC_0.1um.txt')
@@ -318,8 +323,6 @@ def Dustcooling(data1D):
   dust_size    = 1e-5
   heat_transfer_zone = 1e-7
   therm_conduc = 50
-  
-  
   
   CoolingBowen      = (3*Rg/(2*bowen_Cprime))*multiply( divide(data1D['rho'],data1D['mu']) , Tdust_interp-Tgas )
   CoolingHollenbach = multiply(multiply((d2g*kboltz/(2*rho_sp*dust_size))*sqrt(3*kboltz*divide(Tgas,(data1D['mu']*mass_proton_cgs)**3)),data1D['rho']**2),Tdust_interp-Tgas)
@@ -346,12 +349,12 @@ def Dustcooling(data1D):
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 
 # Main directory of the data
-mainPath   = ['/lhome/ward/Desktop/phantom_backup/Dusty_wind/BowenDust/']
+mainPath   = ['/lhome/ward/Programs/phantom/test/1Drad/']
 modelLabel = 'wind'
-dumpNumber = '00020'
+dumpNumber = '00100'
 
 # What do you want to plot?
-whichPlot = 'dustcool'       # vel, temp, v&T, dust, chem, dustcool
+whichPlot = 'vel'       # vel, temp, v&T, dust, chem, dustcool
 xAxis     = 'r'          # r, Tgas
 
 #Number of vertical subplots, change second dimension of ax array for horizontal plots
@@ -367,18 +370,16 @@ for i in range(Nsub):
 
 # ===== READ INPUT ========================================================================
 
-  inputFile = mainPath[i] + modelLabel + '.in'
-  setupFile = mainPath[i] + modelLabel + '.setup'
+  inputFile = mainPath[i] + modelLabel
   
   # initialise parameters
   iget_tdust = 0
   
   # Extract data from parameter card
   wind_param      = read_infile(inputFile)
-  setup_param     = read_infile(setupFile)
-  Mstar           = setup_param['primary_mass']*solarm
-  Rstar           = setup_param['primary_racc']*au
-  Tstar           = setup_param['primary_Teff']
+  Mstar           = wind_param['primary_mass']*solarm
+  Rstar           = wind_param['primary_racc']*au
+  Tstar           = wind_param['primary_Teff']
   Rinj            = wind_param['wind_inject_radius']*au
   mu              = wind_param['mu']
   idust_opacity   = wind_param['idust_opacity']
@@ -399,7 +400,7 @@ for i in range(Nsub):
       Tcond       = wind_param['bowen_Tcond']
       delta       = wind_param['bowen_delta']
       mu          = wind_param['mu']
-      gamma       = setup_param['wind_gamma']
+      gamma       = wind_param['wind_gamma']
   if iget_tdust == 1:
       tdust_exp   = wind_param['tdust_exp']
 
@@ -414,9 +415,9 @@ for i in range(Nsub):
 
   # Read input and dump file
   data1D  = read1D(mainPath[i] + modelLabel + '_1D.dat')
-  #data1D_2  = read1D(mainPath[i] + modelLabel + '_t_1D.dat')
-  #dataSPH = readSPH(mainPath[i] + modelLabel + '_' + dumpNumber)
-  #dataSPH_2 = readSPH(mainPath[i] + modelLabel + '_t_' + dumpNumber)
+  #data1D_2  = read1D(mainPath[i] + modelLabel + '_noR_1D.dat')
+  dataSPH = readSPH(mainPath[i] + modelLabel + '_' + dumpNumber)
+  #dataSPH_2 = readSPH(mainPath[i] + modelLabel + '_noR_' + dumpNumber)
 
   # ===== GENERATE PLOT ========================================================================
 
@@ -429,7 +430,7 @@ for i in range(Nsub):
           lns1      = plot1D(data1D,i)
       #lns5 = plot_Auxiliary(data1D,i)
   else:
-      #plot3D(dataSPH,i)
+      plot3D(dataSPH,i)
       #plot3D(dataSPH_2,i,second=True)
       plot1D(data1D,i)
       #plot1D(data1D_2,i,second=True)
@@ -447,7 +448,7 @@ for i in range(Nsub):
     labs = [l.get_label() for l in lns]
     ax1[i][0].legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=13)
   else:
-    ax1[i][0].legend(           bbox_to_anchor=(1, 0.69), loc='lower right', fontsize=13)
+    ax1[i][0].legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=13)
 
   #---------- only set xlabels on bottom panel ----------    
   if i == range(Nsub)[-1]:
@@ -465,12 +466,12 @@ for i in range(Nsub):
   #txt = ['high resolution, q=20','mid resolution, q=10','low resolution, q=3']
   #ax1[i][0].text(2.6,19,txt[i],fontsize=16)
   ax1[i][0].set_xlim(x_limits)
-  #ax1[i][0].set_ylim([0,40])
+  ax1[i][0].set_ylim([0,60])
   #ax2[i][0].set_ylim([0,40])
-  ax2[i][0].set_yscale('log')
+  #ax2[i][0].set_yscale('log')
   plt.title('BowenDust model',fontsize=16)   
 
 
 plt.show()
-#plt.savefig('/lhome/ward/dustCooling_rates.png',dpi=200.)
+#plt.savefig('/lhome/ward/1D_raytrace.png',dpi=200.)
 plt.close()
