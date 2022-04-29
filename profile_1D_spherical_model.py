@@ -12,8 +12,15 @@ Make sure that the path in the sys.append points to the scripts directory of pha
 import matplotlib.pyplot as plt
 from numpy import *
 from scipy import constants, interpolate
+import userSettings as us
+import os
 import sys
-sys.path.append('/lhome/ward/Programs/phantom/scripts')
+
+userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
+if not os.path.isfile(userSettingsFilePath) or os.stat(userSettingsFilePath).st_size == 0: us.create(userSettingsFilePath)
+userSettingsDictionary = us.load(userSettingsFilePath)
+sys.path.append(userSettingsDictionary["hard_path_to_phantom"]+'/scripts')
+
 from readPhantomDump import *
 from PhysicalConstantsCGS import Rg, steboltz, kboltz, au, gg, c, mass_proton_cgs, solarm
 

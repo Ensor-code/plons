@@ -7,9 +7,6 @@ import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
 import LoadSetup                as stp
 import sys
-sys.path.append('/home/mats/codes/phantom/scripts')
-sys.path.append('/home/matse/codes/phantom/scripts')
-from readPhantomDump import read_dump
 
 '''
 Loads the final full dump of a phantom model, given the number, in cgs-units 
@@ -27,6 +24,9 @@ RETURNS
 def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     runName = os.path.join(loc,run)
     userPrefix = userSettingsDictionary["prefix"]
+    phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
+    sys.path.append(phantom_dir+"/scripts")
+    from readPhantomDump import read_dump
 
     # Pick either last dump file or user chosen file
     index = 0
@@ -157,6 +157,9 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
 
     runName = os.path.join(loc, run)
     userPrefix = userSettingsDictionary["prefix"]
+    phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
+    sys.path.append(phantom_dir+"/scripts")
+    from readPhantomDump import read_dump
 
     # Pick last file from model
     lastFullDumpIndexInt = findLastFullDumpIndex(userPrefix, setup, runName)
