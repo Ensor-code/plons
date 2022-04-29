@@ -130,7 +130,7 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc, rAccCom
         xcomp = dumpData['posComp'][0] / cgs.AU_cm()
         ycomp = dumpData['posComp'][1] / cgs.AU_cm()
 
-        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
+        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
         if setup['single_star'] == False:
             circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -253,7 +253,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     if gamma <= 1.:
         if ax == axs[2] or ax == axs[4]:
             ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black",
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black",
                                    zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
@@ -270,7 +270,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black",
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black",
                                    zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
@@ -281,7 +281,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     else:
         if ax == axs[2] or ax == axs[4] or ax == axs[6]:
             ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -296,7 +296,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3] or ax == axs[5]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), setup["primary_Reff"], transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
@@ -476,7 +476,7 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
     else:
         theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
         rAccComp = setup['rAccrComp']
-        if rAccComp <= 0.05 * setup["primary_Reff"]: rAccComp = 0.05 * setup["primary_Reff"]
+        if rAccComp <= 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"]): rAccComp = 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"])
 
     rhoMin = {}
     rhoMax = {}

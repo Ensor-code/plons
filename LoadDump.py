@@ -36,15 +36,14 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
 
     # make filename of this filenumber
     fileName       = runName+'/{0:s}_{1:05d}'.format(userPrefix, index)
+    fileTaus       = runName+'/taus_{0:s}_{1:05d}.txt'.format(userPrefix, index)
 
     # reading the dumpfile
     dump = read_dump(fileName)
     
-    if "tau" in dump["blocks"][0]["data"]: containsTau = True
-    else: containsTau=False
-    if "Tdust" in dump["blocks"][0]["data"]: containsTemp = True
-    else: containsTemp=False
-
+    containsTau = "tau" in dump["blocks"][0]["data"] or os.path.exists(fileTaus)
+    containsTemp = "Tdust" in dump["blocks"][0]["data"]
+    
     x = dump["blocks"][0]["data"]["x"]
     y = dump["blocks"][0]["data"]["y"]
     z = dump["blocks"][0]["data"]["z"]
@@ -54,9 +53,13 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     vy = dump["blocks"][0]["data"]["vy"]
     vz = dump["blocks"][0]["data"]["vz"]
     u = dump["blocks"][0]["data"]["u"]
-    if containsTau:  tau  = dump["blocks"][0]["data"]["tau"]
-    if containsTemp: temp = dump["blocks"][0]["data"]["Tdust"]
-    
+    if containsTau: 
+        if "tau" in dump["blocks"][0]["data"]: tau = dump["blocks"][0]["data"]["tau"]
+        else: tau = np.loadtxt(fileTaus)
+    if containsTemp:
+        temp = dump["blocks"][0]["data"]["Tdust"]
+        if (len(temp) == 2*len(h)): temp = temp[1::2] # A problem with loading the files, info: Mats
+
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [h > 0.0] * cgs.AU_cm()       # position coordinates          [cm]
     y     = y                     [h > 0.0] * cgs.AU_cm()       
@@ -67,11 +70,11 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     vz    = vz                    [h > 0.0]
     u     = u                     [h > 0.0]                     # specific internal density     [erg/g]
     if containsTemp: temp = temp  [h > 0.0]                     # temperature                   [K]
-    else:            temp = pq.getTemp(p, rho, setup['mu'], u)
-    if containsTau: tau   = tau   [h > 0.0]                     # optical depth                 
+    if containsTau and len(tau) == len(h): tau = tau [h > 0.0]  # optical depth                 
     h     = h                     [h > 0.0] * cgs.AU_cm()       # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
+    if not containsTemp: temp = pq.getTemp(p, rho, setup['mu'], u) # temperature                [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -79,20 +82,20 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     
     # Data of the two stars
     # AGB star
-    xAGB     = dump["blocks"][1]["data"]["x"][0]
-    yAGB     = dump["blocks"][1]["data"]["y"][0]
-    zAGB     = dump["blocks"][1]["data"]["z"][0]
+    xAGB     = dump["blocks"][1]["data"]["x"][0] * cgs.AU_cm()
+    yAGB     = dump["blocks"][1]["data"]["y"][0] * cgs.AU_cm()
+    zAGB     = dump["blocks"][1]["data"]["z"][0] * cgs.AU_cm()
     posAGB   = [xAGB, yAGB, zAGB]
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
-    massAGB  = dump["blocks"][1]["data"]["m"][0]
+    massAGB  = dump["blocks"][1]["data"]["m"][0] * cgs.Msun_gram()
     
     # companion
-    xComp    = dump["blocks"][1]["data"]["x"][1]
-    yComp    = dump["blocks"][1]["data"]["y"][1]
-    zComp    = dump["blocks"][1]["data"]["z"][1]
+    xComp    = dump["blocks"][1]["data"]["x"][1] * cgs.AU_cm()
+    yComp    = dump["blocks"][1]["data"]["y"][1] * cgs.AU_cm()
+    zComp    = dump["blocks"][1]["data"]["z"][1] * cgs.AU_cm()
     posComp  = [xComp, yComp, zComp]
     rComp    = gf.calc_r(xComp, yComp, zComp)
-    massComp = dump["blocks"][1]["data"]["m"][1]
+    massComp = dump["blocks"][1]["data"]["m"][1] * cgs.Msun_gram()
     
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -103,10 +106,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
     
   
-    # get normal of the edge-on plane
-    #normal_edgeon_plane = gf.getNormalPerpTo(AGBcoord, compCoord, [1,1,0])
-    
-
     
     # output
     data = {'position'      : position,              # [cm]
@@ -196,11 +195,11 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     vz    = vz                    [h > 0.0] * cgs.cu_vel()
     u     = u                     [h > 0.0] * cgs.cu_e()        # specific internal density     [erg/g]
     if containsTemp: temp = temp  [h > 0.0]                     # temperature                   [K]
-    else:            temp = pq.getTemp(p, rho, setup['mu'], u)
     if containsTau: tau   = tau   [h > 0.0]                     # optical depth                 
     h     = h                     [h > 0.0] * cgs.AU_cm()       # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
+    if not containsTemp: temp = pq.getTemp(p, rho, setup['mu'], u) # temperature                [K]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
