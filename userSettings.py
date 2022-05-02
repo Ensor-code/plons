@@ -61,7 +61,7 @@ def create(userSettingsFilePath):
         file.close()
 
 # Load userSettingsFile.txt if it exists
-def load(userSettingsFilePath):
+def load(userSettingsFilePath,onlyPathToPhantom=False):
     dictionary = {}
     splittedFile = []
     print()
@@ -75,38 +75,40 @@ def load(userSettingsFilePath):
             print(line[:-1])
     print("--------------------------------------------------------------")
     print()
-
-    loc = str(dictionary["data_location"])
-    outputloc = str(dictionary["pipeline_output_location"])
+    
+    if onlyPathToPhantom == False:
+      loc = str(dictionary["data_location"])
+      outputloc = str(dictionary["pipeline_output_location"])
     phantom = str(dictionary["hard_path_to_phantom"])
 
     # If the user has changed the directory in userSettingsFile.txt, check if the path still exists
-    if not os.path.isdir(loc):
-        print(
-            "ERROR: The specified directory 'data_location' in %s does not exist anymore, shutting down the pipeline."
-            % userSettingsFilePath)
-        print('------------------END:', dt.datetime.now(), '---------------------')
-        sys.exit()
-
-    if " " in loc:
-        print("ERROR: The specified directory 'data_location' in %s contains spaces, shutting down the pipeline."
+    if onlyPathToPhantom == False:
+      if not os.path.isdir(loc):
+          print(
+              "ERROR: The specified directory 'data_location' in %s does not exist anymore, shutting down the pipeline."
               % userSettingsFilePath)
-        print('------------------END:', dt.datetime.now(), '---------------------')
-        sys.exit()
+          print('------------------END:', dt.datetime.now(), '---------------------')
+          sys.exit()
 
-    if not os.path.isdir(outputloc):
-        print(
-            "ERROR: The specified directory 'pipeline_output_location' in %s does not exist anymore, shutting down the"
-            " pipeline." % userSettingsFilePath)
-        print('------------------END:', dt.datetime.now(), '---------------------')
-        sys.exit()
+      if " " in loc:
+          print("ERROR: The specified directory 'data_location' in %s contains spaces, shutting down the pipeline."
+                % userSettingsFilePath)
+          print('------------------END:', dt.datetime.now(), '---------------------')
+          sys.exit()
 
-    if " " in outputloc:
-        print(
-            "ERROR: The specified directory 'pipeline_output_location' in %s contains spaces, shutting down the pipeline."
-            % userSettingsFilePath)
-        print('------------------END:', dt.datetime.now(), '---------------------')
-        sys.exit()
+      if not os.path.isdir(outputloc):
+          print(
+              "ERROR: The specified directory 'pipeline_output_location' in %s does not exist anymore, shutting down the"
+              " pipeline." % userSettingsFilePath)
+          print('------------------END:', dt.datetime.now(), '---------------------')
+          sys.exit()
+
+      if " " in outputloc:
+          print(
+              "ERROR: The specified directory 'pipeline_output_location' in %s contains spaces, shutting down the pipeline."
+              % userSettingsFilePath)
+          print('------------------END:', dt.datetime.now(), '---------------------')
+          sys.exit()
 
     if not os.path.isdir(phantom):
         print(
