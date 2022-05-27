@@ -9,13 +9,24 @@ Gives the function f which is used by the function 'smoothingKernelPhantom'
 From: Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031; Eq. 17
 '''
 def get_f(d):
-    if d >= 0 and d < 1:
-        f = 1-(3/2)*d**2+(3/4)*d**3
-    if d >= 1 and d < 2:
-        f = (1/4)*(2-d)**3
-    if d >= 2:
-        f = 0
+    f = np.zeros_like(d)
+
+    ind1 = (d >= 0) & (d < 1)
+    f[ind1] = get_f1(d[ind1])
+
+    ind2 = (d >= 1) & (d < 2)
+    f[ind2] = get_f2(d[ind2])
+
     return f
+
+def get_f1(d):
+    return 1-(3/2)*np.square(d)+(3/4)*np.power(d,3)
+def get_f2(d):
+    return (1/4)*np.power(2-d,3)
+
+Cnorm = 1/np.pi
+hfact = 1.2
+
 
 '''
 Smoothing kernel from phantom from the phantom paper Price 2018 (Sect. 2.1.5, 2.1.6)
@@ -25,12 +36,9 @@ Smoothing kernel from phantom from the phantom paper Price 2018 (Sect. 2.1.5, 2.
 RETURNS:
      np.array with the values of the smoothing kernel W_ab for every closest neighbour b 
 '''
-def smoothingKernelPhantom(r_a,r_b_list,h_list):
-    Cnorm = 1/np.pi
-    W_ab = []
-    for i in range(len(h_list)):
-        d = np.abs(np.linalg.norm(r_a-r_b_list[i])/h_list[i])
-        W_ab.append((Cnorm/h_list[i]**3)*get_f(d))
+def smoothingKernelPhantom(dist,h_list):
+    d = np.abs(dist/h_list)
+    W_ab = (Cnorm/hfact**3)*get_f(d)
     return W_ab
 
 '''
@@ -38,13 +46,11 @@ Get a parameter in a certain point (not one that exists), using the PHANTOM smoo
     par = sum(par_i*W_i)
     'param' is the string of the parameters
 '''
-def getParamSmoothingKernel(closest_points, W_list,param, massPerRho):
+def getParamSmoothingKernel(closest_points, W_list,param):
     param_list = param[closest_points]
-    par =  param_list*W_list*massPerRho
-    par_final = []
-    for i in range(len(par)):
-        par_final.append(sum(par[i]))
-    return np.array(par_final)
+    par =  param_list*W_list
+    par_final = np.sum(par, axis = 1)
+    return par_final
 
 '''
 Get a 2D array containing the [x,y,z]-components of all pixels 
@@ -150,11 +156,6 @@ Get the values on a healpy sphere for n pixels, 'neighbours' neighbours for a li
 '''
 def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta, mesh=False, vec=False):
 
-    rho = data['rho']
-    mass = data['mass']
-
-    mPrho = mass/rho
-
     pixCoord    = getPixels(shape, n, r, data, bound)
 
     # Rotate the plane/line to align with companion
@@ -176,17 +177,18 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta
     '''
     position_closest_points = data['position'][closest_points]
     h_closest_points        = data['h'       ][closest_points]
-    mPrho_closest_points    = mPrho[closest_points]
 
     # Get the smoothing kernel W_ab for all nearest neighbours for every pixel in 'sphere'
-    W_ab = []
-    for i in range(len(pixCoord)):
-        W_ab.append(smoothingKernelPhantom(pixCoord[i],position_closest_points[i],h_closest_points[i]))
-        
+    # W_ab = []
+    # for i in range(len(pixCoord)):
+    #     W_ab.append(smoothingKernelPhantom(distances[i], h_closest_points[i]))
+    
+    W_ab = smoothingKernelPhantom(distances, h_closest_points)
+
     results = {}
     for i in range(len(params)):
         # Get the corresponding values for the parameter 'param' for every pixel, by param = sum(param_i*W_i), for i ~ [0,neighbours]
-        results[str(params[i])] = getParamSmoothingKernel(closest_points, W_ab, data[params[i]], mPrho_closest_points) 
+        results[str(params[i])] = getParamSmoothingKernel(closest_points, W_ab, data[params[i]]) 
 
     if shape == 'r':
         return results
