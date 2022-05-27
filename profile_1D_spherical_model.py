@@ -18,7 +18,7 @@ import sys
 
 userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
 if not os.path.isfile(userSettingsFilePath) or os.stat(userSettingsFilePath).st_size == 0: us.create(userSettingsFilePath)
-userSettingsDictionary = us.load(userSettingsFilePath)
+userSettingsDictionary = us.load(userSettingsFilePath,onlyPathToPhantom=True)
 sys.path.append(userSettingsDictionary["hard_path_to_phantom"]+'/scripts')
 
 from readPhantomDump import *
