@@ -32,7 +32,7 @@ n_grid_vec      = 50
 mesh            = True
 roundToInteger  = True
 round_bounds    = False
-customRanges    = False
+customRanges    = True
 velocity_vec    = True
 printRanges     = True
 minInfLog       = -300
@@ -41,16 +41,14 @@ maxInfLog       = 300
 maxInf          = 10.**maxInfLog
 sigma_bounds_u  = 3.
 sigma_bounds_l  = 2.
+nneighb = 120
 
 
 '''
 Load the smoothing kernel data
 '''
-def smoothData(dumpData, setup, theta, zoom=1):
-    nneighb = 20
+def smoothData(dumpData, setup, theta, observables, zoom=1):
     print('          Calculating zoom = '+str(zoom), end='\r')
-    if "tau" in dumpData: observables = ['rho', 'temp', 'speed', 'tau']
-    else: observables = ['rho', 'temp', 'speed']
     results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
     results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
@@ -105,7 +103,7 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - loc           output directory
     - rAccComp      accretion radius of the companion
 '''
-def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc, rAccComp, number = -1):
+def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, number = -1):
 
     cm_rho  = plt.cm.get_cmap('inferno')
     fig, ax = plt.subplots(1, figsize=(7, 7))
@@ -117,11 +115,11 @@ def densityPlot(smooth, zoom, rhoMin, rhoMax, dumpData, setup, run, loc, rAccCom
     dataRho = np.log10(smooth[zoom]['smooth_z']["rho"])
     if mesh == False:
         axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(), smooth[zoom]['y_z']/cgs.AU_cm(),
-                            s=5, c=dataRho,cmap=cm_rho,vmin=rhoMin, vmax = rhoMax,
+                            s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
                             rasterized=True)
     else:
         axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(),
-                               dataRho, cmap=cm_rho, vmin=rhoMin, vmax=rhoMax,
+                               dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
                                rasterized=True)
 
     if setup['single_star']== False:
@@ -176,19 +174,21 @@ INPUT
     - zoom      zoom factor for the plot
 '''
 
-def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, rAccComp, velocity_vec = False):
+def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, rAccComp, velocity_vec = False):
     # colormap per parameter
     cm = {'rho': plt.cm.get_cmap('inferno'),
           'speed': plt.cm.get_cmap('Spectral'),
           'temp': plt.cm.get_cmap('RdYlGn'),
-          'tau': plt.cm.get_cmap('viridis_r')
+          'tau': plt.cm.get_cmap('viridis_r'),
+          'kappa': plt.cm.get_cmap('Spectral')
           }
 
     # label name per parameter
     name = {'rho': r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
             'speed': '$v$ [km/s]',
             'temp': r'$\log \, T$ [K]',
-            'tau': r'$\tau [/]$',#
+            'tau': r'$\tau [/]$',
+            'kappa': r'$\kappa$ [g/cm$^3$]'
             }
     logtau = False
 
@@ -204,7 +204,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
     gamma = setup["gamma"]
     axPlot = None
     if plane == 'z':
-        if not logtau and par == 'tau':
+        if (not logtau and par == 'tau') or par == 'kappa':
             data = smooth[zoom]['smooth_z'][par]
         elif par == 'speed':
             data = smooth[zoom]['smooth_z'][par] * cgs.cms_kms()
@@ -212,11 +212,11 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
             data = np.log10(smooth[zoom]['smooth_z'][par])
         if mesh == False:
             axPlot = ax.scatter(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(), s=5,
-                                c=data, cmap=cm[par], vmin=mi, vmax=ma,
+                                c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
                                 rasterized=True)
         else:
             axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(),
-                                    data, cmap=cm[par], vmin=mi, vmax=ma,
+                                    data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
                                     rasterized=True, shading="nearest")
 
             if par == 'speed' and velocity_vec:
@@ -227,7 +227,7 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
                             vx / normaliseVectorLength, vy / normaliseVectorLength, scale_units="dots", scale=0.2)
 
     if plane == 'y':
-        if not logtau and par == 'tau':
+        if (not logtau and par == 'tau') or par == 'kappa':
             data = smooth[zoom]['smooth_y'][par]
         elif par == 'speed':
             data = smooth[zoom]['smooth_y'][par] * cgs.cms_kms()
@@ -235,12 +235,12 @@ def onePlot(fig, ax, par, mi, ma, smooth, smooth_vec, zoom, dumpData, setup, axs
             data = np.log10(smooth[zoom]['smooth_y'][par])
         if mesh == False:
             axPlot = ax.scatter(smooth[zoom]['x_y'] / cgs.AU_cm(), smooth[zoom]['z_y'] / cgs.AU_cm(), s=5,
-                                c=data, cmap=cm[par], vmin=mi, vmax=ma,
+                                c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
                                 rasterized=True)
 
         else:
             axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.AU_cm(), smooth[zoom]['z_y'] / cgs.AU_cm(), data,
-                                    cmap=cm[par], vmin=mi, vmax=ma, rasterized=True, shading="nearest")
+                                    cmap=cm[par], vmin=limits[0], vmax=limits[1], rasterized=True, shading="nearest")
 
             if par == 'speed' and velocity_vec:
                 vx = smooth_vec[zoom]['smooth_y']['vx'] * cgs.cms_kms()
@@ -337,7 +337,7 @@ INPUT:
 '''
 
 
-def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, taumin, taumax, dumpData, setup, run, loc, rAccComp, number = - 1):
+def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, number = - 1):
     gamma = setup["gamma"]
 
     fig = None
@@ -357,10 +357,10 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
                }
 
         # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax2, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax3, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
-        onePlot(fig, ax4, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
 
         ax2.set_yticklabels([])
         ax4.set_yticklabels([])
@@ -391,12 +391,12 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
                }
 
         # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax2, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax3, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
-        onePlot(fig, ax4, 'speed', vmin, vmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
-        onePlot(fig, ax5, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax6, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax5, 'temp', limits["temp"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax6, 'temp', limits["temp"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
 
         ax2.set_yticklabels([])
         ax4.set_yticklabels([])
@@ -430,12 +430,12 @@ def allPlots(smooth, smooth_vec, zoom, rhoMin, rhoMax, vmin, vmax, Tmin, Tmax, t
                }
 
         # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax2, 'rho', rhoMin, rhoMax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax3, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax4, 'temp', Tmin, Tmax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax5, 'tau', taumin, taumax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax6, 'tau', taumin, taumax, smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax3, 'kappa', limits["kappa"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax4, 'kappa', limits["kappa"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax5, 'tau', limits["tau"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
+        onePlot(fig, ax6, 'tau', limits["tau"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
 
         ax2.set_yticklabels([])
         ax4.set_yticklabels([])
@@ -478,103 +478,127 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
         rAccComp = setup['rAccrComp']
         if rAccComp <= 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"]): rAccComp = 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"])
 
-    rhoMin = {}
-    rhoMax = {}
-    vMin = {}
-    vMax = {}
-    TMin = {}
-    TMax = {}
-    tauMin = {}
-    tauMax = {}
-    for zoom in zoomin:
-        rhoMin[zoom] = 0.
-        rhoMax[zoom] = 0.
-        vMin[zoom] = 0.
-        vMax[zoom] = 0.
-        TMin[zoom] = 0.
-        TMax[zoom] = 0.
-        tauMin[zoom] = 0.
-        tauMax[zoom] = 0.
 
+    if "tau" in dumpData: observables = ['rho', 'tau', 'kappa']
+    else: observables = ['rho', 'temp', 'speed']
+
+    limits = {}
+    for observable in observables:
+        limits[observable] = {}
+        for zoom in zoomin:
+            limits[observable][zoom] = [0.,0.]
+            
     # Ranges are the same as for '/gamma/non_isowind/gamma1.4/global'
     if "global" in run:
-        rhoMin[1], rhoMax[1] = -24.39280, -16.86249
-        rhoMin[2], rhoMax[2] = -20.80625, -17.63237
-        rhoMin[5], rhoMax[5] = -19.71264, -16.90193
+        if "rho" in observables:
+            limits["rho"][1] = [-24.39280, -16.86249]
+            limits["rho"][2] = [-20.80625, -17.63237]
+            limits["rho"][5] = [-19.71264, -16.90193]
 
-        vMin[1], vMax[1] = 5.96568, 38.44218
-        vMin[2], vMax[2] = 5.99680, 33.89827
-        vMin[5], vMax[5] = 3.17029, 25.16178
+        if "speed" in observables:
+            limits["speed"][1] = [5.96568, 38.44218]
+            limits["speed"][2] = [5.99680, 33.89827]
+            limits["speed"][5] = [3.17029, 25.16178]
 
-        TMin[1], TMax[1] = 1.26680, 4.65751
-        TMin[2], TMax[2] = 2.58142, 4.07818
-        TMin[5], TMax[5] = 2.52443, 4.53982
+        if "temp" in observables:
+            limits["temp"][1] = [1.26680, 4.65751]
+            limits["temp"][2] = [2.58142, 4.07818]
+            limits["temp"][5] = [2.52443, 4.53982]
 
-        tauMin[1], tauMax[1] = -7., -9.
-        tauMin[2], tauMax[2] = -7., -9.
-        tauMin[5], tauMax[5] = -7., -9.
+        if "tau" in observables:
+            limits["tau"][1] = [0, 0.17]
+            limits["tau"][2] = [0, 0.17]
+            limits["tau"][5] = [0, 0.17]
+
+        if "kappa" in observables:
+            limits["kappa"][1] = [0., 3.]
+            limits["kappa"][2] = [0., 3.]
+            limits["kappa"][5] = [0., 3.]
 
     # Ranges are the same as for '/gamma/non_isowind/gamma1.4/local'
     elif "local" in run:
-        rhoMin[1], rhoMax[1] = -19.96524, -16.86532
-        rhoMin[2], rhoMax[2] = -19.57196, -15.85257
-        rhoMin[5], rhoMax[5] = -18.47570, -14.90456
+        if "rho" in observables:
+            limits["rho"][1] = [-19.96524, -16.86532]
+            limits["rho"][2] = [-19.57196, -15.85257]
+            limits["rho"][5] = [-18.47570, -14.90456]
 
-        vMin[1], vMax[1] = 2.54833, 21.86302
-        vMin[2], vMax[2] = 0.03749, 18.39068
-        vMin[5], vMax[5] = 0.00000, 22.53676
+        if "speed" in observables:
+            limits["speed"][1] = [2.54833, 21.86302]
+            limits["speed"][2] = [0.03749, 18.39068]
+            limits["speed"][5] = [0.00000, 22.53676]
 
-        TMin[1], TMax[1] = 2.26195, 4.49702
-        TMin[2], TMax[2] = 2.14475, 4.92498
-        TMin[5], TMax[5] = 1.97842, 5.32584
+        if "temp" in observables:
+            limits["temp"][1] = [2.26195, 4.49702]
+            limits["temp"][2] = [2.14475, 4.92498]
+            limits["temp"][5] = [1.97842, 5.32584]
 
-        tauMin[1], tauMax[1] = -7., -9.
-        tauMin[2], tauMax[2] = -7., -9.
-        tauMin[5], tauMax[5] = -7., -9.
+        if "tau" in observables:
+            limits["tau"][1] = [0, 0.17]
+            limits["tau"][2] = [0, 0.17]
+            limits["tau"][5] = [0, 0.17]
+
+        if "kappa" in observables:
+            limits["kappa"][1] = [0., 3.]
+            limits["kappa"][2] = [0., 3.]
+            limits["kappa"][5] = [0., 3.]
     
     elif customRanges:
-        rhoMin[1], rhoMax[1] = -19, -14
-        rhoMin[2], rhoMax[2] = -19, -14
-        rhoMin[5], rhoMax[5] = -19, -14
+        if "rho" in observables:
+            limits["rho"][1] = [-19, -14]
+            limits["rho"][2] = [-19, -14]
+            limits["rho"][5] = [-19, -14]
 
-        vMin[1], vMax[1] = 0., 30.
-        vMin[2], vMax[2] = 0., 30.
-        vMin[5], vMax[5] = 0., 30.
+        if "speed" in observables:
+            limits["speed"][1] = [0., 30.]
+            limits["speed"][2] = [0., 30.]
+            limits["speed"][5] = [0., 30.]
 
-        TMin[1], TMax[1] = 1.5, 5.
-        TMin[2], TMax[2] = 1.5, 5.
-        TMin[5], TMax[5] = 1.5, 5.
+        if "temp" in observables:
+            limits["temp"][1] = [1.5, 5.]
+            limits["temp"][1] = [1.5, 5.]
+            limits["temp"][1] = [1.5, 5.]
 
-        tauMin[1], tauMax[1] = 0, 5
-        tauMin[2], tauMax[2] = 0, 5
-        tauMin[5], tauMax[5] = 0, 5
+        if "tau" in observables:
+            limits["tau"][1] = [0, 0.17]
+            limits["tau"][2] = [0, 0.17]
+            limits["tau"][5] = [0, 0.17]
+
+        if "kappa" in observables:
+            limits["kappa"][1] = [0., 3.]
+            limits["kappa"][2] = [0., 3.]
+            limits["kappa"][5] = [0., 3.]
 
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}
     smooth_vec = {}
     for zoom in zoomin:
-        smooth[zoom], smooth_vec[zoom] = smoothData(dumpData, setup, theta, zoom)
+        smooth[zoom], smooth_vec[zoom] = smoothData(dumpData, setup, theta, observables, zoom)
 
         if not "global" in run and not "local" in run and not customRanges:
-            rhoMin[zoom], rhoMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["rho"]), log=True, round=round_bounds)
-            vMin[zoom], vMax[zoom] = findBounds(smooth[zoom]['smooth_y']["speed"] * cgs.cms_kms(), log=False, round=round_bounds)
-            vMin[zoom] = max(vMin[zoom], 0.)
-            TMin[zoom], TMax[zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["temp"]), log=True, round=round_bounds)
-            if "tau" in smooth[zoom]['smooth_y']:
-                tauMin[zoom], tauMax[zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
-                tauMin[zoom] = 0
+            if "rho" in observables:
+                limits["rho"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["rho"]), log=True, round=round_bounds)
+            if "speed" in observables:
+                limits["speed"][zoom] = findBounds(smooth[zoom]['smooth_y']["speed"] * cgs.cms_kms(), log=False, round=round_bounds)
+                limits["speed"][zoom][0] = max(limits["speed"][zoom][0], 0.)
+            if "temp" in observables:
+                limits["temp"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["temp"]), log=True, round=round_bounds)
+            if "tau" in observables:
+                limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
+                limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
+            if "tau" in observables:
+                limits["kappa"][zoom] = findBounds(smooth[zoom]['smooth_y']["kappa"], log=False, round=round_bounds)
 
         if printRanges:
             print("          Ranges of Parameters: zoom = "+str(zoom))
-            print("          rhoMin, rhoMax = {0:10.5f}, {1:10.5f}".format(rhoMin[zoom], rhoMax[zoom]))
-            print("          vMin  , vMax   = {0:10.5f}, {1:10.5f}".format(vMin[zoom], vMax[zoom]))
-            print("          TMin  , TMax   = {0:10.5f}, {1:10.5f}".format(TMin[1], TMax[1]))
-            if "tau" in smooth[zoom]['smooth_y']:
-                print("          tauMin, tauMax = {0:10.5f}, {1:10.5f}".format(tauMin[1], tauMax[1]))
+            if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
+            if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
+            if "temp"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["temp"][zoom][0], limits["temp"][zoom][1]))
+            if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
+            if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
 
         # Make plots
-        densityPlot(smooth, zoom, rhoMin[zoom], rhoMax[zoom], dumpData, setup, run, loc, rAccComp, number = number)
-        allPlots(smooth, smooth_vec, zoom, rhoMin[zoom], rhoMax[zoom], vMin[zoom], vMax[zoom], TMin[zoom], TMax[zoom], tauMin[zoom], tauMax[zoom], dumpData, setup, run, loc, rAccComp, number = number)
+        densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, number = number)
+        allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, number = number)
 
     
 def findBounds(data, log = False, round = False):

@@ -22,11 +22,22 @@ def getTemp(pressure, density, mu, u):
     return temp
 
 '''
-Returns the dencity, given smoothing length, hfact (proportionality factor specifying the smoothing length) and the particle mass [g] in g/cm^3
+Returns the density, given smoothing length, hfact (proportionality factor specifying the smoothing length) and the particle mass [g] in g/cm^3
 '''
 def getRho(hi, hfact, pmassi):
     rhoh = pmassi*(hfact/abs(hi))**3
     return rhoh
+
+'''
+Returns the opacity, given smoothing length, hfact (proportionality factor specifying the smoothing length) and the particle mass [g] in g/cm^3
+'''
+def getKappa(Teq):
+    kappa_gas = 2e-4
+    bowen_delta = 60.
+    bowen_Tcond = 1500.
+    bowen_max   = 2.7991
+    kappa = bowen_max/(1+np.exp((Teq-bowen_Tcond)/bowen_delta))+kappa_gas
+    return kappa
 
 '''
 Returns the speed of sound [km/s] of the local medium: c_s = sqrt(gamma*P/rho), with gamma = cst, P in [Ba] and rho in [g/cm^3]

@@ -59,6 +59,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     if containsTemp:
         temp = dump["blocks"][0]["data"]["Tdust"]
         if (len(temp) == 2*len(h)): temp = temp[1::2] # A problem with loading the files, info: Mats
+        
 
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [h > 0.0] * cgs.AU_cm()       # position coordinates          [cm]
@@ -75,6 +76,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     if not containsTemp: temp = pq.getTemp(p, rho, setup['mu'], u) # temperature                [K]
+    if containsTau: kappa = pq.getKappa(temp)
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -134,7 +136,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz                     # [cm/s]
             }
-    if containsTau: data["tau"] = tau
+    if containsTau:
+        data["tau"]   = tau
+        data["kappa"] = kappa
 
     
     return data
@@ -203,6 +207,7 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     if not containsTemp: temp = pq.getTemp(p, rho, setup['mu'], u) # temperature                [K]
+    if containsTau: kappa = pq.getKappa(temp)
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -237,7 +242,9 @@ def LoadDump_single_cgs(run, loc, setup, userSettingsDictionary):
             'vy'            : vy,             # [cm/s]
             'vz'            : vz              # [cm/s]
             }                    
-    if containsTau: data["tau"] = tau             
+    if containsTau:
+        data["tau"]   = tau             
+        data["kappa"] = kappa             
 
     
     return data
@@ -274,7 +281,9 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     u     = dump['u']
     rho   = dump['rho']
     temp  = dump['temp']
-    if "tau" in dump: tau   = dump['tau']
+    if "tau" in dump:
+        tau   = dump['tau']
+        kappa = dump['kappa']
     h     = dump['h']
     r     = dump['r']
 
@@ -289,7 +298,9 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     u     = u     [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # erg/g
     rho   = rho   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # g/cm^3
     temp  = temp  [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # K
-    if "tau" in dump: tau = tau   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 
+    if "tau" in dump:
+        tau   = tau   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 
+        kappa = kappa [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 
     h     = h     [r > factor * setup['sma_ini'] * cgs.AU_cm() ]                                 # cm
     r     = r     [r > factor * setup['sma_ini'] * cgs.AU_cm() ] 
     
@@ -304,7 +315,9 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
     u     = u     [r < bound * cgs.AU_cm()]                                 # erg/g
     rho   = rho   [r < bound * cgs.AU_cm()]                                 # g/cm^3
     temp  = temp  [r < bound * cgs.AU_cm()]                                 # K
-    if "tau" in dump: tau = tau   [r < bound * cgs.AU_cm()]                                 # K
+    if "tau" in dump: 
+        tau   = tau   [r < bound * cgs.AU_cm()]
+        kappa = kappa [r < bound * cgs.AU_cm()]
     h     = h     [r < bound * cgs.AU_cm()]                                 # cm
     r     = r     [r < bound * cgs.AU_cm()] 
     
@@ -342,7 +355,9 @@ def LoadDump_outer_cgs(run, loc, factor, bound, setup, dump):
             'theta'         : theta,         
             'cs'            : cs             # [cm]
             }
-    if "tau" in dump: data["tau"] = tau
+    if "tau" in dump:
+        data["tau"]   = tau
+        data["kappa"] = kappa
     
     return data
 
