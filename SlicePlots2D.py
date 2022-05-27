@@ -180,7 +180,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
           'speed': plt.cm.get_cmap('Spectral'),
           'temp': plt.cm.get_cmap('RdYlGn'),
           'tau': plt.cm.get_cmap('viridis_r'),
-          'kappa': plt.cm.get_cmap('Spectral')
+          'kappa': plt.cm.get_cmap('Spectral_r')
           }
 
     # label name per parameter
@@ -466,7 +466,7 @@ main definition
 '''
 
 
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10]):
     print('')
     print('(1)  Start calculations for slice plots...')
 
@@ -491,82 +491,97 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5]):
     # Ranges are the same as for '/gamma/non_isowind/gamma1.4/global'
     if "global" in run:
         if "rho" in observables:
-            limits["rho"][1] = [-24.39280, -16.86249]
-            limits["rho"][2] = [-20.80625, -17.63237]
-            limits["rho"][5] = [-19.71264, -16.90193]
+            limits["rho"][1]  = [-24.39280, -16.86249]
+            limits["rho"][2]  = [-20.80625, -17.63237]
+            limits["rho"][5]  = [-19.71264, -16.90193]
+            limits["rho"][10] = [-19.71264, -16.90193]
 
         if "speed" in observables:
-            limits["speed"][1] = [5.96568, 38.44218]
-            limits["speed"][2] = [5.99680, 33.89827]
-            limits["speed"][5] = [3.17029, 25.16178]
+            limits["speed"][1]  = [5.96568, 38.44218]
+            limits["speed"][2]  = [5.99680, 33.89827]
+            limits["speed"][5]  = [3.17029, 25.16178]
+            limits["speed"][10] = [3.17029, 25.16178]
 
         if "temp" in observables:
-            limits["temp"][1] = [1.26680, 4.65751]
-            limits["temp"][2] = [2.58142, 4.07818]
-            limits["temp"][5] = [2.52443, 4.53982]
+            limits["temp"][1]  = [1.26680, 4.65751]
+            limits["temp"][2]  = [2.58142, 4.07818]
+            limits["temp"][5]  = [2.52443, 4.53982]
+            limits["temp"][10] = [2.52443, 4.53982]
 
         if "tau" in observables:
-            limits["tau"][1] = [0, 0.17]
-            limits["tau"][2] = [0, 0.17]
-            limits["tau"][5] = [0, 0.17]
+            limits["tau"][1]  = [0, 0.17]
+            limits["tau"][2]  = [0, 0.17]
+            limits["tau"][5]  = [0, 0.17]
+            limits["tau"][10] = [0, 0.17]
 
         if "kappa" in observables:
-            limits["kappa"][1] = [0., 3.]
-            limits["kappa"][2] = [0., 3.]
-            limits["kappa"][5] = [0., 3.]
+            limits["kappa"][1]  = [0., 3.]
+            limits["kappa"][2]  = [0., 3.]
+            limits["kappa"][5]  = [0., 3.]
+            limits["kappa"][10] = [0., 3.]
 
     # Ranges are the same as for '/gamma/non_isowind/gamma1.4/local'
     elif "local" in run:
         if "rho" in observables:
-            limits["rho"][1] = [-19.96524, -16.86532]
-            limits["rho"][2] = [-19.57196, -15.85257]
-            limits["rho"][5] = [-18.47570, -14.90456]
+            limits["rho"][1]  = [-19.96524, -16.86532]
+            limits["rho"][2]  = [-19.57196, -15.85257]
+            limits["rho"][5]  = [-18.47570, -14.90456]
+            limits["rho"][10] = [-18.47570, -14.90456]
 
         if "speed" in observables:
-            limits["speed"][1] = [2.54833, 21.86302]
-            limits["speed"][2] = [0.03749, 18.39068]
-            limits["speed"][5] = [0.00000, 22.53676]
+            limits["speed"][1]  = [2.54833, 21.86302]
+            limits["speed"][2]  = [0.03749, 18.39068]
+            limits["speed"][5]  = [0.00000, 22.53676]
+            limits["speed"][10] = [0.00000, 22.53676]
 
         if "temp" in observables:
-            limits["temp"][1] = [2.26195, 4.49702]
-            limits["temp"][2] = [2.14475, 4.92498]
-            limits["temp"][5] = [1.97842, 5.32584]
+            limits["temp"][1]  = [2.26195, 4.49702]
+            limits["temp"][2]  = [2.14475, 4.92498]
+            limits["temp"][5]  = [1.97842, 5.32584]
+            limits["temp"][10] = [1.97842, 5.32584]
 
         if "tau" in observables:
-            limits["tau"][1] = [0, 0.17]
-            limits["tau"][2] = [0, 0.17]
-            limits["tau"][5] = [0, 0.17]
+            limits["tau"][1]  = [0, 0.17]
+            limits["tau"][2]  = [0, 0.17]
+            limits["tau"][5]  = [0, 0.17]
+            limits["tau"][10] = [0, 0.17]
 
         if "kappa" in observables:
-            limits["kappa"][1] = [0., 3.]
-            limits["kappa"][2] = [0., 3.]
-            limits["kappa"][5] = [0., 3.]
+            limits["kappa"][1]  = [0., 3.]
+            limits["kappa"][2]  = [0., 3.]
+            limits["kappa"][5]  = [0., 3.]
+            limits["kappa"][10] = [0., 3.]
     
     elif customRanges:
         if "rho" in observables:
-            limits["rho"][1] = [-19, -14]
-            limits["rho"][2] = [-19, -14]
-            limits["rho"][5] = [-19, -14]
+            limits["rho"][1]  = [-19, -14]
+            limits["rho"][2]  = [-19, -14]
+            limits["rho"][5]  = [-19, -14]
+            limits["rho"][10] = [-19, -14]
 
         if "speed" in observables:
-            limits["speed"][1] = [0., 30.]
-            limits["speed"][2] = [0., 30.]
-            limits["speed"][5] = [0., 30.]
+            limits["speed"][1]  = [0., 30.]
+            limits["speed"][2]  = [0., 30.]
+            limits["speed"][5]  = [0., 30.]
+            limits["speed"][10] = [0., 30.]
 
         if "temp" in observables:
-            limits["temp"][1] = [1.5, 5.]
-            limits["temp"][1] = [1.5, 5.]
-            limits["temp"][1] = [1.5, 5.]
+            limits["temp"][1]  = [1.5, 5.]
+            limits["temp"][2]  = [1.5, 5.]
+            limits["temp"][5]  = [1.5, 5.]
+            limits["temp"][10] = [1.5, 5.]
 
         if "tau" in observables:
-            limits["tau"][1] = [0, 0.17]
-            limits["tau"][2] = [0, 0.17]
-            limits["tau"][5] = [0, 0.17]
+            limits["tau"][1]  = [0, 0.17]
+            limits["tau"][2]  = [0, 0.17]
+            limits["tau"][5]  = [0, 0.17]
+            limits["tau"][10] = [0, 0.17]
 
         if "kappa" in observables:
-            limits["kappa"][1] = [0., 3.]
-            limits["kappa"][2] = [0., 3.]
-            limits["kappa"][5] = [0., 3.]
+            limits["kappa"][1]  = [0., 3.]
+            limits["kappa"][2]  = [0., 3.]
+            limits["kappa"][5]  = [0., 3.]
+            limits["kappa"][10] = [0., 3.]
 
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}
