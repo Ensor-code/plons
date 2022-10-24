@@ -32,6 +32,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     index = 0
     if number == -1: index = findLastFullDumpIndex(userPrefix, setup, runName)
     else: index = number
+    print('file number: ',index)
 
 
     # make filename of this filenumber
@@ -63,13 +64,13 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
 
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [h > 0.0] * cgs.AU_cm()       # position coordinates          [cm]
-    y     = y                     [h > 0.0] * cgs.AU_cm()       
+    y     = y                     [h > 0.0] * cgs.AU_cm()      
     z     = z                     [h > 0.0] * cgs.AU_cm()      
     mass  = mass                  [h > 0.0] * cgs.Msun_gram()   # mass of sph particles         [g]
-    vx    = vx                    [h > 0.0]                     # velocity components           [cm/s]
-    vy    = vy                    [h > 0.0]
-    vz    = vz                    [h > 0.0]
-    u     = u                     [h > 0.0]                     # specific internal density     [erg/g]
+    vx    = vx                    [h > 0.0] * cgs.cu_vel()                    # velocity components           [cm/s]
+    vy    = vy                    [h > 0.0] * cgs.cu_vel()
+    vz    = vz                    [h > 0.0] * cgs.cu_vel()
+    u     = u                     [h > 0.0] * cgs.cu_e()                    # specific internal density     [erg/g]
     if containsTemp: temp = temp  [h > 0.0]                     # temperature                   [K]
     if containsTau and len(tau) == len(h): tau = tau [h > 0.0]  # optical depth                 
     h     = h                     [h > 0.0] * cgs.AU_cm()       # smoothing length              [cm]
@@ -99,15 +100,23 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
     rComp    = gf.calc_r(xComp, yComp, zComp)
     massComp = dump["blocks"][1]["data"]["m"][1] * cgs.Msun_gram()
     
+    if setup['triple_star'] == True:
+        # inner companion
+        xComp_in    = dump["blocks"][1]["data"]["x"][2] * cgs.AU_cm()
+        yComp_in    = dump["blocks"][1]["data"]["y"][2] * cgs.AU_cm()
+        zComp_in    = dump["blocks"][1]["data"]["z"][2] * cgs.AU_cm()
+        posComp_in  = [xComp_in, yComp_in, zComp_in]
+        rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
+        massComp_in = dump["blocks"][1]["data"]["m"][2] * cgs.Msun_gram()
+        
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
-    
+        
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
     rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
     
-  
     
     # output
     data = {'position'      : position,              # [cm]
@@ -136,9 +145,16 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number):
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz                     # [cm/s]
             }
+    
     if containsTau:
         data["tau"]   = tau
         data["kappa"] = kappa
+        
+    if setup['triple_star'] == True:
+        data["posComp_in"]  = posComp_in               # [cm]
+        data['rComp_in']    = rComp_in                 # [cm]
+        data['massComp_in'] = massComp_in              # [g]
+        
 
     
     return data

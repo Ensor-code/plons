@@ -103,7 +103,7 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - loc           output directory
     - rAccComp      accretion radius of the companion
 '''
-def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, number = -1):
+def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = -1):
 
     cm_rho  = plt.cm.get_cmap('inferno')
     fig, ax = plt.subplots(1, figsize=(7, 7))
@@ -130,9 +130,15 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, numbe
 
         circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
-        if setup['single_star'] == False:
-            circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
-            ax.add_artist(circleComp)
+        circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+        ax.add_artist(circleComp)
+        
+        if setup['triple_star']==True:
+            xcomp_in = dumpData['posComp_in' ][0] / cgs.AU_cm()
+            ycomp_in = dumpData['posComp_in' ][1] / cgs.AU_cm()
+            circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
+            ax.add_artist(circleComp_in)
+            
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -174,11 +180,12 @@ INPUT
     - zoom      zoom factor for the plot
 '''
 
-def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, rAccComp, velocity_vec = False):
+def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, rAccComp,rAccComp_in, velocity_vec = False):
     # colormap per parameter
     cm = {'rho': plt.cm.get_cmap('inferno'),
-          'speed': plt.cm.get_cmap('Spectral'),
-          'temp': plt.cm.get_cmap('RdYlGn'),
+          'speed': plt.cm.get_cmap('CMRmap'),
+          #'temp': plt.cm.get_cmap('RdYlGn'),
+          'temp': plt.cm.get_cmap('hot'), #nipy_spectral
           'tau': plt.cm.get_cmap('viridis_r'),
           'kappa': plt.cm.get_cmap('Spectral_r')
           }
@@ -196,10 +203,16 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
     yAGB = dumpData['posAGB'][1] / cgs.AU_cm()
     zAGB = dumpData['posAGB'][2] / cgs.AU_cm()
 
+
     if setup['single_star'] == False:
         xcomp = dumpData['posComp'][0] / cgs.AU_cm()
         ycomp = dumpData['posComp'][1] / cgs.AU_cm()
         zcomp = dumpData['posComp'][2] / cgs.AU_cm()
+        if setup['triple_star']==True:
+            xcomp_in = dumpData['posComp_in'][0] / cgs.AU_cm()
+            ycomp_in = dumpData['posComp_in'][1] / cgs.AU_cm()
+            zcomp_in = dumpData['posComp_in'][2] / cgs.AU_cm()
+            
 
     gamma = setup["gamma"]
     axPlot = None
@@ -210,6 +223,8 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             data = smooth[zoom]['smooth_z'][par] * cgs.cms_kms()
         else:
             data = np.log10(smooth[zoom]['smooth_z'][par])
+            
+            if par == 'temp': print('Tmax: ',np.max(data), ', Tmin: ',np.min(data))
         if mesh == False:
             axPlot = ax.scatter(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(), s=5,
                                 c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
@@ -225,12 +240,14 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
                 normaliseVectorLength = np.hypot(vx, vy)
                 ax.quiver(smooth_vec[zoom]['x_z'] / cgs.AU_cm(), smooth_vec[zoom]['y_z'] / cgs.AU_cm(),
                             vx / normaliseVectorLength, vy / normaliseVectorLength, scale_units="dots", scale=0.2)
+                #print('max vel [km/s]: ',np.max(data))
 
     if plane == 'y':
         if (not logtau and par == 'tau') or par == 'kappa':
             data = smooth[zoom]['smooth_y'][par]
         elif par == 'speed':
             data = smooth[zoom]['smooth_y'][par] * cgs.cms_kms()
+            #print('max vel [km/s]: ',np.max(data))
         else:
             data = np.log10(smooth[zoom]['smooth_y'][par])
         if mesh == False:
@@ -260,6 +277,10 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b,
                                         color="black", zorder=10)
                 ax.add_artist(circleComp)
+                if setup['triple_star']==True:
+                    circleComp_in = plt.Circle((xcomp_in, zcomp_in), rAccComp_in, transform=ax.transData._b,
+                                        color="black", zorder=10)
+                    ax.add_artist(circleComp_in)                    
 
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -277,6 +298,13 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b,
                                         color="black", zorder=10)
                 ax.add_artist(circleComp)
+                if setup['triple_star']==True:
+                    pos = np.array([xcomp_in,ycomp_in,zcomp_in])
+                    circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b,
+                                        color="black", zorder=10)
+                    ax.add_artist(circleComp_in) 
+                
+                
 
     else:
         if ax == axs[2] or ax == axs[4] or ax == axs[6]:
@@ -286,6 +314,10 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             if setup['single_star'] == False:
                 circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
                 ax.add_artist(circleComp)
+                if setup['triple_star']==True:
+                    circleComp_in = plt.Circle((xcomp_in, zcomp_in), rAccComp_in, transform=ax.transData._b,
+                                        color="black", zorder=10)
+                    ax.add_artist(circleComp_in)
 
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -296,11 +328,17 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
         # plot the position of the AGB star and comp in the face-on plane
         if ax == axs[1] or ax == axs[3] or ax == axs[5]:
             ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
+            #circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
+            circleAGB = plt.Circle((xAGB, yAGB), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleAGB)
             if setup['single_star'] == False:
-                circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+                #circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+                circleComp = plt.Circle((xcomp, ycomp), rAccComp, transform=ax.transData._b, color="black", zorder=10)
                 ax.add_artist(circleComp)
+                if setup['triple_star']==True:
+                    circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b,
+                                        color="black", zorder=10)
+                    ax.add_artist(circleComp_in)
 
     ax.tick_params(labelsize=20)
     ax.set_aspect('equal')
@@ -337,7 +375,7 @@ INPUT:
 '''
 
 
-def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, number = - 1):
+def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = - 1):
     gamma = setup["gamma"]
 
     fig = None
@@ -357,10 +395,10 @@ def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccCo
                }
 
         # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
-        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
+        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in)
+        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in)
+        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in, velocity_vec = velocity_vec)
+        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in, velocity_vec = velocity_vec)
 
         ax2.set_yticklabels([])
         ax4.set_yticklabels([])
@@ -391,13 +429,14 @@ def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccCo
                }
 
         # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, velocity_vec = velocity_vec)
-        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, velocity_vec = velocity_vec)
-        onePlot(fig, ax5, 'temp', limits["temp"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax6, 'temp', limits["temp"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-
+        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in)
+        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in)
+        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in, velocity_vec = velocity_vec)
+        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in, velocity_vec = velocity_vec)
+        onePlot(fig, ax5, 'temp', limits["temp"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in)
+        onePlot(fig, ax6, 'temp', limits["temp"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in)
+    
+        
         ax2.set_yticklabels([])
         ax4.set_yticklabels([])
         ax6.set_yticklabels([])
@@ -430,12 +469,12 @@ def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccCo
                }
 
         # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax3, 'kappa', limits["kappa"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax4, 'kappa', limits["kappa"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
-        onePlot(fig, ax5, 'tau', limits["tau"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp)
-        onePlot(fig, ax6, 'tau', limits["tau"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp)
+        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in)
+        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in)
+        onePlot(fig, ax3, 'kappa', limits["kappa"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in)
+        onePlot(fig, ax4, 'kappa', limits["kappa"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in)
+        onePlot(fig, ax5, 'tau', limits["tau"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', rAccComp, rAccComp_in)
+        onePlot(fig, ax6, 'tau', limits["tau"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', rAccComp, rAccComp_in)
 
         ax2.set_yticklabels([])
         ax4.set_yticklabels([])
@@ -477,6 +516,10 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10]):
         theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
         rAccComp = setup['rAccrComp']
         if rAccComp <= 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"]): rAccComp = 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"])
+        if setup['triple_star']==True:
+            rAccComp_in = setup['rAccrComp_in']
+        else:
+            rAccComp_in = 0
 
 
     if "tau" in dumpData: observables = ['rho', 'tau', 'kappa']
@@ -554,22 +597,22 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10]):
     
     elif customRanges:
         if "rho" in observables:
-            limits["rho"][1]  = [-19, -14]
-            limits["rho"][2]  = [-19, -14]
-            limits["rho"][5]  = [-19, -14]
-            limits["rho"][10] = [-19, -14]
+            limits["rho"][1]  = [-21, -14]
+            limits["rho"][2]  = [-21, -14]
+            limits["rho"][5]  = [-21, -14]
+            limits["rho"][10] = [-21, -14]
 
         if "speed" in observables:
-            limits["speed"][1]  = [0., 30.]
-            limits["speed"][2]  = [0., 30.]
-            limits["speed"][5]  = [0., 30.]
-            limits["speed"][10] = [0., 30.]
+            limits["speed"][1]  = [0., 20.]
+            limits["speed"][2]  = [0., 20.]
+            limits["speed"][5]  = [0., 20.]
+            limits["speed"][10] = [0., 20.]
 
         if "temp" in observables:
-            limits["temp"][1]  = [1.5, 5.]
-            limits["temp"][2]  = [1.5, 5.]
-            limits["temp"][5]  = [1.5, 5.]
-            limits["temp"][10] = [1.5, 5.]
+            limits["temp"][1]  = [2.5, 4.]
+            limits["temp"][2]  = [2.5, 4.]
+            limits["temp"][5]  = [3., 4.5]
+            limits["temp"][10] = [3., 4.5]
 
         if "tau" in observables:
             limits["tau"][1]  = [0, 0.17]
@@ -612,8 +655,8 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10]):
             if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
 
         # Make plots
-        densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, number = number)
-        allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, number = number)
+        densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number)
+        allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number)
 
     
 def findBounds(data, log = False, round = False):

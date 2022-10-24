@@ -226,7 +226,7 @@ Main definition
 '''
 def CMF_meanRho(run,outloc, data, setup, factor):
     print('')
-    print('(5)  Start calculations for the cummulative mass fraction and mean density plots...')
+    print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
 
     # legend
     left          = mlines.Line2D([],[], color = 'k', linestyle = 'dashed', label = 'Periastron')
@@ -278,7 +278,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         
         plt.setp((ax), xticks= [0,1/4,1/2], xticklabels=['$\pi/2$', '$\pi/4$ $&$ $3\pi/4$', '0 $&$ $\pi$'])
         ax.tick_params(labelsize=10)
-        ax.set_title('Model '+ str(run)+': Mean density without '+str(factor)+'a', fontsize = 15)
+        ax.set_title('Mean density without '+str(factor)+'a', fontsize = 15)
         ax.legend(handles = handles, loc = 'lower right',  fontsize = 8)
         fig.tight_layout()
 
@@ -288,7 +288,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
 
 
     # Plot of the cumulative mass fraction 
-    fig = plt.figure(figsize=(5, 6))
+    fig = plt.figure(figsize=(6,6))
 
     color  = 'k'
     marker = 'solid'
@@ -322,7 +322,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
 
     plt.xlabel('$\\theta$',fontsize = 13)
     plt.ylabel('$M[\\theta]/M_{tot}$', fontsize = 13)
-    plt.title('Model '+ str(run) + ': Cumulative mass fraction without'+str(factor)+'a', fontsize = 15)
+    plt.title('Cumulative mass fraction without'+str(factor)+'a', fontsize = 15)
     fig.tight_layout()
 
     plt.savefig(os.path.join(outloc, 'png/CummulativeMassFractionPlot_without_' + str(factor) + 'a' + ".png"))
@@ -337,7 +337,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     ratioAll       = infoForPlot['meanRho'][0]/meanAllRho
 
     # Makes text file with all usefull data
-    title = os.path.join(outloc,'data_CummulativeMassFraction_meanDensity_without_'+str(factor)+'a.txt')
+    title = os.path.join(outloc,'txt/data_CummulativeMassFraction_meanDensity_without_'+str(factor)+'a.txt')
     with open (title,'w') as f:
         f.write('Model '+str(run)+'\n')
         f.write('\n')

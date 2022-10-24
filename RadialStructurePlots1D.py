@@ -44,13 +44,13 @@ def getParamsLine(results_line, vec1, minT, gamma, vec2 = [], dumpData = None):
 '''
 definition used in plotParR, plots radial structure of given parameter (log(rho)/|v|/T) on the x- and y-axis
 '''
-def oneRadialStructurePlot(parX,parY,parZ, X, Y, Z, parName, axis, parMin, parMax, xcomp, xAGB, bound, limX):
+def oneRadialStructurePlot(parX,parZ, X, Z, parName, axis, parMin, parMax, rcomp, bound, limX):
 
     axis.set_xlim(limX, bound)
-    axis.vlines(xcomp, parMin, parMax, 'black', linestyle='--', linewidth=1., label=r"$x_\mathrm{comp}$", zorder = 10)
-
+    axis.vlines(rcomp, parMin, parMax, 'black', linestyle='--', linewidth=1., label=r"$x_\mathrm{comp}$", zorder = 10)
+    
     axis.plot(X/cgs.AU_cm(), parX, color = 'C0', label = '$x$-axis', lw = 1)
-    axis.plot((Z/cgs.AU_cm()), parZ, color = 'C1', label = '$z$-axis', lw = 1)
+    axis.plot(Z/cgs.AU_cm(), parZ, color = 'C1', label = '$z$-axis', lw = 1)
 
     axis.set_ylim(parMin,parMax)
 
@@ -63,17 +63,11 @@ def radialStructPlots(run,loc, dumpData, setup):
     print('(2)  Start calculations for the radial structure plots.')
 
     #plots radial structure of log(rho), |v| and T on the x- and y-axis
-
-    xcomp = 0.
-    xAGB  = 0.
-    if setup['single_star'] == False:
-        xcomp = dumpData['posComp'][0]/cgs.AU_cm()
-        xAGB  = dumpData['posAGB' ][0]/cgs.AU_cm()
-
     fig = None
     gamma = setup["gamma"]
 
     if gamma <= 1.:
+        print('case gamma <=1')
         fig = plt.figure(figsize=(10, 10))
 
         # fig = plt.figure(figsize=(4.5, 10))
@@ -109,15 +103,17 @@ def radialStructPlots(run,loc, dumpData, setup):
         vini = setup['v_ini']
 
         # Bounds
+        
         rhoMinX, rhoMaxX = np.min(parX[0]), np.max(parX[0])
         rhoMinZ, rhoMaxZ = np.min(parZ[0]), np.max(parZ[0])
-        rhoMin = min(rhoMinX, rhoMinZ)
-        rhoMax = 10 * max(rhoMaxX, rhoMaxZ)
+        rhoMin           = 0.1 * min(rhoMinX[rhoMinX>0], rhoMinZ[rhoMinZ>0])
+        rhoMax           = 10 * max(rhoMaxX, rhoMaxZ)
+        #print('rhomin en max zijn: ',rhoMin,rhoMax)
 
         vMinX, vMaxX = np.min(parX[1]), np.max(parX[1])
         vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
         vMin = min(vMinX, vMinZ)
-        vMin = max(0., vMin)
+        vMin = 0.9 * vMin
         vMax = 1.1 * max(vMaxX, vMaxZ)
 
         TMinX, TMaxX = np.min(parX[2]), np.max(parX[2])
@@ -130,12 +126,18 @@ def radialStructPlots(run,loc, dumpData, setup):
         limX = setup['wind_inject_radius']
         posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
         X += posAGB
-        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1]) + posAGB) / cgs.AU_cm()
+        posComp = posAGB
+        if setup['single_star'] == False:
+            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])) / cgs.AU_cm()
+            if setup['triple_star']==True:
+                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])) / cgs.AU_cm()]
+            print('radial position 2 companions: ', posComp)
+
         bound = setup['bound']
 
-        oneRadialStructurePlot(parX[0], parY[0], parZ[0], X, Y, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax,
-                               posComp, xAGB, bound, limX)
-        oneRadialStructurePlot(parX[1], parY[1], parZ[1], X, Y, Z, r'$v$ [km/s]', ax2, vMin, vMax, posComp, xAGB, bound,
+        oneRadialStructurePlot(parX[0],parZ[0], X, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax,
+                               posComp, bound, limX)
+        oneRadialStructurePlot(parX[1], parZ[1], X, Z, r'$v$ [km/s]', ax2, vMin, vMax, posComp, bound,
                                limX)
 
         # Plot make up
@@ -146,7 +148,7 @@ def radialStructPlots(run,loc, dumpData, setup):
 
         ax1.legend(loc='upper center', ncol=5, bbox_to_anchor=[0., 0.3, 1., 1.], prop={'size': 20}, labelspacing=2)
         ax1.set_yscale('log')
-        ax2.set_yscale('log')
+        #ax2.set_yscale('log')
         ax2.set_xlabel('$r$ [AU]', fontsize=22)
         ax1.set_xticklabels([])
 
@@ -166,6 +168,7 @@ def radialStructPlots(run,loc, dumpData, setup):
 
 
     else:
+        print('case gamma>1')
         fig = plt.figure(figsize=(15,10))
 
         #fig = plt.figure(figsize=(4.5, 10))
@@ -204,14 +207,17 @@ def radialStructPlots(run,loc, dumpData, setup):
         # Bounds
         rhoMinX, rhoMaxX = np.min(parX[0]), np.max(parX[0])
         rhoMinZ, rhoMaxZ = np.min(parZ[0]), np.max(parZ[0])
-        rhoMin           = min(rhoMinX, rhoMinZ)
+        rhoMin           = 0.1 * min(rhoMinX[rhoMinX>0], rhoMinZ[rhoMinZ>0])
         rhoMax           = 10 * max(rhoMaxX, rhoMaxZ)
+        #print('rhomin en max zijn: ',rhoMin,rhoMax)
+
 
         vMinX, vMaxX = np.min(parX[1]), np.max(parX[1])
         vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
-        vMin         = min(vMinX, vMinZ)
-        vMin         = max(0., vMin)
+        vMin         = min(vMinX,vMinZ)
+        vMin         = 0.9 * vMin
         vMax         = 1.1*max(vMaxX, vMaxZ)
+        #print(vMin,vMax)
 
         TMinX, TMaxX = np.min(parX[2]), np.max(parX[2])
         TMinZ, TMaxZ = np.min(parZ[2]), np.max(parZ[2])
@@ -223,12 +229,17 @@ def radialStructPlots(run,loc, dumpData, setup):
         limX = setup['wind_inject_radius']
         posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
         X += posAGB
-        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1]) + posAGB) / cgs.AU_cm()
+        posComp = posAGB
+        if setup['single_star'] == False:
+            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])+posAGB) / cgs.AU_cm()
+            if setup['triple_star']==True:
+                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.AU_cm()]
+            print('radial position 2 companions: ', posComp)
         bound = setup['bound']
 
-        oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax, posComp, xAGB, bound, limX)
-        oneRadialStructurePlot(parX[1],parY[1], parZ[1], X, Y, Z, r'$v$ [km/s]', ax2, vMin  , vMax  , posComp, xAGB, bound, limX)
-        oneRadialStructurePlot(parX[2],parY[2], parZ[2], X, Y, Z, r'$T$ [K]', ax3, TMin  , TMax  , posComp, xAGB, bound, limX)
+        oneRadialStructurePlot(parX[0], parZ[0], X, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax, posComp,  bound, limX)
+        oneRadialStructurePlot(parX[1], parZ[1], X, Z, r'$v$ [km/s]', ax2, vMin  , vMax  , posComp, bound, limX)
+        oneRadialStructurePlot(parX[2], parZ[2], X, Z, r'$T$ [K]', ax3, TMin  , TMax  , posComp, bound, limX)
 
         # Plot make up
         ax1.xaxis.set_major_locator(MultipleLocator(bound / 5.))
@@ -240,7 +251,7 @@ def radialStructPlots(run,loc, dumpData, setup):
 
         ax1.legend(loc = 'upper center', ncol=5, bbox_to_anchor=[0., 0.3, 1., 1.], prop={'size': 20}, labelspacing=2)
         ax1.set_yscale('log')
-        ax2.set_yscale('log')
+        #ax2.set_yscale('log')
         ax3.set_yscale('log')
         ax3.set_xlabel('$r$ [AU]', fontsize=22)
         ax1.set_xticklabels([])
