@@ -224,7 +224,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     h     = dump['h']
     r     = dump['r']
 
-    filter = r > factor * setup['sma_ini'] * cgs.AU_cm() and r < bound * cgs.AU_cm()
+    filter = (r > factor * setup['sma_ini'] * cgs.AU_cm()) & (r < bound * cgs.AU_cm())
     x     = x                         [filter]             # cm
     y     = y                         [filter]
     z     = z                         [filter]
