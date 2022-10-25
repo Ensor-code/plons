@@ -1,4 +1,4 @@
-import datetime                     as dt
+#import datetime                     as dt
 from distutils.command.config import dump_file
 import numpy                        as np
 import sys
@@ -16,18 +16,17 @@ import TerminalVelocity             as tmv
 import Tubes                        as tb
 import userSettings                 as us
 
-print('------------------START:', dt.datetime.now(),'---------------------')
+#print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
 
-options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal velocity \n(4) Morphological parameters\n(5) Cummulative mass fraction\n(6) Orbital evolution\n(7) Tube plots ', 
+options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal velocity and Morphological parameters\n(4) Cummulative mass fraction\n(5) Orbital evolution',#\n(6) Tube plots ', 
             '1': '(1) 2D slice plots', 
             '2': '(2) 1D line plots & tube plots',
-            '3': '(3) velocity related quantities',
-            '4': '(4) Morphological parameters',
-            '5': '(5) Cummulative mass fraction',
-            '6': '(6) Orbital evolution',
-            '7': '(7) Tube plots',
-            '8': '(8) Animation 2D slice plots'
+            '3': '(3) velocity related quantities and Morphological parameters',
+            '4': '(4) Cummulative mass fraction',
+            '5': '(5) Orbital evolution'
+            #'6': '(6) Tube plots',
+            #'7': '(7) Animation 2D slice plots'
             }
 
 
@@ -55,17 +54,17 @@ def run_main(outputloc,runParts,numbers, models):
                 sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
                 # (2) 1D line plots
                 rs.radialStructPlots(run, saveloc, dumpData, setup)
-                # (3) and (4) terminal velocity, eta, Qp
+                # (3) terminal velocity, eta, Qp
                 tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
-                # (5) cummulative mass fraction
+                # (4) cummulative mass fraction
                 if setup['single_star'] == True:
                     cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
                 else:
                     cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-                # (6) orbital evolution
+                # (5) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
-                # (7) tube plots
-                tb.main_tube(run, saveloc, setup, dumpData)
+                # (6) tube plots
+                #tb.main_tube(run, saveloc, setup, dumpData)
                 
             if part == '1':
                 # (1) 2D slice plots
@@ -75,23 +74,23 @@ def run_main(outputloc,runParts,numbers, models):
                 # (2) 1D line plots
                 rs.radialStructPlots(run, saveloc, dumpData, setup)
 
-            if part == '3' or part == '4':  
-                # (3) and (4) terminal velocity, eta, Qp
+            if part == '3':  
+                # (3) terminal velocity, eta, Qp
                 tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
                 
-            if part == '5':
-                # (5) cummulative mass fraction
+            if part == '4':
+                # (4) cummulative mass fraction
                 if setup['single_star'] == True:
                     cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
                 else:
                     cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
                     
-            if part == '6':
-                # (6) orbital evolution
+            if part == '5':
+                # (5) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
                 
-            if part == '7':
-                # (7) tube plots
+            if part == '6':
+                # (6) tube plots
                 tb.main_tube(run, saveloc, setup, dumpData)
         print('')
 
@@ -146,7 +145,7 @@ if runModels == 'q':
     print('')
 
     print('')
-    print('------------------END:', dt.datetime.now(),'---------------------')
+    #print('------------------END:', dt.datetime.now(),'---------------------')
 else:
     models    = runModels.split()
     print('')
@@ -154,13 +153,12 @@ else:
     print()
     print('     (1) 2D slice plots of the global structure of the last dump full of the model.')
     print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
-    print('     (3) Information about the velocity related quantities of the model.')
-    print('     (4) Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
-    print('     (5) Cummulative mass fraction in function of the polar coordinate theta.')
-    print('     (6) Information of the orbital evolution.')
-    print('     (7) Tube plots for classifying EDEs/flattenings.')
+    print('     (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
+    print('     (4) Cummulative mass fraction in function of the polar coordinate theta.')
+    print('     (5) Information of the orbital evolution.')
+    #print('     (6) Tube plots for classifying EDEs/flattenings.')
     print()
-    print('Choose from 0 to 7, where 0 means \'all\', split multiple components by a space (q to quit):')
+    print('Choose from 0 to 5, where 0 means \'all\', split multiple components by a space (q to quit):')
     part = input('  >>>   ')
     if part == 'q':
         print('')
@@ -168,14 +166,11 @@ else:
         print('')
 
         print('')
-        print('------------------END:', dt.datetime.now(),'---------------------')
+        #print('------------------END:', dt.datetime.now(),'---------------------')
     else:
         runParts = part.split()
         for i in range(len(runParts)):
             print(options[runParts[i]])
-
-        if '3' in runParts and '4' in runParts:
-            runParts.remove('4')
 
         print('')
         print('')
@@ -201,4 +196,4 @@ else:
         print('')
 
         print('')
-        print('------------------END:', dt.datetime.now(),'---------------------')
+        #print('------------------END:', dt.datetime.now(),'---------------------')

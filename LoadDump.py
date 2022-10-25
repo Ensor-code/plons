@@ -88,18 +88,19 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         temp = dump["blocks"][0]["data"]["Tdust"]
         if (len(temp) == 2*len(h)): temp = temp[1::2] # A problem with loading the files, info: Mats
 
+    filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
-    x     = x                     [h > 0.0] * unit_dist         # position coordinates          [cm]
-    y     = y                     [h > 0.0] * unit_dist     
-    z     = z                     [h > 0.0] * unit_dist
-    mass  = mass                  [h > 0.0] * unit_mass         # mass of sph particles         [g]
-    vx    = vx                    [h > 0.0] * unit_velocity * cgs.cms_kms()                   # velocity components           [cm/s]
-    vy    = vy                    [h > 0.0] * unit_velocity * cgs.cms_kms()
-    vz    = vz                    [h > 0.0] * unit_velocity * cgs.cms_kms()
-    u     = u                     [h > 0.0] * unit_energ        # specific internal density     [erg/g]
-    if containsTemp: temp = temp  [h > 0.0]                     # temperature                   [K]
-    if containsTau and len(tau) == len(h): tau = tau [h > 0.0]  # optical depth                 
-    h     = h                     [h > 0.0] * unit_dist         # smoothing length              [cm]
+    x     = x                     [filter] * unit_dist         # position coordinates          [cm]
+    y     = y                     [filter] * unit_dist     
+    z     = z                     [filter] * unit_dist
+    mass  = mass                  [filter] * unit_mass         # mass of sph particles         [g]
+    vx    = vx                    [filter] * unit_velocity * cgs.cms_kms()                   # velocity components           [cm/s]
+    vy    = vy                    [filter] * unit_velocity * cgs.cms_kms()
+    vz    = vz                    [filter] * unit_velocity * cgs.cms_kms()
+    u     = u                     [filter] * unit_energ        # specific internal density     [erg/g]
+    if containsTemp: temp = temp  [filter]                     # temperature                   [K]
+    if containsTau and len(tau) == len(h): tau = tau [filter]  # optical depth                 
+    h     = h                     [filter] * unit_dist         # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
     if not containsTemp: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
@@ -108,10 +109,38 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
+
     
+    # Data of the two stars
+    # AGB star
+    xAGB     = dump["blocks"][1]["data"]["x"][0] * cgs.AU_cm()
+    yAGB     = dump["blocks"][1]["data"]["y"][0] * cgs.AU_cm()
+    zAGB     = dump["blocks"][1]["data"]["z"][0] * cgs.AU_cm()
+    posAGB   = [xAGB, yAGB, zAGB]
+    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
+    massAGB  = dump["blocks"][1]["data"]["m"][0] * cgs.Msun_gram()
+    
+    if not setup["single_star"]:
+        # companion
+        xComp    = dump["blocks"][1]["data"]["x"][1] * cgs.AU_cm()
+        yComp    = dump["blocks"][1]["data"]["y"][1] * cgs.AU_cm()
+        zComp    = dump["blocks"][1]["data"]["z"][1] * cgs.AU_cm()
+        posComp  = [xComp, yComp, zComp]
+        rComp    = gf.calc_r(xComp, yComp, zComp)
+        massComp = dump["blocks"][1]["data"]["m"][1] * cgs.Msun_gram()
+    
+    if setup['triple_star']:
+        # inner companion
+        xComp_in    = dump["blocks"][1]["data"]["x"][2] * cgs.AU_cm()
+        yComp_in    = dump["blocks"][1]["data"]["y"][2] * cgs.AU_cm()
+        zComp_in    = dump["blocks"][1]["data"]["z"][2] * cgs.AU_cm()
+        posComp_in  = [xComp_in, yComp_in, zComp_in]
+        rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
+        massComp_in = dump["blocks"][1]["data"]["m"][2] * cgs.Msun_gram()
+        
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
-    
+        
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
@@ -145,6 +174,12 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         data['rComp'      ] = rComp                  # [cm]
         data['massComp'   ] = massComp               # [g]
         data['rHill'      ] = rHill                  # [cm]
+
+    if setup['triple_star']:
+        data["posComp_in"]  = posComp_in               # [cm]
+        data['rComp_in']    = rComp_in                 # [cm]
+        data['massComp_in'] = massComp_in              # [g]
+        
 
     if containsTau:
         data["tau"        ] = tau
@@ -189,40 +224,22 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     h     = dump['h']
     r     = dump['r']
 
-    
-    x     = x                         [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # cm
-    y     = y                         [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    z     = z                         [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    mass  = mass                      [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # g
-    vx    = vx                        [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # cm/s
-    vy    = vy                        [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    vz    = vz                        [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    u     = u                         [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # erg/g
-    rho   = rho                       [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # g/cm^3
-    temp  = temp                      [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # K
-    if "tau"   in dump: tau   = tau   [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    if "kappa" in dump: kappa = kappa [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # cm^2/g
-    if "Gamma" in dump: Gamma = Gamma [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    h     = h                         [r > factor * setup['sma_ini'] * cgs.AU_cm() ]             # cm
-    r     = r                         [r > factor * setup['sma_ini'] * cgs.AU_cm() ]
-    
-    
-    x     = x                         [r < bound * cgs.AU_cm()]             # cm
-    y     = y                         [r < bound * cgs.AU_cm()]
-    z     = z                         [r < bound * cgs.AU_cm()]
-    mass  = mass                      [r < bound * cgs.AU_cm()]             # g
-    vx    = vx                        [r < bound * cgs.AU_cm()]             # cm/s
-    vy    = vy                        [r < bound * cgs.AU_cm()]
-    vz    = vz                        [r < bound * cgs.AU_cm()]
-    u     = u                         [r < bound * cgs.AU_cm()]             # erg/g
-    rho   = rho                       [r < bound * cgs.AU_cm()]             # g/cm^3
-    temp  = temp                      [r < bound * cgs.AU_cm()]             # K
-    if "tau"   in dump: tau   = tau   [r < bound * cgs.AU_cm()]
-    if "kappa" in dump: kappa = kappa [r < bound * cgs.AU_cm()]
-    if "Gamma" in dump: Gamma = Gamma [r < bound * cgs.AU_cm()]
-    h     = h                         [r < bound * cgs.AU_cm()]             # cm
-    r     = r                         [r < bound * cgs.AU_cm()]
-    
+    filter = r > factor * setup['sma_ini'] * cgs.AU_cm() and r < bound * cgs.AU_cm()
+    x     = x                         [filter]             # cm
+    y     = y                         [filter]
+    z     = z                         [filter]
+    mass  = mass                      [filter]             # g
+    vx    = vx                        [filter]             # cm/s
+    vy    = vy                        [filter]
+    vz    = vz                        [filter]
+    u     = u                         [filter]             # erg/g
+    rho   = rho                       [filter]             # g/cm^3
+    temp  = temp                      [filter]             # K
+    if "tau"   in dump: tau   = tau   [filter]
+    if "kappa" in dump: kappa = kappa [filter]             # cm^2/g
+    if "Gamma" in dump: Gamma = Gamma [filter]
+    h     = h                         [filter]             # cm
+    r     = r                         [filter]
     
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
