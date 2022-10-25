@@ -17,6 +17,11 @@ def kB():
     kB = 1.380649e-16               # [erg K^-1] 
     return kB
 
+# speed of light
+def c():
+    c = 2.99792458e10               # [cm s^-1]
+    return c
+
 
 # --- Conversion factors ---
 
@@ -28,6 +33,11 @@ def AU_cm():
 # mass: solar mass to gram
 def Msun_gram():
     Msun = 1.98847e+33              # [g]
+    return Msun
+
+# mass: solar luminocity to ergs/s
+def Lsun_ergs():
+    Msun = 3.826e33              # [ergs s^-1]
     return Msun
 
 # time: seconds to years

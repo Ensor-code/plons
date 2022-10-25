@@ -25,20 +25,22 @@ round_bounds = False
     
 def getParamsLine(results_line, vec1, minT, gamma, vec2 = [], dumpData = None):
     indicesToKeep = np.where(np.log10(results_line['temp']) > minT)
-
     if gamma <= 1.:
         indicesToKeep = np.where(results_line['rho'] > 0.)
 
     R     = vec1[indicesToKeep]
     if len(vec2) != 0:
-        x_comp = dumpData['posComp'][0]
-        y_comp = dumpData['posComp'][1]
+        x_comp = 0.
+        y_comp = 0.
+        if 'posComp' in dumpData:
+            x_comp = dumpData['posComp'][0]
+            y_comp = dumpData['posComp'][1]
         R = lineCoordinates(len(indicesToKeep[0]), vec1[indicesToKeep], vec2[indicesToKeep], x_comp, y_comp)
 
     temp  = (results_line['temp' ][indicesToKeep])
-    speed = (results_line['speed'][indicesToKeep]) * cgs.cms_kms()
+    speed = (results_line['speed'][indicesToKeep])
     rho   = (results_line['rho'  ][indicesToKeep])
-    
+
     return(rho,speed,temp,R)
 
 '''
@@ -90,7 +92,9 @@ def radialStructPlots(run,loc, dumpData, setup):
         dataToUse['h'] = dumpData['h'][:-2]
 
         # calculate smoothed data around one axis
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        theta = 0.
+        if setup['single_star'] == False:
+            theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
         results_line_X, xX, yX, zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'temp', 'speed'], 'comp',
                                                                  'line_x', setup['bound'] * cgs.AU_cm(), theta)
@@ -183,10 +187,12 @@ def radialStructPlots(run,loc, dumpData, setup):
         dataToUse['h'       ] = dumpData['h'       ][:-2]
 
         #calculate smoothed data around one axis
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        theta = 0.
+        if setup['single_star'] == False:
+            theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
         results_line_X,xX,yX,zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','temp','speed'], 'comp','line_x',setup['bound']*cgs.AU_cm(), theta)
-        results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(n_grid,20, dumpData, ['rho','temp','speed'], 'comp','line_z',setup['bound']*cgs.AU_cm(), theta)
+        results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','temp','speed'], 'comp','line_z',setup['bound']*cgs.AU_cm(), theta)
 
         gamma = setup["gamma"]
         parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
@@ -223,7 +229,9 @@ def radialStructPlots(run,loc, dumpData, setup):
         limX = setup['wind_inject_radius']
         posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
         X += posAGB
-        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1]) + posAGB) / cgs.AU_cm()
+        posComp = (0.,0.,0.)
+        if setup['single_star'] == False:
+            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1]) + posAGB) / cgs.AU_cm()
         bound = setup['bound']
 
         oneRadialStructurePlot(parX[0],parY[0], parZ[0], X, Y, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax, posComp, xAGB, bound, limX)

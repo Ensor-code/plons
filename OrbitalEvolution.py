@@ -26,10 +26,10 @@ uses sinkData = data
 '''
 def orbSep_apa_per(data, setup):
 
-    period = setup['period_ini'] * cgs.sec_year()
-    time   = data['time'       ]
-    ecc    = setup['ecc'       ]
-    orbSep = data['rComp'      ] + data['rAGB' ]
+    period = setup['period'] * cgs.sec_year()
+    time   = data['time'   ]
+    ecc    = setup['ecc'   ]
+    orbSep = data['rComp'  ] + data['rAGB' ]
 
     apastronOS   = []
     periastronOS = []  
@@ -37,7 +37,7 @@ def orbSep_apa_per(data, setup):
     timePer      = []
     i=0
 
-    while i<math.ceil(max(time)/period):
+    while i<math.floor(max(time)/period):
         # Model starts in apastron passage, so apastron passages are at i*period for i = 0, 1, ...
         tApa     = i*period
         # The exact apastron is defined as where the orbital separation is maximal
@@ -179,9 +179,9 @@ def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, tit
     
     # Change xticks to orbit numbers
     ax.tick_params(labelsize=12)     
-    period = setup['period_ini'] * cgs.sec_year()
+    period = setup['period'] * cgs.sec_year()
     tickorbit = []
-    for p in range(1, int(setup['tmax']/period)+1,1):
+    for p in range(1, int(t_total/period)+1,1):
         tickorbit.append(str(p))
         
     plt.setp(ax, xticks= orbit_t, xticklabels=tickorbit)
@@ -232,7 +232,7 @@ def plotMassAccr(setup, sinkData, run, loc):
     plt.plot(sinkData['time'],  sinkData['maccrComp'], color = 'royalblue', linestyle = 'solid')
     
     # Plot vertical lines indicating where there are apastron and periastron passages
-    period = setup['period_ini'] * cgs.sec_year()
+    period = setup['period'] * cgs.sec_year()
     j = period/2  # First periastron
     i = 0         # Start at apastron
 
@@ -295,7 +295,7 @@ def plotMassAccrRate(setup, sinkData, run, loc):
 
     
     #Plot vertical lines indicating where there are apastron and periastron passages
-    period = setup['period_ini'] * cgs.sec_year()
+    period = setup['period'] * cgs.sec_year()
     j = period/2  # First periastron
     i = 0         # Start at apastron
 

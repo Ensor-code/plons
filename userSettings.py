@@ -71,7 +71,10 @@ def load(userSettingsFilePath,onlyPathToPhantom=False):
     with open(userSettingsFilePath, "r") as file:
         for line in file.readlines():
             splittedLine = line.split()
-            dictionary[splittedLine[0]] = splittedLine[2]
+            if len(splittedLine) == 3:
+                dictionary[splittedLine[0]] = splittedLine[2]
+            else:
+                dictionary[splittedLine[0]] = splittedLine[2:]
             print(line[:-1])
     print("--------------------------------------------------------------")
     print()

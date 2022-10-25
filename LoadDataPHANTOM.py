@@ -25,81 +25,32 @@ Load the data for a general model
 def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
     
     setup       = stp.LoadSetup(run, loc, userSettingsDictionary)
-    single_star = setup['single_star']
-    
-    if single_star == False:
-        dumpData, sinkData, outerData = LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, number)
-        
-        return setup, dumpData, sinkData, outerData
-        
-    if single_star == True:
-        dumpData, sinkData = LoadData_single_cgs(run, loc, setup, userSettingsDictionary)
-        
-        return setup, dumpData, sinkData, None
-    
-    
-
-'''
-Load the data for a binary star model
-'''
-def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, number):
-    
     dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary, number)
-    sinkData  = snk.LoadSink_cgs(run, loc, setup, userSettingsDictionary)
-    if bound == None:
-        bound = setup['bound']
-    outerData = dmp.LoadDump_outer_cgs(run, loc, factor, bound, setup, dumpData)
-    
-    # save the final specifics of the AGB star and companion to dumpData
-    #dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
-    #dumpData['posComp'  ] = sinkData['posComp'    ][-1]
-                                                  
-    dumpData['velAGB'   ] = sinkData['velAGB'     ][-1]
-    dumpData['velComp'  ] = sinkData['velComp'    ][-1]
-                                                  
-    #dumpData['rAGB'     ] = sinkData['rAGB'       ][-1]
-    #dumpData['rComp'    ] = sinkData['rComp'      ][-1]
-                                                  
-    #dumpData['massAGB'  ] = sinkData['massAGB'    ][-1]
-    #dumpData['massComp' ] = sinkData['massComp'   ][-1]
-                                                  
-    dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
-    dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
-                                                  
-    dumpData['period_fi'] = sinkData['period_t'   ][-1]
-                                                  
-    #dumpData['rHill'    ] = sinkData['rHill_t'    ][-1]
-                                                  
-    dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
-    dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
-    
-    dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
-    dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.AU_cm() )
+    if setup['single_star']:
+        sinkData  = snk.LoadSink_single_cgs(run, loc, setup, userSettingsDictionary)
+        outerData = None
 
+    else:
+        sinkData  = snk.LoadSink_cgs(run, loc, setup, userSettingsDictionary)
+        if bound == None:
+            bound = setup['bound']
+        outerData = dmp.LoadDump_outer_cgs(factor, bound, setup, dumpData)
 
-    return dumpData, sinkData, outerData
-
-
-
-
-
-'''
-Load the data for a single star model
-'''
-def LoadData_single_cgs(run, loc, setup, userSettingsDictionary):
-    
-    setup    = stp.LoadSetup(run, loc, userSettingsDictionary)
-    dumpData = dmp.LoadDump_single_cgs(run, loc, setup, userSettingsDictionary)
-    sinkData = snk.LoadSink_single_cgs(run, loc, setup, userSettingsDictionary)
-    
-    # save the final specifics of the AGB star and companion to dumpData
+    # save the final specifics of the AGB star to dumpData
     dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
     dumpData['velAGB'   ] = sinkData['velAGB'     ][-1]
     dumpData['rAGB'     ] = sinkData['rAGB'       ][-1]
     dumpData['massAGB'  ] = sinkData['massAGB'    ][-1]
     dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
-   
-    return dumpData, sinkData
 
+    # save the final specifics of the companion to dumpData
+    if not setup['single_star']:
+        dumpData['velComp'  ] = sinkData['velComp'    ][-1]
+        dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
+        dumpData['period_fi'] = sinkData['period_t'   ][-1]
+        dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
+        dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
+        dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
+        dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.AU_cm() )
 
-
+    return setup, dumpData, sinkData, outerData

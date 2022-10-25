@@ -15,9 +15,7 @@ def getPressure(density, u, gamma):
 '''
 Returns the temperature, given the pressure [Ba] and density [g/cm^3] in K (via Ideal Gas Law)
 '''
-def getTemp(pressure, density, mu, u):
-    #temp = ((pressure*mu*cgs.mH())/(density*cgs.kB()))
-    gamma = 1.4
+def getTemp(pressure, density, gamma, mu, u):
     temp = (gamma-1.) * mu * u * cgs.mH() / cgs.kB()
     return temp
 
@@ -29,15 +27,18 @@ def getRho(hi, hfact, pmassi):
     return rhoh
 
 '''
-Returns the opacity, given smoothing length, hfact (proportionality factor specifying the smoothing length) and the particle mass [g] in g/cm^3
+Returns the opacity, given the equilibrium temperature in [K] in cm^2/g
 '''
-def getKappa(Teq):
-    kappa_gas = 2e-4
-    bowen_delta = 60.
-    bowen_Tcond = 1500.
-    bowen_max   = 2.7991
+def getKappa(Teq, kappa_gas = 2e-4, bowen_delta = 60., bowen_Tcond = 1500., bowen_max   = 2.7991):
     kappa = bowen_max/(1+np.exp((Teq-bowen_Tcond)/bowen_delta))+kappa_gas
     return kappa
+
+'''
+Returns the Eddington factor, the opacity in [cm^2/g], the luminocity [erg/s] and mass [g] of the AGB star, optional optical depth
+'''
+def getGamma(kappa, lumAGB, massAGB, tau = 0):
+    Gamma = kappa*lumAGB*np.exp(tau)/(4*np.pi*cgs.c()*cgs.G()*massAGB)
+    return Gamma
 
 '''
 Returns the speed of sound [km/s] of the local medium: c_s = sqrt(gamma*P/rho), with gamma = cst, P in [Ba] and rho in [g/cm^3]

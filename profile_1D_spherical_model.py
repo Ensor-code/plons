@@ -356,9 +356,9 @@ def Dustcooling(data1D):
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 
 # Main directory of the data
-mainPath   = ['/lhome/ward/Programs/phantom/test/1Drad/']
+mainPath   = ['/STER/matse/PHANTOM_Models/Binary/dust_cool/v5k5T25/']
 modelLabel = 'wind'
-dumpNumber = '00100'
+dumpNumber = '00001'
 
 # What do you want to plot?
 whichPlot = 'vel'       # vel, temp, v&T, dust, chem, dustcool
@@ -399,7 +399,9 @@ for i in range(Nsub):
       iget_tdust = wind_param['iget_tdust']
       Tinj       = wind_param['wind_temp']
   except:
-      pass
+      alpha_rad  = 0.
+      iget_tdust = 0.
+      Tinj       = 0.
   
   if idust_opacity == 1:
       kappa_gas   = wind_param['kappa_gas']

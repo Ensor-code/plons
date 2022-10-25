@@ -33,7 +33,7 @@ options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal vel
 
 def run_main(outputloc,runParts,numbers, models):
     for number in numbers:
-        run = models[int(number)][1][1:]
+        run = models[int(number)][1]
         print('---- MODEL '+run+' ----')
         saveloc = os.path.join(outputloc, run)
         try:
@@ -52,7 +52,7 @@ def run_main(outputloc,runParts,numbers, models):
         for part in runParts:
             if part == '0':
                 # (1) 2D slice plots
-                sl.SlicePlots(run, saveloc, dumpData, setup)
+                sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
                 # (2) 1D line plots
                 rs.radialStructPlots(run, saveloc, dumpData, setup)
                 # (3) and (4) terminal velocity, eta, Qp
@@ -69,7 +69,7 @@ def run_main(outputloc,runParts,numbers, models):
                 
             if part == '1':
                 # (1) 2D slice plots
-                sl.SlicePlots(run, saveloc, dumpData, setup)
+                sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
                 
             if part == '2':
                 # (2) 1D line plots
@@ -123,7 +123,9 @@ prefix = userSettingsDictionary["prefix"]
 loc = userSettingsDictionary["data_location"]
 outputloc = userSettingsDictionary["pipeline_output_location"]
 phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
-
+if "observables" in userSettingsDictionary:
+    observables = userSettingsDictionary["observables"]
+else: observables = ['rho', 'temp', 'speed']
 
 # Which parts do you want to run?
 factor      = 3   # the without inner, is without r< factor * sma
