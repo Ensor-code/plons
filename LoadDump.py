@@ -5,7 +5,6 @@ import os
 import PhysicalQuantities       as pq
 import GeometricalFunctions     as gf
 import ConversionFactors_cgs    as cgs
-import LoadSetup                as stp
 import sys
 
 '''
@@ -52,9 +51,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
 
     # Data of the two stars
     # AGB star
-    xAGB     = dump["blocks"][1]["data"]["x"][0] * cgs.AU_cm()
-    yAGB     = dump["blocks"][1]["data"]["y"][0] * cgs.AU_cm()
-    zAGB     = dump["blocks"][1]["data"]["z"][0] * cgs.AU_cm()
+    xAGB     = dump["blocks"][1]["data"]["x"][0] * unit_dist
+    yAGB     = dump["blocks"][1]["data"]["y"][0] * unit_dist
+    zAGB     = dump["blocks"][1]["data"]["z"][0] * unit_dist
     posAGB   = [xAGB, yAGB, zAGB]
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
     massAGB  = dump["blocks"][1]["data"]["m"][0] * unit_mass
@@ -62,13 +61,22 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
 
     # companion
     if not setup["single_star"]:
-        xComp    = dump["blocks"][1]["data"]["x"][1] * cgs.AU_cm()
-        yComp    = dump["blocks"][1]["data"]["y"][1] * cgs.AU_cm()
-        zComp    = dump["blocks"][1]["data"]["z"][1] * cgs.AU_cm()
+        xComp    = dump["blocks"][1]["data"]["x"][1] * unit_dist
+        yComp    = dump["blocks"][1]["data"]["y"][1] * unit_dist
+        zComp    = dump["blocks"][1]["data"]["z"][1] * unit_dist
         posComp  = [xComp, yComp, zComp]
         rComp    = gf.calc_r(xComp, yComp, zComp)
         massComp = dump["blocks"][1]["data"]["m"][1] * unit_mass
         rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
+
+        if setup['triple_star']:
+            # inner companion
+            xComp_in    = dump["blocks"][1]["data"]["x"][2] * unit_dist
+            yComp_in    = dump["blocks"][1]["data"]["y"][2] * unit_dist
+            zComp_in    = dump["blocks"][1]["data"]["z"][2] * unit_dist
+            posComp_in  = [xComp_in, yComp_in, zComp_in]
+            rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
+            massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
 
     containsTau = "tau" in dump["blocks"][0]["data"]
     containsTemp = "Tdust" in dump["blocks"][0]["data"]
@@ -110,33 +118,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
 
-    
-    # Data of the two stars
-    # AGB star
-    xAGB     = dump["blocks"][1]["data"]["x"][0] * cgs.AU_cm()
-    yAGB     = dump["blocks"][1]["data"]["y"][0] * cgs.AU_cm()
-    zAGB     = dump["blocks"][1]["data"]["z"][0] * cgs.AU_cm()
-    posAGB   = [xAGB, yAGB, zAGB]
-    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
-    massAGB  = dump["blocks"][1]["data"]["m"][0] * cgs.Msun_gram()
-    
-    if not setup["single_star"]:
-        # companion
-        xComp    = dump["blocks"][1]["data"]["x"][1] * cgs.AU_cm()
-        yComp    = dump["blocks"][1]["data"]["y"][1] * cgs.AU_cm()
-        zComp    = dump["blocks"][1]["data"]["z"][1] * cgs.AU_cm()
-        posComp  = [xComp, yComp, zComp]
-        rComp    = gf.calc_r(xComp, yComp, zComp)
-        massComp = dump["blocks"][1]["data"]["m"][1] * cgs.Msun_gram()
-    
-    if setup['triple_star']:
-        # inner companion
-        xComp_in    = dump["blocks"][1]["data"]["x"][2] * cgs.AU_cm()
-        yComp_in    = dump["blocks"][1]["data"]["y"][2] * cgs.AU_cm()
-        zComp_in    = dump["blocks"][1]["data"]["z"][2] * cgs.AU_cm()
-        posComp_in  = [xComp_in, yComp_in, zComp_in]
-        rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
-        massComp_in = dump["blocks"][1]["data"]["m"][2] * cgs.Msun_gram()
         
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()

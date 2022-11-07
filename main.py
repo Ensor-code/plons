@@ -147,7 +147,10 @@ if runModels == 'q':
     print('')
     #print('------------------END:', dt.datetime.now(),'---------------------')
 else:
-    models    = runModels.split()
+    if runModels == -1:
+        models = range(len(foundModels))
+    else:
+        models    = runModels.split()
     print('')
     print('Which components of the pipeline do you want to run?')
     print()

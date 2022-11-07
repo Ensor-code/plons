@@ -129,7 +129,7 @@ def plot1D (data, i, second=False):
     if whichPlot == 'temp':
         ax1[i][0].plot(data[xAxis]/x_ref, data['T']/T_ref, color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
         ax1[i][0].set_ylabel('Temperature [K]')
-        if iget_tdust == 1:
+        if iget_tdust > 0:
           ax1[i][0].plot(data[xAxis]/x_ref, data['Tdust']/T_ref, color='magenta',  linestyle='-',  label=r'T$_{dust}$  analytic')
           
     if whichPlot == 'dustcool':
@@ -183,6 +183,14 @@ def plot1D (data, i, second=False):
             lns2  = lns21 + lns22 + lns23
             ax2[i][0].set_ylabel(r' $\gamma$  OR  $\mu$  OR  log($S$)')
             return lns1, lns2
+
+    if whichPlot == 'tau':
+        ax1[i][0].plot(data[xAxis]/x_ref, data['tau'], color='black',  linestyle='-',  label=r'$\tau$  analytic')
+        ax1[i][0].set_ylabel('optical depth')
+
+    if whichPlot == 'tau_lucy':
+        ax1[i][0].plot(data[xAxis]/x_ref, data['tau_lucy'], color='black',  linestyle='-',  label=r'$\tau_{Lucy}$  analytic')
+        ax1[i][0].set_ylabel('Lucy optical depth')
   
 # Plots the 3D SPH data
 def plot3D (data, i, second=False):
@@ -194,7 +202,7 @@ def plot3D (data, i, second=False):
           
     if whichPlot == 'temp':
         ax1[i][0].plot(data['blocks'][0]['data'][xAxis]/x_ref, data['blocks'][0]['data']['Tgas']/T_ref, 'r.', label=r'T$_{gas}$  SPH')
-        if iget_tdust == 1:
+        if iget_tdust > 0:
           ax1[i][0].plot(data['blocks'][0]['data'][xAxis]/x_ref, data['blocks'][0]['data']['Tdust']/T_ref, 'm.', label=r'T$_{dust}$  SPH')
         
     if whichPlot == 'v&T':
@@ -241,6 +249,14 @@ def plot3D (data, i, second=False):
             print('Aborting script')
             print('===============\n')
             sys.exit()
+
+    if whichPlot == 'tau':
+        ax1[i][0].plot(data['blocks'][0]['data'][xAxis]/x_ref, data['blocks'][0]['data']['tau'], 'r.', label=r'$\tau$  SPH')
+        ax1[i][0].set_ylim([0,1.2*max(data['blocks'][0]['data']['tau'])])
+
+    if whichPlot == 'tau_lucy':
+        ax1[i][0].plot(data['blocks'][0]['data'][xAxis]/x_ref, data['blocks'][0]['data']['tau_lucy'], 'r.', label=r'$\tau_{Lucy}$  SPH')
+        ax1[i][0].set_ylim([0,1.2*max(data['blocks'][0]['data']['tau_lucy'])])
 
 
 # Plots auxiliary quantities that are not strictly related to the 1D or 3D SPH data
@@ -356,12 +372,12 @@ def Dustcooling(data1D):
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 
 # Main directory of the data
-mainPath   = ['/STER/matse/PHANTOM_Models/Binary/dust_cool/v5k5T25/']
+mainPath   = ['/STER/matse/PHANTOM_Models/test_Lucy/']
 modelLabel = 'wind'
-dumpNumber = '00001'
+dumpNumber = '00011'
 
 # What do you want to plot?
-whichPlot = 'vel'       # vel, temp, v&T, dust, chem, dustcool
+whichPlot = 'vel'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
 xAxis     = 'r'          # r, Tgas
 
 #Number of vertical subplots, change second dimension of ax array for horizontal plots
@@ -379,9 +395,6 @@ for i in range(Nsub):
 
   inputFile = mainPath[i] + modelLabel
   
-  # initialise parameters
-  iget_tdust = 0
-  
   # Extract data from parameter card
   wind_param      = read_infile(inputFile)
   Mstar           = wind_param['primary_mass']*solarm
@@ -397,7 +410,7 @@ for i in range(Nsub):
   try:
       alpha_rad  = wind_param['alpha_rad']
       iget_tdust = wind_param['iget_tdust']
-      Tinj       = wind_param['wind_temp']
+      Tinj       = wind_param['wind_temperature']
   except:
       alpha_rad  = 0.
       iget_tdust = 0.
@@ -475,7 +488,6 @@ for i in range(Nsub):
   #txt = ['high resolution, q=20','mid resolution, q=10','low resolution, q=3']
   #ax1[i][0].text(2.6,19,txt[i],fontsize=16)
   ax1[i][0].set_xlim(x_limits)
-  ax1[i][0].set_ylim([0,60])
   #ax2[i][0].set_ylim([0,40])
   #ax2[i][0].set_yscale('log')
   plt.title('BowenDust model',fontsize=16)   

@@ -566,10 +566,10 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             limits["speed"][10] = [0., 20.]
 
         if "temp" in observables:
-            limits["temp"][1]  = [2.5, 4.]
-            limits["temp"][2]  = [2.5, 4.]
-            limits["temp"][5]  = [3., 4.5]
-            limits["temp"][10] = [3., 4.5]
+            limits["temp"][1]  = [1., 4.]
+            limits["temp"][2]  = [1., 4.]
+            limits["temp"][5]  = [1., 4.]
+            limits["temp"][10] = [1., 4.]
 
         if "tau" in observables:
             limits["tau"][1]  = [0, 1]
