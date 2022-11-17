@@ -14,19 +14,18 @@ import OrbitalEvolution             as ov
 import LoadDataPHANTOM              as ld
 import TerminalVelocity             as tmv
 import Tubes                        as tb
+import Profiles1D                   as dp
 import userSettings                 as us
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
 
-options = { '0': '(1) 2D slice plots \n(2) 1D line/tube plots \n(3) Terminal velocity and Morphological parameters\n(4) Cummulative mass fraction\n(5) Orbital evolution',#\n(6) Tube plots ', 
-            '1': '(1) 2D slice plots', 
+options = { '1': '(1) 2D slice plots', 
             '2': '(2) 1D line plots & tube plots',
             '3': '(3) velocity related quantities and Morphological parameters',
             '4': '(4) Cummulative mass fraction',
-            '5': '(5) Orbital evolution'
-            #'6': '(6) Tube plots',
-            #'7': '(7) Animation 2D slice plots'
+            '5': '(5) Orbital evolution',
+            '6': '(6) 1D spherical model'
             }
 
 
@@ -63,8 +62,6 @@ def run_main(outputloc,runParts,numbers, models):
                     cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
                 # (5) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
-                # (6) tube plots
-                #tb.main_tube(run, saveloc, setup, dumpData)
                 
             if part == '1':
                 # (1) 2D slice plots
@@ -91,7 +88,7 @@ def run_main(outputloc,runParts,numbers, models):
                 
             if part == '6':
                 # (6) tube plots
-                tb.main_tube(run, saveloc, setup, dumpData)
+                dp.profiles_main(run, loc, saveloc, dumpData, setup)
         print('')
 
 def searchModels(loc, prefix):
@@ -124,7 +121,7 @@ outputloc = userSettingsDictionary["pipeline_output_location"]
 phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
 if "observables" in userSettingsDictionary:
     observables = userSettingsDictionary["observables"]
-else: observables = ['rho', 'temp', 'speed']
+else: observables = ['rho', 'Tgas', 'speed']
 
 # Which parts do you want to run?
 factor      = 3   # the without inner, is without r< factor * sma
@@ -132,14 +129,14 @@ bound       = None
 foundModels = searchModels(loc, prefix)
 print("The following models within %s "
       "have been found based on the prefix '%s' "%(loc, prefix))
-print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q to quit):')
+print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q or exit to quit, a or all to run all models):')
 for i in range(len(foundModels)):
     if foundModels[i][1] == "": print("\t(%d) %s"%(i, foundModels[i][0]))
     else: print("\t(%d) /...%s"%(i, foundModels[i][1]))
 
 print()
 runModels = str(input( '  >>>   '))
-if runModels == 'q':
+if runModels in ('q', 'exit'):
     print('')
     print('Program is stopped by the user!!')
     print('')
@@ -147,7 +144,7 @@ if runModels == 'q':
     print('')
     #print('------------------END:', dt.datetime.now(),'---------------------')
 else:
-    if runModels == -1:
+    if runModels in ('a', 'all'):
         models = range(len(foundModels))
     else:
         models    = runModels.split()
@@ -159,11 +156,11 @@ else:
     print('     (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
     print('     (4) Cummulative mass fraction in function of the polar coordinate theta.')
     print('     (5) Information of the orbital evolution.')
-    #print('     (6) Tube plots for classifying EDEs/flattenings.')
+    print('     (6) 1D spherical profiles for single star models.')
     print()
-    print('Choose from 0 to 5, where 0 means \'all\', split multiple components by a space (q to quit):')
+    print('Choose from 0 to 5, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
     part = input('  >>>   ')
-    if part == 'q':
+    if part in ('q', 'exit'):
         print('')
         print('Program is stopped by the user!!')
         print('')
@@ -173,7 +170,10 @@ else:
     else:
         runParts = part.split()
         for i in range(len(runParts)):
-            print(options[runParts[i]])
+            if runParts[i] in ('0', 0):
+                for option in options: print(options[option])
+            else:
+                print(options[runParts[i]])
 
         print('')
         print('')

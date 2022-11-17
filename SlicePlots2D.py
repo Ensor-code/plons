@@ -184,8 +184,8 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
     # colormap per parameter
     cm = {'rho': plt.cm.get_cmap('inferno'),
           'speed': plt.cm.get_cmap('CMRmap'),
-          #'temp': plt.cm.get_cmap('RdYlGn'),
-          'temp': plt.cm.get_cmap('hot'), #nipy_spectral
+          #'Tgas': plt.cm.get_cmap('RdYlGn'),
+          'Tgas': plt.cm.get_cmap('hot'), #nipy_spectral
           'tau': plt.cm.get_cmap('viridis_r'),
           'kappa': plt.cm.get_cmap('Spectral_r'),
           'Gamma': plt.cm.get_cmap('Spectral_r')
@@ -194,7 +194,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
     # label name per parameter
     name = {'rho': r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
             'speed': '$v$ [km/s]',
-            'temp': r'$\log \, T$ [K]',
+            'Tgas': r'$\log \, T$ [K]',
             'tau': r'$\tau [/]$',
             'kappa': r'$\kappa$ [g/cm$^3$]',
             'Gamma': r'$\Gamma$ [/]'
@@ -455,7 +455,7 @@ main definition
 '''
 
 
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], observables = ['rho', 'temp', 'speed']):
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], observables = ['rho', 'Tgas', 'speed']):
     print('')
     print('(1)  Start calculations for slice plots...')
 

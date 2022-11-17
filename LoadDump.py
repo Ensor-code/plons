@@ -79,7 +79,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
 
     containsTau = "tau" in dump["blocks"][0]["data"]
-    containsTemp = "Tdust" in dump["blocks"][0]["data"]
+    containsTemp = "temperature" in dump["blocks"][0]["data"]
+    # for i in dump["blocks"][0]["data"]: print(i)
+    # exit()
     bowenDust = "bowen_kmax" in setup
     
     x = dump["blocks"][0]["data"]["x"]
@@ -92,9 +94,8 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     vz = dump["blocks"][0]["data"]["vz"]
     u = dump["blocks"][0]["data"]["u"]
     if containsTau:  tau  = dump["blocks"][0]["data"]["tau"]
-    if containsTemp:
-        temp = dump["blocks"][0]["data"]["Tdust"]
-        if (len(temp) == 2*len(h)): temp = temp[1::2] # A problem with loading the files, info: Mats
+    if containsTemp: temp = dump["blocks"][0]["data"]["temperature"]
+    if bowenDust:    Tdust = dump["blocks"][0]["data"]["Tdust"]
 
     filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
@@ -112,8 +113,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
     if not containsTemp: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
-    if bowenDust: kappa = pq.getKappa(temp, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
-    if bowenDust: Gamma = pq.getGamma(kappa, lumAGB, massAGB)
+    if bowenDust:
+        kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
+        Gamma = pq.getGamma(kappa, lumAGB, massAGB)
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -133,7 +135,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             'mass'          : mass,                  # [g]
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
-            'temp'          : temp,                  # [K] 
+            'Tgas'          : temp,                  # [K] 
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,                  
             'vtvv'          : vtvv,     
@@ -168,6 +170,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
         data["Gamma"      ] = Gamma
+        data["Tdust"      ] = Tdust
     
     return data
 
@@ -198,10 +201,11 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     vz    = velocity[2]
     u     = dump['u']
     rho   = dump['rho']
-    temp  = dump['temp']
+    temp  = dump['Tgas']
     if "tau"   in dump: tau   = dump['tau']
     if "kappa" in dump: kappa = dump['kappa']
     if "Gamma" in dump: Gamma = dump['Gamma']
+    if "Tdust" in dump: Tdust = dump['Tdust']
     h     = dump['h']
     r     = dump['r']
 
@@ -219,6 +223,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     if "tau"   in dump: tau   = tau   [filter]
     if "kappa" in dump: kappa = kappa [filter]             # cm^2/g
     if "Gamma" in dump: Gamma = Gamma [filter]
+    if "Tdust" in dump: Tdust = Tdust [filter]
     h     = h                         [filter]             # cm
     r     = r                         [filter]
     
@@ -244,7 +249,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
             'u'             : u,             # [erg/g]
-            'temp'          : temp,          # [K]  
+            'Tgas'          : temp,          # [K]  
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          
             'vtvv'          : vtvv,
@@ -256,6 +261,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     if "tau"   in dump: data["tau"]   = tau
     if "kappa" in dump: data["kappa"] = kappa
     if "Gamma" in dump: data["Gamma"] = Gamma
+    if "Tdust" in dump: data["Tdust"] = Tdust
     
     return data
 

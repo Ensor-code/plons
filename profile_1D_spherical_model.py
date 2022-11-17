@@ -372,12 +372,12 @@ def Dustcooling(data1D):
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 
 # Main directory of the data
-mainPath   = ['/STER/matse/PHANTOM_Models/test_Lucy/']
+mainPath   = ['/STER/matse/PHANTOM_Models/Binary/Lucy_cool/v5k6T15M1e-7/']
 modelLabel = 'wind'
-dumpNumber = '00011'
+dumpNumber = '00010'
 
 # What do you want to plot?
-whichPlot = 'vel'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
+whichPlot = 'temp'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
 xAxis     = 'r'          # r, Tgas
 
 #Number of vertical subplots, change second dimension of ax array for horizontal plots
@@ -409,11 +409,15 @@ for i in range(Nsub):
   wss             = wind_param['wind_shell_spacing']
   try:
       alpha_rad  = wind_param['alpha_rad']
-      iget_tdust = wind_param['iget_tdust']
-      Tinj       = wind_param['wind_temperature']
   except:
       alpha_rad  = 0.
+  try:
+      iget_tdust = wind_param['iget_tdust']
+  except:
       iget_tdust = 0.
+  try:
+      Tinj       = wind_param['wind_temperature']
+  except:
       Tinj       = 0.
   
   if idust_opacity == 1:
@@ -466,7 +470,7 @@ for i in range(Nsub):
     if idust_opacity > 0:
         lns = lns1+lns2#+lns3+lns4#+[lns5]
     else:
-        lns = lns1+lns3+[lns5]
+        lns = lns1#+lns3+[lns5]
     labs = [l.get_label() for l in lns]
     ax1[i][0].legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=13)
   else:
