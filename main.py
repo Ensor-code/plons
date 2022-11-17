@@ -62,6 +62,8 @@ def run_main(outputloc,runParts,numbers, models):
                     cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
                 # (5) orbital evolution
                 ov.orbEv_main(run, saveloc, sinkData, setup)
+                # (6) 1D profiles
+                dp.profiles_main(run, loc, saveloc, dumpData, setup)
                 
             if part == '1':
                 # (1) 2D slice plots
@@ -87,7 +89,7 @@ def run_main(outputloc,runParts,numbers, models):
                 ov.orbEv_main(run, saveloc, sinkData, setup)
                 
             if part == '6':
-                # (6) tube plots
+                # (6) 1D profiles
                 dp.profiles_main(run, loc, saveloc, dumpData, setup)
         print('')
 

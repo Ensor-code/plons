@@ -43,7 +43,7 @@ def read1D(runName, setup):
       pass
     data_1D['v_esc'] = sqrt(2*gg*setup['massAGB_ini']*solarm/(data_1D['r']))
     if setup['idust_opacity'] == 1:
-        data_1D['kappa'] = setup['bowen_kmax']*(1 + exp((data_1D['Tgas']-setup['bowen_Tcond'])/setup['bowen_delta']))**(-1) + setup['kappa_gas']
+        data_1D['kappa'] = setup['bowen_kmax']*(1 + exp((data_1D['Tdust']-setup['bowen_Tcond'])/setup['bowen_delta']))**(-1) + setup['kappa_gas']
     if setup['iget_tdust'] == 1:
         data_1D['Tdust'] = setup['primary_Teff']*(setup['primary_Reff']/data_1D['r'])**setup['tdust_exp']
     del headers, m, i, column
@@ -345,6 +345,7 @@ def Dustcooling(data1D, references, ax1, ax2):
 
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 def profiles_main(run, loc, saveloc, dumpData, setup):
+    if not setup['single_star']: return
     runName = os.path.join(loc,run)
     data1D = read1D(runName, setup)
 

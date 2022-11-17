@@ -490,11 +490,11 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             limits["speed"][5]  = [3.17029, 25.16178]
             limits["speed"][10] = [3.17029, 25.16178]
 
-        if "temp" in observables:
-            limits["temp"][1]  = [1.26680, 4.65751]
-            limits["temp"][2]  = [2.58142, 4.07818]
-            limits["temp"][5]  = [2.52443, 4.53982]
-            limits["temp"][10] = [2.52443, 4.53982]
+        if "Tgas" in observables:
+            limits["Tgas"][1]  = [1.26680, 4.65751]
+            limits["Tgas"][2]  = [2.58142, 4.07818]
+            limits["Tgas"][5]  = [2.52443, 4.53982]
+            limits["Tgas"][10] = [2.52443, 4.53982]
 
         if "tau" in observables:
             limits["tau"][1]  = [0, 0.17]
@@ -528,11 +528,11 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             limits["speed"][5]  = [0.00000, 22.53676]
             limits["speed"][10] = [0.00000, 22.53676]
 
-        if "temp" in observables:
-            limits["temp"][1]  = [2.26195, 4.49702]
-            limits["temp"][2]  = [2.14475, 4.92498]
-            limits["temp"][5]  = [1.97842, 5.32584]
-            limits["temp"][10] = [1.97842, 5.32584]
+        if "Tgas" in observables:
+            limits["Tgas"][1]  = [2.26195, 4.49702]
+            limits["Tgas"][2]  = [2.14475, 4.92498]
+            limits["Tgas"][5]  = [1.97842, 5.32584]
+            limits["Tgas"][10] = [1.97842, 5.32584]
 
         if "tau" in observables:
             limits["tau"][1]  = [0, 0.17]
@@ -565,11 +565,11 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             limits["speed"][5]  = [0., 20.]
             limits["speed"][10] = [0., 20.]
 
-        if "temp" in observables:
-            limits["temp"][1]  = [1., 4.]
-            limits["temp"][2]  = [1., 4.]
-            limits["temp"][5]  = [1., 4.]
-            limits["temp"][10] = [1., 4.]
+        if "Tgas" in observables:
+            limits["Tgas"][1]  = [1., 4.]
+            limits["Tgas"][2]  = [1., 4.]
+            limits["Tgas"][5]  = [1., 4.]
+            limits["Tgas"][10] = [1., 4.]
 
         if "tau" in observables:
             limits["tau"][1]  = [0, 1]
@@ -601,8 +601,8 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             if "speed" in observables:
                 limits["speed"][zoom] = findBounds(smooth[zoom]['smooth_y']["speed"], log=False, round=round_bounds)
                 limits["speed"][zoom][0] = max(limits["speed"][zoom][0], 0.)
-            if "temp" in observables:
-                limits["temp"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["temp"]), log=True, round=round_bounds)
+            if "Tgas" in observables:
+                limits["Tgas"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["Tgas"]), log=True, round=round_bounds)
             if "tau" in observables:
                 limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
                 limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
@@ -615,7 +615,7 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             print("          Ranges of Parameters: zoom = "+str(zoom))
             if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
             if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
-            if "temp"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["temp"][zoom][0], limits["temp"][zoom][1]))
+            if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
             if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
             if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
             if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
