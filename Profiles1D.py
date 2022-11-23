@@ -42,10 +42,12 @@ def read1D(runName, setup):
     except:
       pass
     data_1D['v_esc'] = sqrt(2*gg*setup['massAGB_ini']*solarm/(data_1D['r']))
-    if setup['idust_opacity'] == 1:
-        data_1D['kappa'] = setup['bowen_kmax']*(1 + exp((data_1D['Tdust']-setup['bowen_Tcond'])/setup['bowen_delta']))**(-1) + setup['kappa_gas']
     if setup['iget_tdust'] == 1:
         data_1D['Tdust'] = setup['primary_Teff']*(setup['primary_Reff']/data_1D['r'])**setup['tdust_exp']
+    elif setup['iget_tdust'] == 0:
+        data_1D['Tdust'] = data_1D['Tgas']
+    if setup['idust_opacity'] == 1:
+        data_1D['kappa'] = setup['bowen_kmax']*(1 + exp((data_1D['Tdust']-setup['bowen_Tcond'])/setup['bowen_delta']))**(-1) + setup['kappa_gas']
     del headers, m, i, column
     return data_1D
 
