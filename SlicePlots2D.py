@@ -439,9 +439,12 @@ def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccCo
         axs[2*len(observables)  ].set_xlabel(r"$x$ [AU]", fontsize=22)
 
     fig.subplots_adjust(wspace=-0.1, hspace=0.15)
+    struct = ""
+    for i in observables:
+        struct+=i
     if number == -1:
-        plt.savefig(os.path.join(loc, 'png/2Dplot_DensTempTau_zoom{0:01d}.png'.format(zoom)), dpi=200, bbox_inches="tight")
-        fig.savefig(os.path.join(loc, 'pdf/2Dplot_DensTempTau_zoom{0:01d}.pdf'.format(zoom)), bbox_inches="tight")
+        plt.savefig(os.path.join(loc, 'png/2Dplot_'+struct+'_zoom{0:01d}.png'.format(zoom)), dpi=200, bbox_inches="tight")
+        fig.savefig(os.path.join(loc, 'pdf/2Dplot_'+struct+'_zoom{0:01d}.pdf'.format(zoom)), bbox_inches="tight")
         print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
 
     else:

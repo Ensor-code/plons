@@ -37,7 +37,7 @@ def getKappa(Teq, kappa_gas = 2e-4, bowen_delta = 60., bowen_Tcond = 1500., bowe
 Returns the Eddington factor, the opacity in [cm^2/g], the luminocity [erg/s] and mass [g] of the AGB star, optional optical depth
 '''
 def getGamma(kappa, lumAGB, massAGB, tau = 0):
-    Gamma = kappa*lumAGB*np.exp(tau)/(4*np.pi*cgs.c()*cgs.G()*massAGB)
+    Gamma = kappa*lumAGB*np.exp(-tau)/(4*np.pi*cgs.c()*cgs.G()*massAGB)
     return Gamma
 
 '''

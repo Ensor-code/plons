@@ -78,8 +78,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
             massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
 
-    containsTau = "tau" in dump["blocks"][0]["data"]
-    bowenDust = "bowen_kmax" in setup
+    containsTau  = "tau" in dump["blocks"][0]["data"]
+    containsTauL = "tau_lucy" in dump["blocks"][0]["data"]
+    bowenDust    = "bowen_kmax" in setup
     
     x = dump["blocks"][0]["data"]["x"]
     y = dump["blocks"][0]["data"]["y"]
@@ -103,7 +104,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     u     = u                     [filter] * unit_energ        # specific internal density     [erg/g]
     if containsTau:
         tau  = dump["blocks"][0]["data"]["tau"][filter]        # optical depth  
-    if setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
+    if containsTauL:
+        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]        # optical depth  
+    if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     else: temp = dump["blocks"][0]["data"]["temperature"][filter]
     if bowenDust:
         Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
@@ -113,7 +116,10 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     # if not containsTemp: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
     if bowenDust:
         kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
-        Gamma = pq.getGamma(kappa, lumAGB, massAGB)
+        if containsTau:
+            Gamma = pq.getGamma(kappa, lumAGB, massAGB, tau)
+        else:
+            Gamma = pq.getGamma(kappa, lumAGB, massAGB)
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
@@ -161,9 +167,11 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         data['rComp_in']    = rComp_in                 # [cm]
         data['massComp_in'] = massComp_in              # [g]
         
-
     if containsTau:
         data["tau"        ] = tau
+        
+    if containsTauL:
+        data["tauL"   ] = tauL
 
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
@@ -201,6 +209,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     rho   = dump['rho']
     temp  = dump['Tgas']
     if "tau"   in dump: tau   = dump['tau']
+    if "tauL"  in dump: tauL   = dump['tauL']
     if "kappa" in dump: kappa = dump['kappa']
     if "Gamma" in dump: Gamma = dump['Gamma']
     if "Tdust" in dump: Tdust = dump['Tdust']
@@ -219,6 +228,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     rho   = rho                       [filter]             # g/cm^3
     temp  = temp                      [filter]             # K
     if "tau"   in dump: tau   = tau   [filter]
+    if "tauL"  in dump: tauL  = tauL  [filter]
     if "kappa" in dump: kappa = kappa [filter]             # cm^2/g
     if "Gamma" in dump: Gamma = Gamma [filter]
     if "Tdust" in dump: Tdust = Tdust [filter]
@@ -257,6 +267,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
             'cs'            : cs             # [cm]
             }
     if "tau"   in dump: data["tau"]   = tau
+    if "tauL"  in dump: data["tauL"]  = tauL
     if "kappa" in dump: data["kappa"] = kappa
     if "Gamma" in dump: data["Gamma"] = Gamma
     if "Tdust" in dump: data["Tdust"] = Tdust

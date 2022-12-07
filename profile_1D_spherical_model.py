@@ -30,7 +30,7 @@ def reference(axis):
     if axis == 'r':
         x_ref    = r_ref
         x_label  = r'$Distance$ [$R_*]$'
-        x_in     = 1.*x_ref
+        x_in     = 0.
         x_out    = 12.*x_ref
         x_limits = [x_in/x_ref,x_out/x_ref]
     if axis == 'Tgas':
@@ -372,29 +372,30 @@ def Dustcooling(data1D):
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 
 # Main directory of the data
-mainPath   = ['/STER/matse/PHANTOM_Models/Binary/Lucy_cool/v5k6T15M1e-7/']
+# mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/Low/single/', '/STER/matse/PHANTOM_Models/Lucy/Low/single_Lucy/', '/STER/matse/PHANTOM_Models/Lucy/Low/single_Atten/']
+# mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/High/single/', '/STER/matse/PHANTOM_Models/Lucy/High/single_Lucy/', '/STER/matse/PHANTOM_Models/Lucy/High/single_Atten/']
+mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/High/single_Atten/']
 modelLabel = 'wind'
-dumpNumber = '00010'
+dumpNumber = '00050'
 
 # What do you want to plot?
-whichPlot = 'temp'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
+whichPlot = 'tau'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
 xAxis     = 'r'          # r, Tgas
 
 #Number of vertical subplots, change second dimension of ax array for horizontal plots
-Nsub     = 1
+Nsub     = len(mainPath)
 
 # ===== SET UP PLOT LAYOUT =============================================================
 
-size     = (9,Nsub*6)
-fig, ax1 = plt.subplots(Nsub,figsize=size,tight_layout=True,squeeze=False,sharex=True)
+size     = (9,6)
+fig, ax1 = plt.subplots(1,figsize=size,tight_layout=True,squeeze=False,sharex=True)
 ax2      = copy(ax1)
-
-for i in range(Nsub):
+i = 0
+for j in range(Nsub):
 
 # ===== READ INPUT ========================================================================
 
-  inputFile = mainPath[i] + modelLabel
-  
+  inputFile = mainPath[j] + modelLabel
   # Extract data from parameter card
   wind_param      = read_infile(inputFile)
   Mstar           = wind_param['primary_mass']*solarm
@@ -431,7 +432,7 @@ for i in range(Nsub):
       tdust_exp   = wind_param['tdust_exp']
 
   # specify reference values
-  r_ref  = Rstar
+  r_ref  = au
   T_ref  = 1.
   v_ref  = 1.e5
   x_ref, x_label, x_in, x_out, x_limits = reference(xAxis)
@@ -440,9 +441,9 @@ for i in range(Nsub):
   # ===== READ DATA ========================================================================
 
   # Read input and dump file
-  data1D  = read1D(mainPath[i] + modelLabel + '_1D.dat')
+  data1D  = read1D(mainPath[j] + modelLabel + '_1D.dat')
   #data1D_2  = read1D(mainPath[i] + modelLabel + '_noR_1D.dat')
-  dataSPH = readSPH(mainPath[i] + modelLabel + '_' + dumpNumber)
+  dataSPH = readSPH(mainPath[j] + modelLabel + '_' + dumpNumber)
   #dataSPH_2 = readSPH(mainPath[i] + modelLabel + '_noR_' + dumpNumber)
 
   # ===== GENERATE PLOT ========================================================================
@@ -498,5 +499,3 @@ for i in range(Nsub):
 
 
 plt.show()
-#plt.savefig('/lhome/ward/1D_raytrace.png',dpi=200.)
-plt.close()
