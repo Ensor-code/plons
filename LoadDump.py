@@ -94,26 +94,26 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
 
     filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
-    x     = x                     [filter] * unit_dist         # position coordinates          [cm]
+    x     = x                     [filter] * unit_dist          # position coordinates          [cm]
     y     = y                     [filter] * unit_dist     
     z     = z                     [filter] * unit_dist
-    mass  = mass                  [filter] * unit_mass         # mass of sph particles         [g]
+    mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
     vx    = vx                    [filter] * unit_velocity * cgs.cms_kms()                   # velocity components           [cm/s]
     vy    = vy                    [filter] * unit_velocity * cgs.cms_kms()
     vz    = vz                    [filter] * unit_velocity * cgs.cms_kms()
-    u     = u                     [filter] * unit_energ        # specific internal density     [erg/g]
-    if containsTau:
-        tau  = dump["blocks"][0]["data"]["tau"][filter]        # optical depth  
-    if containsTauL:
-        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]        # optical depth  
-    if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
-    else: temp = dump["blocks"][0]["data"]["temperature"][filter]
-    if bowenDust:
-        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
-    h     = h                     [filter] * unit_dist         # smoothing length              [cm]
+    u     = u                     [filter] * unit_energ         # specific internal density     [erg/g]
+    h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
-    # if not containsTemp: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
+    if containsTau:
+        tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth  
+    if containsTauL:
+        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth  
+    if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
+    elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
+    else: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
+    if bowenDust:
+        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
     if bowenDust:
         kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
         if containsTau:
