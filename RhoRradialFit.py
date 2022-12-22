@@ -36,7 +36,7 @@ def fitRhoR(run,loc,dumpData,sinkData,setup):
             }
     #rComp = dumpData['r'][-2]
     rComp = np.mean(sinkData['rComp']) 
-    #print('rcomp [au] = ', rComp/cgs.AU_cm())
+    #print('rcomp [au] = ', rComp/cgs.au)
     
     dataToUse = {}
     dataToUse['rho1'] = dumpData['rho']    [dumpData['r'] < rComp]
@@ -45,12 +45,12 @@ def fitRhoR(run,loc,dumpData,sinkData,setup):
     dens = dumpData['rho']    [(dumpData['r'] >= rComp)]
     rad  = dumpData['r'  ]    [(dumpData['r'] >= rComp)]
     
-    dataToUse['rho2'] = dens   [(rad < models[run][-1]*cgs.AU_cm())]
-    dataToUse['r2'  ] = rad    [(rad < models[run][-1]*cgs.AU_cm())]
+    dataToUse['rho2'] = dens   [(rad < models[run][-1]*cgs.au)]
+    dataToUse['r2'  ] = rad    [(rad < models[run][-1]*cgs.au)]
     
-    r1 = dataToUse['r1']/cgs.AU_cm()
-    r2 = dataToUse['r2']/cgs.AU_cm()
-    rC = rComp/cgs.AU_cm()
+    r1 = dataToUse['r1']/cgs.au
+    r2 = dataToUse['r2']/cgs.au
+    rC = rComp/cgs.au
     rho1 = np.log10(dataToUse['rho1'])
     rho2 = np.log10(dataToUse['rho2'])
 
@@ -130,13 +130,13 @@ def func(x,sc1,p):
 def fitRhoR(run,loc,dumpData,sinkData):
     #rComp = dumpData['r'][-2]
     rComp = np.mean(sinkData['rComp'])
-    print('rcomp= ', rComp/cgs.AU_cm())
+    print('rcomp= ', rComp/cgs.au)
     
     dataToUse = {}
     dataToUse['rho'     ] = dumpData['rho'     ][:-2]  
     dataToUse['r'       ] = dumpData['r'       ][:-2]      
  
-    r = dataToUse['r']/cgs.AU_cm()
+    r = dataToUse['r']/cgs.au
         
     fig = plt.figure(figsize=(9, 6))  
     ax1 = plt.subplot(111)
@@ -146,7 +146,7 @@ def fitRhoR(run,loc,dumpData,sinkData):
     print('scaling1 = ',scaling1,' power = ',power) 
 
                                       
-    plt.axvline(x = rComp/cgs.AU_cm(),c='k')
+    plt.axvline(x = rComp/cgs.au,c='k')
     ax1.scatter(r,np.log10(dataToUse['rho']), s= 0.3, c='firebrick')
     
     x1 = np.linspace(min(r),max(r),10000)

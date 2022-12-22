@@ -96,9 +96,9 @@ def getTubeData_orbPlane(setup,data):
     
     pos = data['position'].transpose()
     
-    x   = np.abs( pos[0]  /cgs.AU_cm() )     # [au]    
-    y   = np.abs( pos[1]  /cgs.AU_cm() )     # [au]
-    z   = np.abs( pos[2]  /cgs.AU_cm() )     # [au]
+    x   = np.abs( pos[0]  /cgs.au )     # [au]    
+    y   = np.abs( pos[1]  /cgs.au )     # [au]
+    z   = np.abs( pos[2]  /cgs.au )     # [au]
     
     #xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
     #yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]
@@ -136,9 +136,9 @@ def getTubeData_xy(setup,data):
     
     pos = data['position'].transpose()
     
-    x   = np.abs( pos[0]  /cgs.AU_cm() )     # [au]    
-    y   = np.abs( pos[1]  /cgs.AU_cm() )     # [au]
-    z   = np.abs( pos[2]  /cgs.AU_cm() )     # [au]
+    x   = np.abs( pos[0]  /cgs.au )     # [au]    
+    y   = np.abs( pos[1]  /cgs.au )     # [au]
+    z   = np.abs( pos[2]  /cgs.au )     # [au]
     
     xr  = np.abs( gf.calc_r_2D(y,z)    )     # [au]
     yr  = np.abs( gf.calc_r_2D(x,z)    )     # [au]

@@ -225,8 +225,6 @@ def plotLvsR(ax, theta, infoForPlot, marker):#, infoForPlotL, infoForPlotR):
 Main definition
 '''
 def CMF_meanRho(run,outloc, data, setup, factor):
-    print('')
-    print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
 
     # legend
     left          = mlines.Line2D([],[], color = 'k', linestyle = 'dashed', label = 'Periastron')

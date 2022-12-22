@@ -13,14 +13,7 @@ from scipy import constants, interpolate
 import userSettings as us
 import os
 import sys
-
-userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
-if not os.path.isfile(userSettingsFilePath) or os.stat(userSettingsFilePath).st_size == 0: us.create(userSettingsFilePath)
-userSettingsDictionary = us.load(userSettingsFilePath,onlyPathToPhantom=True)
-sys.path.append(userSettingsDictionary["hard_path_to_phantom"]+'/scripts')
-
-from readPhantomDump import *
-from PhysicalConstantsCGS import Rg, steboltz, kboltz, au, gg, c, mass_proton_cgs, solarm
+from ConversionFactors_cgs import Rg, steboltz, kB, au, G, mH, Msun
 
 # reads the 1D data and computes derived quantities
 def read1D(runName, setup):
@@ -38,10 +31,10 @@ def read1D(runName, setup):
     #add new variables
     try:
       data_1D['Tgas']  = data_1D['T']
-      data_1D['cs']    = sqrt(data_1D['gamma']*kboltz*data_1D['T']/(data_1D['mu']*mass_proton_cgs))
+      data_1D['cs']    = sqrt(data_1D['gamma']*kB*data_1D['T']/(data_1D['mu']*mH))
     except:
       pass
-    data_1D['v_esc'] = sqrt(2*gg*setup['massAGB_ini']*solarm/(data_1D['r']))
+    data_1D['v_esc'] = sqrt(2*G*setup['massAGB_ini']*Msun/(data_1D['r']))
     if setup['isink_radiation'] > 1:
         if setup['iget_tdust'] == 1:
             data_1D['Tdust'] = setup['primary_Teff']*(setup['primary_Reff']/data_1D['r'])**setup['tdust_exp']
@@ -99,7 +92,7 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
             ax1.set_ylabel('Temperature [K]')
         if setup['idust_opacity'] == 2:
             lns21 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['kappa'], color='green',  linestyle='-', label=r'$\kappa_\mathrm{d}$ analytic')
-            K3    = multiply(data['K3'],data['rho'])/mass_proton_cgs
+            K3    = multiply(data['K3'],data['rho'])/mH
             K3    = array([1e-95 if k == 0. else k for k in K3])
             lns22 = ax2.plot(data[references['x_axis']]/references['x_ref'], log10(K3), color='blue',  linestyle='-', label=r'log($\mathcal{K}_3$) analytic')
             lns2  = lns21 + lns22
@@ -205,7 +198,7 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
         if setup['idust_opacity'] == 2:
             ax2=ax1.twinx()
             lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['kappa'],  'g.', label=r'$\kappa_\mathrm{d}$  SPH')
-            K3    = multiply(dumpData['K3'],dumpData['rho'])/mass_proton_cgs
+            K3    = multiply(dumpData['K3'],dumpData['rho'])/mH
             K3    = array([1e-95 if k == 0. else k for k in K3])
             lns42 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], log10(K3), 'b.', label=r'log($\mathcal{K}_3$)  SPH')
             lns4  = lns41 + lns42
@@ -338,7 +331,7 @@ def Dustcooling(data1D, references, ax1, ax2):
   therm_conduc = 50
   
   CoolingBowen      = (3*Rg/(2*bowen_Cprime))*multiply( divide(data1D['rho'],data1D['mu']) , Tdust_interp-Tgas )
-  CoolingHollenbach = multiply(multiply((d2g*kboltz/(2*rho_sp*dust_size))*sqrt(3*kboltz*divide(Tgas,(data1D['mu']*mass_proton_cgs)**3)),data1D['rho']**2),Tdust_interp-Tgas)
+  CoolingHollenbach = multiply(multiply((d2g*kB/(2*rho_sp*dust_size))*sqrt(3*kB*divide(Tgas,(data1D['mu']*mH)**3)),data1D['rho']**2),Tdust_interp-Tgas)
   CoolingFourier    = (3*therm_conduc*d2g/(rho_sp*dust_size*heat_transfer_zone))*multiply(data1D['rho'],Tdust_interp-Tgas)
   CoolingStefan     = 4.*steboltz*(Tdust_interp**4-Tgas**4)*kappa_gas
   

@@ -98,9 +98,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     y     = y                     [filter] * unit_dist     
     z     = z                     [filter] * unit_dist
     mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
-    vx    = vx                    [filter] * unit_velocity * cgs.cms_kms()                   # velocity components           [cm/s]
-    vy    = vy                    [filter] * unit_velocity * cgs.cms_kms()
-    vz    = vz                    [filter] * unit_velocity * cgs.cms_kms()
+    vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]
+    vy    = vy                    [filter] * unit_velocity / cgs.kms
+    vz    = vz                    [filter] * unit_velocity / cgs.kms
     u     = u                     [filter] * unit_energ         # specific internal density     [erg/g]
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
@@ -216,7 +216,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     h     = dump['h']
     r     = dump['r']
 
-    filter = (r > factor * setup['sma_ini'] * cgs.AU_cm()) & (r < bound * cgs.AU_cm())
+    filter = (r > factor * setup['sma_ini'] * cgs.au) & (r < bound * cgs.au)
     x     = x                         [filter]             # cm
     y     = y                         [filter]
     z     = z                         [filter]

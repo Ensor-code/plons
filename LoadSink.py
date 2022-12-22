@@ -95,14 +95,14 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     # AGB star
 
     t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]                                
-    x1     = x1     *  cgs.AU_cm()                     # position coordinates       [cm]
-    y1     = y1     *  cgs.AU_cm()       
-    z1     = z1     *  cgs.AU_cm()      
-    mass1  = mass1  *  cgs.Msun_gram()                 # mass of sph particles      [g]
+    x1     = x1     *  cgs.au                          # position coordinates       [cm]
+    y1     = y1     *  cgs.au
+    z1     = z1     *  cgs.au
+    mass1  = mass1  *  cgs.Msun                        # mass of sph particles      [g]
     vx1    = vx1    *  cgs.cu_vel()                    # velocity components        [cm/s]
     vy1    = vy1    *  cgs.cu_vel()
     vz1    = vz1    *  cgs.cu_vel()
-    maccr1 = maccr1 *  cgs.Msun_gram()                 # accreted mass              [g]
+    maccr1 = maccr1 *  cgs.Msun                        # accreted mass              [g]
 
     r1 = gf.calc_r(x1, y1, z1)                         # [cm]
 
@@ -112,14 +112,14 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     # companion star
 
     t2     = t2     *  cgs.cu_time()                   # evolution time             [yrs]                                 
-    x2     = x2     *  cgs.AU_cm()                     # position coordinates       [cm]
-    y2     = y2     *  cgs.AU_cm()       
-    z2     = z2     *  cgs.AU_cm()      
-    mass2  = mass2  *  cgs.Msun_gram()                 # mass of sph particles      [g]
+    x2     = x2     *  cgs.au                          # position coordinates       [cm]
+    y2     = y2     *  cgs.au
+    z2     = z2     *  cgs.au
+    mass2  = mass2  *  cgs.Msun                        # mass of sph particles      [g]
     vx2    = vx2    *  cgs.cu_vel()                    # velocity components        [cm/s]
     vy2    = vy2    *  cgs.cu_vel()
     vz2    = vz2    *  cgs.cu_vel()
-    maccr2 = maccr2 *  cgs.Msun_gram()                 # accreted mass              [g]
+    maccr2 = maccr2 *  cgs.Msun                        # accreted mass              [g]
 
     r2 = gf.calc_r(x2, y2, z2)                         # [cm]
 
@@ -129,22 +129,22 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     if setup['triple_star']==True:
         #close companion star
         t3     = t3     *  cgs.cu_time()                   # evolution time             [yrs]                                 
-        x3     = x3     *  cgs.AU_cm()                     # position coordinates       [cm]
-        y3     = y3     *  cgs.AU_cm()       
-        z3     = z3     *  cgs.AU_cm()      
-        mass3  = mass3  *  cgs.Msun_gram()                 # mass of sph particles      [g]
+        x3     = x3     *  cgs.au                          # position coordinates       [cm]
+        y3     = y3     *  cgs.au
+        z3     = z3     *  cgs.au
+        mass3  = mass3  *  cgs.Msun                        # mass of sph particles      [g]
         vx3    = vx3    *  cgs.cu_vel()                    # velocity components        [cm/s]
         vy3    = vy3    *  cgs.cu_vel()
         vz3    = vz3    *  cgs.cu_vel()
-        maccr3 = maccr3 *  cgs.Msun_gram()                 # accreted mass              [g]
+        maccr3 = maccr3 *  cgs.Msun                        # accreted mass              [g]
 
         r3 = gf.calc_r(x3, y3, z3)                         # [cm]
 
         position3 = np.array((x3, y3, z3 )).transpose()
         velocity3 = np.array((vx3,vy3,vz3)).transpose()
         
-        period_in       = pq.getPeriod(mass1, mass3, (r1 + r3) /cgs.AU_cm() )
-        rHill_in        = pq.getRHill( abs(r1 + r3), mass3, mass1           )         # [cm]
+        period_in       = pq.getPeriod(mass1, mass3, (r1 + r3) /cgs.au )
+        rHill_in        = pq.getRHill( abs(r1 + r3), mass3, mass1      )              # [cm]
 
     
     
@@ -156,9 +156,9 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     #print('period 2',setup['period'])
     #periodFixed = setup['period']
     #ONLY ORBITAL VEL OF OUTER COMPANION WILL BE CORRECT IN CASE OF TRIPLE, INNER HAS COMPLICATED ORBITAL VELOCITY
-    #orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.AU_cm() )
-    #orbitalVel_comp = pq.getOrbitalVelocity(period, r2     /cgs.AU_cm() )
-    #orbotalVel_comp_in = pq.getOrbitalVelocity(period_in, r3     /cgs.AU_cm() )
+    #orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.au_cm() )
+    #orbitalVel_comp = pq.getOrbitalVelocity(period, r2     /cgs.au_cm() )
+    #orbotalVel_comp_in = pq.getOrbitalVelocity(period_in, r3     /cgs.au_cm() )
     
     orbitalVel_AGB  = np.sqrt(np.transpose(velocity1)[0]**2+np.transpose(velocity1)[1]**2) 
     orbitalVel_comp = np.sqrt(np.transpose(velocity2)[0]**2+np.transpose(velocity2)[1]**2)
@@ -258,14 +258,14 @@ def LoadSink_single_cgs(run, loc, setup, userSettingsDictionary):
     # AGB star
 
     t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]                            
-    x1     = x1     *  cgs.AU_cm()                     # position coordinates       [cm]
-    y1     = y1     *  cgs.AU_cm()       
-    z1     = z1     *  cgs.AU_cm()      
-    mass1  = mass1  *  cgs.Msun_gram()                 # mass of sph particles      [g]
+    x1     = x1     *  cgs.au                          # position coordinates       [cm]
+    y1     = y1     *  cgs.au
+    z1     = z1     *  cgs.au
+    mass1  = mass1  *  cgs.Msun                        # mass of sph particles      [g]
     vx1    = vx1    *  cgs.cu_vel()                    # velocity components        [cm/s]
     vy1    = vy1    *  cgs.cu_vel()
     vz1    = vz1    *  cgs.cu_vel()
-    maccr1 = maccr1 *  cgs.Msun_gram()                 # accreted mass              [g]
+    maccr1 = maccr1 *  cgs.Msun                        # accreted mass              [g]
 
     r1 = gf.calc_r(x1, y1, z1)                         # [cm]
 

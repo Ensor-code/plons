@@ -107,15 +107,15 @@ def LoadSetup(run, loc, userSettingsDictionary):
     if setup["single_star"] == False:
         massComp_ini = setup["massComp_ini"]
         sma = setup["sma_ini"]
-        period = pq.getPeriod(massAGB_ini * cgs.Msun_gram(), massComp_ini * cgs.Msun_gram(), sma)           # [s]
-        #v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                                          # [km/s]
-        Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun_gram(), v_ini / cgs.cms_kms()) / cgs.AU_cm()     # [au]
+        period = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_ini * cgs.Msun, sma)           # [s]
+        #v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                           # [km/s]
+        Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au         # [au]
         if setup['triple_star']==True:
             massComp_in_ini = setup["massComp_in_ini"]        
             sma_in = setup["sma_in_ini"]
-            period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun_gram(), massComp_ini * cgs.Msun_gram(), sma)           # [s]        
-            period_in = pq.getPeriod(massAGB_ini * cgs.Msun_gram(), massComp_in_ini * cgs.Msun_gram(), sma_in)
-            Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun_gram(), v_ini / cgs.cms_kms()) / cgs.AU_cm()     # [au]
+            period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun, massComp_ini * cgs.Msun, sma)  # [s]
+            period_in = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_in_ini * cgs.Msun, sma_in)           # [s]
+            Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au            # [au]
             setup["period_in"] = period_in
             setup["Rcap_in"] = Rcap_in
 

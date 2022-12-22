@@ -51,8 +51,8 @@ def oneRadialStructurePlot(parX,parZ, X, Z, parName, axis, parMin, parMax, rcomp
     axis.set_xlim(limX, bound)
     axis.vlines(rcomp, parMin, parMax, 'black', linestyle='--', linewidth=1., label=r"$x_\mathrm{comp}$", zorder = 10)
     
-    axis.plot(X/cgs.AU_cm(), parX, color = 'C0', label = '$x$-axis', lw = 1)
-    axis.plot(Z/cgs.AU_cm(), parZ, color = 'C1', label = '$z$-axis', lw = 1)
+    axis.plot(X/cgs.au, parX, color = 'C0', label = '$x$-axis', lw = 1)
+    axis.plot(Z/cgs.au, parZ, color = 'C1', label = '$z$-axis', lw = 1)
 
     axis.set_ylim(parMin,parMax)
 
@@ -61,9 +61,6 @@ def oneRadialStructurePlot(parX,parZ, X, Z, parName, axis, parMin, parMax, rcomp
     axis.tick_params(axis='x', pad=9)
 
 def radialStructPlots(run,loc, dumpData, setup):
-    print('')
-    print('(2)  Start calculations for the radial structure plots.')
-
     #plots radial structure of log(rho), |v| and T on the x- and y-axis
     fig = None
     gamma = setup["gamma"]
@@ -90,9 +87,9 @@ def radialStructPlots(run,loc, dumpData, setup):
             theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
         results_line_X, xX, yX, zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'Tgas', 'speed'], 'comp',
-                                                                 'line_x', setup['bound'] * cgs.AU_cm(), theta)
+                                                                 'line_x', setup['bound'] * cgs.au, theta)
         results_line_Z, xZ, yZ, zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'Tgas', 'speed'], 'comp',
-                                                                 'line_z', setup['bound'] * cgs.AU_cm(), theta)
+                                                                 'line_z', setup['bound'] * cgs.au, theta)
 
         parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
         parY = np.zeros_like(parX)
@@ -131,9 +128,9 @@ def radialStructPlots(run,loc, dumpData, setup):
         X += posAGB
         posComp = posAGB
         if setup['single_star'] == False:
-            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])) / cgs.AU_cm()
+            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])) / cgs.au
             if setup['triple_star']==True:
-                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])) / cgs.AU_cm()]
+                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])) / cgs.au]
             print('radial position 2 companions: ', posComp)
 
         bound = setup['bound']
@@ -192,8 +189,8 @@ def radialStructPlots(run,loc, dumpData, setup):
         if setup['single_star'] == False:
             theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
-        results_line_X,xX,yX,zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','Tgas','speed'], 'comp','line_x',setup['bound']*cgs.AU_cm(), theta)
-        results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','Tgas','speed'], 'comp','line_z',setup['bound']*cgs.AU_cm(), theta)
+        results_line_X,xX,yX,zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','Tgas','speed'], 'comp','line_x',setup['bound']*cgs.au, theta)
+        results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','Tgas','speed'], 'comp','line_z',setup['bound']*cgs.au, theta)
 
         gamma = setup["gamma"]
         parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
@@ -235,9 +232,9 @@ def radialStructPlots(run,loc, dumpData, setup):
         X += posAGB
         posComp = posAGB
         if setup['single_star'] == False:
-            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])+posAGB) / cgs.AU_cm()
+            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])+posAGB) / cgs.au
             if setup['triple_star']==True:
-                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.AU_cm()]
+                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.au]
             print('radial position 2 companions: ', posComp)
         bound = setup['bound']
 

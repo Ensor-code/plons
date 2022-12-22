@@ -49,48 +49,10 @@ def run_main(outputloc,runParts,numbers, models):
         print('')
         for part in runParts:
             if part == '0':
-                # (1) 2D slice plots
-                sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
-                # (2) 1D line plots
-                rs.radialStructPlots(run, saveloc, dumpData, setup)
-                # (3) terminal velocity, eta, Qp
-                tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
-                # (4) cummulative mass fraction
-                if setup['single_star'] == True:
-                    cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
-                else:
-                    cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-                # (5) orbital evolution
-                ov.orbEv_main(run, saveloc, sinkData, setup)
-                # (6) 1D profiles
-                dp.profiles_main(run, loc, saveloc, dumpData, setup)
-                
-            if part == '1':
-                # (1) 2D slice plots
-                sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
-                
-            if part == '2':
-                # (2) 1D line plots
-                rs.radialStructPlots(run, saveloc, dumpData, setup)
-
-            if part == '3':  
-                # (3) terminal velocity, eta, Qp
-                tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
-                
-            if part == '4':
-                # (4) cummulative mass fraction
-                if setup['single_star'] == True:
-                    cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
-                else:
-                    cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-                    
-            if part == '5':
-                # (5) orbital evolution
-                ov.orbEv_main(run, saveloc, sinkData, setup)
-                
-            if part == '6':
-                # (6) 1D profiles
-                dp.profiles_main(run, loc, saveloc, dumpData, setup)
+                for i in options: 
+                    runPart(i, run, saveloc, dumpData, setup, sinkData, outerData)
+            else: 
+                runPart(part, run, saveloc, dumpData, setup, sinkData, outerData)
         print('')
 
 def searchModels(loc, prefix):
@@ -102,6 +64,44 @@ def searchModels(loc, prefix):
             result.append([path, slicedString])
 
     return result
+
+def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
+    if part == '1':
+        print('')
+        print('(1)  Start calculations for slice plots...')
+        sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
+        
+    if part == '2':
+        print('')
+        print('(2)  Start calculations for the radial structure plots.')
+        rs.radialStructPlots(run, saveloc, dumpData, setup)
+
+    if part == '3':  
+        print('')
+        print('(3) Start calculations for terminal velocity...')
+        tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
+        
+    if part == '4':
+        print('')
+        print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
+        if setup['single_star'] == True:
+            cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
+        else:
+            cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
+            
+    if part == '5':
+        print('')
+        if setup['single_star']:
+            print('(5)  A single model has no orbit, and thereby no orbital evolution.')
+            print('     The orbital evolution part is therefore skipped.')
+        else:
+            print('(5)  Start calculations for orbital evolution...')
+            ov.orbEv_main(run, saveloc, sinkData, setup)
+        
+    if part == '6':
+        print('')
+        print('(6)  Start calculating for the 1D spherical plots')
+        dp.profiles_main(run, loc, saveloc, dumpData, setup)
 
 print('')
 print('-------------------------------------------------------')
@@ -160,7 +160,7 @@ else:
     print('     (5) Information of the orbital evolution.')
     print('     (6) 1D spherical profiles for single star models.')
     print()
-    print('Choose from 0 to 5, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
+    print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
     part = input('  >>>   ')
     if part in ('q', 'exit'):
         print('')

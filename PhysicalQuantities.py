@@ -37,7 +37,7 @@ def getKappa(Teq, kappa_gas = 2e-4, bowen_delta = 60., bowen_Tcond = 1500., bowe
 Returns the Eddington factor, the opacity in [cm^2/g], the luminocity [erg/s] and mass [g] of the AGB star, optional optical depth
 '''
 def getGamma(kappa, lumAGB, massAGB, tau = 0):
-    Gamma = kappa*lumAGB*np.exp(-tau)/(4*np.pi*cgs.c()*cgs.G()*massAGB)
+    Gamma = kappa*lumAGB*np.exp(-tau)/(4*np.pi*cgs.c*cgs.G*massAGB)
     return Gamma
 
 '''
@@ -52,7 +52,7 @@ Returns the orbital period (s) of the binary system via Kepler's second law.
       mass1 and mass2 in gram, orbSep in AU
 '''
 def getPeriod(mass1,mass2,orbSep):
-    period = 2*np.pi*np.sqrt((orbSep*cgs.AU_cm())**3/(cgs.G()*(mass1+mass2)))
+    period = 2*np.pi*np.sqrt((orbSep*cgs.au)**3/(cgs.G*(mass1+mass2)))
     return period                           # in s
 
 '''
@@ -60,7 +60,7 @@ Returns the orbital velocity [cm/s] of the binary system.
       period in seconds, orbSep in AU
 '''
 def getOrbitalVelocity(period, orbSep):
-    v_orb = (2*np.pi*orbSep*cgs.AU_cm())/(period)      
+    v_orb = (2*np.pi*orbSep*cgs.au)/(period)      
     return v_orb                                    # cm/s
 
 '''
@@ -89,7 +89,7 @@ def getRHill(orbSep, mcomp, mAGB):
 Calculate the accretion radius of the companion.
 '''
 def getCaptureRadius(mcomp, vwind):
-    Rcap = (2*cgs.G()*mcomp)/(vwind**2)
+    Rcap = (2*cgs.G*mcomp)/(vwind**2)
     return Rcap                         # [cm]
 
 '''
@@ -102,7 +102,7 @@ It is defined as the ratio of enery densities:
             = (v_wind**2 * sma) / ((24 * G**3 * M_comp**2 * M_AGB)^(1/3))
 '''
 def getEpsilon(vwind, sma, mComp, mAGB):
-    epsilon = (vwind**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
+    epsilon = (vwind**2 * sma)/(cgs.G * (24 * (mComp)**2 * mAGB)**(1/3))
     return epsilon
 
 

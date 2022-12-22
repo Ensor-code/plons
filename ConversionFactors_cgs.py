@@ -1,60 +1,21 @@
 
 # --- Physical constants in cgs ---
 
-
-# gravitational constant 
-def G():
-    G = 6.674e-8                    # [cm^3 g^-1 s^-1]
-    return G
-
-# mass of a hydrogen
-def mH():
-    mH = 1.6735337254999998e-24     # [g]
-    return mH
-
-# Boltzmann constant
-def kB():
-    kB = 1.380649e-16               # [erg K^-1] 
-    return kB
-
-# speed of light
-def c():
-    c = 2.99792458e10               # [cm s^-1]
-    return c
+G = 6.674e-8                    # gravitational constant     [cm^3 g^-1 s^-1]
+mH = 1.6735337254999998e-24     # mass of a hydrogen         [g]
+kB = 1.380649e-16               # Boltzmann constant         [erg K^-1] 
+Rg = 8.31446261815324e7         # Gas constant               [erg/K/g]
+steboltz   = 5.67051e-5         # Stefan-Boltzmann constant  [erg cm^-2K^-4 s^-1]
+c = 2.99792458e10               # speed of light             [cm s^-1]
 
 
 # --- Conversion factors ---
 
-# length: astronomical unit [AU] to cm
-def AU_cm():
-    au = 1.496e+13                  # [cm]
-    return au
-
-# mass: solar mass to gram
-def Msun_gram():
-    Msun = 1.98847e+33              # [g]
-    return Msun
-
-# mass: solar luminocity to ergs/s
-def Lsun_ergs():
-    Msun = 3.826e33              # [ergs s^-1]
-    return Msun
-
-# time: seconds to years
-def sec_year():
-    year = 1/(60*60*24*365)         # [year]
-    return year
-
-# speed: cm/s to km/s
-def cms_kms():
-    kms = 1e-5                      # [cm s^-1]
-    return kms
-
-# density: g/cm^3 to kg/m^3
-def gcm3_kgm3():
-    kgm3 = 1e3                      # [g cm^-3]
-    return kgm3
-
+au = 1.496e+13                  # length: astronomical unit  [cm]
+Msun = 1.98847e+33              # mass: solar mass           [g]
+Lsun = 3.826e33                 # lumin: solar luminocity    [ergs s^-1]
+year = 1/(60*60*24*365)         # time: year                 [s]
+kms = 1e5                       # speed: km/s                [cm s^-1]
 
 
 # --- Conversion factors specific to PHANTOM ---

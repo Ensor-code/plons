@@ -49,10 +49,10 @@ Load the smoothing kernel data
 '''
 def smoothData(dumpData, setup, theta, observables, zoom=1):
     print('          Calculating zoom = '+str(zoom), end='\r')
-    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
-    results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
-    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh)
-    results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'y', (setup['bound']) * cgs.AU_cm() * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
+    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh)
+    results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
+    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'y', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh)
+    results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'y', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
 
     if (setup['single_star']):
         xcomp, ycomp = 0,0
@@ -114,19 +114,19 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     axPlot = None
     dataRho = np.log10(smooth[zoom]['smooth_z']["rho"])
     if mesh == False:
-        axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.AU_cm(), smooth[zoom]['y_z']/cgs.AU_cm(),
+        axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.au, smooth[zoom]['y_z']/cgs.au,
                             s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
                             rasterized=True)
     else:
-        axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(),
+        axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
                                dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
                                rasterized=True)
 
     if setup['single_star']== False:
-        xAGB  = dumpData['posAGB' ][0] / cgs.AU_cm()
-        yAGB  = dumpData['posAGB' ][1] / cgs.AU_cm()
-        xcomp = dumpData['posComp'][0] / cgs.AU_cm()
-        ycomp = dumpData['posComp'][1] / cgs.AU_cm()
+        xAGB  = dumpData['posAGB' ][0] / cgs.au
+        yAGB  = dumpData['posAGB' ][1] / cgs.au
+        xcomp = dumpData['posComp'][0] / cgs.au
+        ycomp = dumpData['posComp'][1] / cgs.au
 
         circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
@@ -134,8 +134,8 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
         ax.add_artist(circleComp)
         
         if setup['triple_star']==True:
-            xcomp_in = dumpData['posComp_in' ][0] / cgs.AU_cm()
-            ycomp_in = dumpData['posComp_in' ][1] / cgs.AU_cm()
+            xcomp_in = dumpData['posComp_in' ][0] / cgs.au
+            ycomp_in = dumpData['posComp_in' ][1] / cgs.au
             circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleComp_in)
             
@@ -201,19 +201,19 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             }
     logtau = False
 
-    xAGB = dumpData['posAGB'][0] / cgs.AU_cm()
-    yAGB = dumpData['posAGB'][1] / cgs.AU_cm()
-    zAGB = dumpData['posAGB'][2] / cgs.AU_cm()
+    xAGB = dumpData['posAGB'][0] / cgs.au
+    yAGB = dumpData['posAGB'][1] / cgs.au
+    zAGB = dumpData['posAGB'][2] / cgs.au
 
 
     if setup['single_star'] == False:
-        xcomp = dumpData['posComp'][0] / cgs.AU_cm()
-        ycomp = dumpData['posComp'][1] / cgs.AU_cm()
-        zcomp = dumpData['posComp'][2] / cgs.AU_cm()
+        xcomp = dumpData['posComp'][0] / cgs.au
+        ycomp = dumpData['posComp'][1] / cgs.au
+        zcomp = dumpData['posComp'][2] / cgs.au
         if setup['triple_star']==True:
-            xcomp_in = dumpData['posComp_in'][0] / cgs.AU_cm()
-            ycomp_in = dumpData['posComp_in'][1] / cgs.AU_cm()
-            zcomp_in = dumpData['posComp_in'][2] / cgs.AU_cm()
+            xcomp_in = dumpData['posComp_in'][0] / cgs.au
+            ycomp_in = dumpData['posComp_in'][1] / cgs.au
+            zcomp_in = dumpData['posComp_in'][2] / cgs.au
             
 
     gamma = setup["gamma"]
@@ -225,11 +225,11 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             data = np.log10(smooth[zoom]['smooth_z'][par])
             
         if mesh == False:
-            axPlot = ax.scatter(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(), s=5,
+            axPlot = ax.scatter(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au, s=5,
                                 c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
                                 rasterized=True)
         else:
-            axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.AU_cm(), smooth[zoom]['y_z'] / cgs.AU_cm(),
+            axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
                                     data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
                                     rasterized=True, shading="nearest")
 
@@ -237,7 +237,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
                 vx = smooth_vec[zoom]['smooth_z']['vx']
                 vy = smooth_vec[zoom]['smooth_z']['vy']
                 normaliseVectorLength = np.hypot(vx, vy)
-                ax.quiver(smooth_vec[zoom]['x_z'] / cgs.AU_cm(), smooth_vec[zoom]['y_z'] / cgs.AU_cm(),
+                ax.quiver(smooth_vec[zoom]['x_z'] / cgs.au, smooth_vec[zoom]['y_z'] / cgs.au,
                             vx / normaliseVectorLength, vy / normaliseVectorLength, scale_units="dots", scale=0.05)
 
     if plane == 'y':
@@ -246,19 +246,19 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
         else:
             data = np.log10(smooth[zoom]['smooth_y'][par])
         if mesh == False:
-            axPlot = ax.scatter(smooth[zoom]['x_y'] / cgs.AU_cm(), smooth[zoom]['z_y'] / cgs.AU_cm(), s=5,
+            axPlot = ax.scatter(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au, s=5,
                                 c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
                                 rasterized=True)
 
         else:
-            axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.AU_cm(), smooth[zoom]['z_y'] / cgs.AU_cm(), data,
+            axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au, data,
                                     cmap=cm[par], vmin=limits[0], vmax=limits[1], rasterized=True, shading="nearest")
 
             if par == 'speed' and velocity_vec:
                 vx = smooth_vec[zoom]['smooth_y']['vx']
                 vz = smooth_vec[zoom]['smooth_y']['vz']
                 normaliseVectorLength = np.hypot(vx, vz)
-                ax.quiver(smooth_vec[zoom]['x_y'] / cgs.AU_cm(), smooth_vec[zoom]['z_y'] / cgs.AU_cm(),
+                ax.quiver(smooth_vec[zoom]['x_y'] / cgs.au, smooth_vec[zoom]['z_y'] / cgs.au,
                             vx / normaliseVectorLength, vz / normaliseVectorLength, scale_units="dots", scale=0.05)
 
     # plot the position of the AGB star and comp in the edge-on plane & make colorbar
@@ -459,9 +459,6 @@ main definition
 
 
 def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], observables = ['rho', 'Tgas', 'speed']):
-    print('')
-    print('(1)  Start calculations for slice plots...')
-
     rAccComp_in = 0
     theta=0
     rAccComp = 0

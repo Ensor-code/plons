@@ -32,7 +32,7 @@ def getTerminalVelocity(setup, dump):
     if single_star == False:
         sma     = setup['sma_ini']
     outerBound  = int(round( setup['bound']  ))  
-    r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.AU_cm()  # radius [AU] from AGB, not barycentre!
+    r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.au  # radius [AU] from AGB, not barycentre!
     
     # Prepare for binning.
     rmin = min( r )     # minimum radius in the data set [AU]
@@ -232,20 +232,20 @@ def getMassHillTorus(setup, dump):
     if setup['single_star'] == True:
         sma   = np.array([25,40,60,90])                 # [AU/10]
         mComp = np.array([1, 0.01]  )*100               # [Msun/100]
-        mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
+        mAGB    = setup['massAGB_ini' ] * cgs.Msun      # [g]
         
         Hill = {}
         
         for i in sma:
             Hill[i] = {}
             for j in mComp:
-                rHill = pq.getRHill(i* cgs.AU_cm()/10,j* cgs.Msun_gram()/100,mAGB)
+                rHill = pq.getRHill(i* cgs.au/10,j* cgs.Msun/100,mAGB)
                 Hill[i][j] = [rHill]
                     
         for key1 in Hill:
             for key2 in Hill[key1]:
                 
-                sma   = key1 * cgs.AU_cm()               # [cm]
+                sma   = key1 * cgs.au               # [cm]
                 rHill = Hill[key1][key2][0]              # [cm]
                 
                 z       = dump['position'].transpose()[2]
@@ -272,12 +272,12 @@ def getMassHillTorus(setup, dump):
     
     if setup['single_star'] == False:
                 
-        rHill   = dump['rHill'   ]                          # [cm]
-        sma     = setup['sma_ini'     ] * cgs.AU_cm()       # [cm]
-        mComp   = setup['massComp_ini'] * cgs.Msun_gram()   # [g]
+        rHill   = dump['rHill'   ]                     # [cm]
+        sma     = setup['sma_ini'     ] * cgs.au       # [cm]
+        mComp   = setup['massComp_ini'] * cgs.Msun     # [g]
         z       = dump['position'].transpose()[2]
-        mass    = dump['mass'    ]                          # [g]
-        mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
+        mass    = dump['mass'    ]                     # [g]
+        mAGB    = setup['massAGB_ini' ] * cgs.Msun     # [g]
 
         mass    = mass      [ z <  rHill ]
         r       = dump['r'] [ z <  rHill ]
@@ -324,13 +324,13 @@ RETURNS
 '''
 def getQp(setup, wind_comp, massHill):
     
-    sma     = setup['sma_ini'     ] * cgs.AU_cm()       # [cm]
-    mComp   = setup['massComp_ini'] * cgs.Msun_gram()   # [g]
-    mAGB    = setup['massAGB_ini' ] * cgs.Msun_gram()   # [g]
+    sma     = setup['sma_ini'     ] * cgs.au       # [cm]
+    mComp   = setup['massComp_ini'] * cgs.Msun     # [g]
+    mAGB    = setup['massAGB_ini' ] * cgs.Msun     # [g]
 
     wind_comp_mean   = np.mean([wind_comp['min'],wind_comp['max']])     # mean wind speed at the location of the compnion
     
-    v_orb    = np.sqrt( cgs.G() * (mComp + mAGB) / (sma) )              # [cm/s]   
+    v_orb    = np.sqrt( cgs.G * (mComp + mAGB) / (sma) )                # [cm/s]   
     
     Qp_1     = ( (mComp * v_orb)/(massHill * wind_comp_mean   ) ) 
     Qp_2     = ( (mComp * v_orb)/(massHill * wind_comp['mean']) ) 
@@ -357,9 +357,9 @@ RETURNS:
     - epsilon
 '''
 def getEpsilon(v, setup):
-    sma   = setup['sma_ini'     ] * cgs.AU_cm()         # [cm]
-    mComp = setup['massComp_ini'] * cgs.Msun_gram()     # [Msun]
-    mAGB  = setup['massAGB_ini' ] * cgs.Msun_gram()     # [Msun]
+    sma   = setup['sma_ini'     ] * cgs.au         # [cm]
+    mComp = setup['massComp_ini'] * cgs.Msun       # [Msun]
+    mAGB  = setup['massAGB_ini' ] * cgs.Msun       # [Msun]
        
     epsilon = (v**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
     
@@ -374,7 +374,7 @@ EllipsEcc gives the eccentricity of the elliptic morphology formed by the spiral
 def flattening(setup, sinkData):
     v_ini     = setup['v_ini']                                       # [km/s]
     if setup['ecc'] == 0:
-        vOrb_AGB  = np.nanmean(sinkData['v_orbAGB_t' ]) *cgs.cms_kms()  # [km/s]
+        vOrb_AGB  = np.nanmean(sinkData['v_orbAGB_t' ]) / cgs.kms    # [km/s]
         theta     = math.atan(v_ini/vOrb_AGB)* 180/np.pi             # degrees
         a         = v_ini + vOrb_AGB
         b         = v_ini 
@@ -383,7 +383,7 @@ def flattening(setup, sinkData):
         EllipsEcc = np.sqrt(a**2 - b**2) / a
 
     elif setup['ecc'] > 0:
-        vOrb_AGB  = np.array([np.nanmax(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), np.nanmean(sinkData['v_orbAGB_t' ])*cgs.cms_kms(), np.nanmin(sinkData['v_orbAGB_t' ])*cgs.cms_kms()])  # [km/s]
+        vOrb_AGB  = np.array([np.nanmax(sinkData['v_orbAGB_t' ])/cgs.kms, np.nanmean(sinkData['v_orbAGB_t' ])/cgs.kms, np.nanmin(sinkData['v_orbAGB_t' ])/cgs.kms])  # [km/s]
         theta     = [math.atan(v_ini/vOrb_AGB[0])* 180/np.pi , math.atan(v_ini/vOrb_AGB[1])* 180/np.pi , math.atan(v_ini/vOrb_AGB[2])* 180/np.pi ]            # degrees
         a         = vOrb_AGB + v_ini
         b         = v_ini
@@ -397,9 +397,6 @@ def flattening(setup, sinkData):
 def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     
     single_star = setup['single_star']
-    print('')
-    print('(3) Start calculations for terminal velocity...')
-    print('')
     
     if single_star == False:
 
@@ -443,16 +440,16 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write('Inner companion mass:            '+str(round(setup['massComp_in_ini']                 , 2))+' Msun\n')
                 f.write('Inner orbital separation (a):    '+str(round(setup['sma_in_ini'     ]                 , 2))+' au  \n')
             f.write('\n')                                                                         
-            f.write('Orbital velocity AGB at final dump:      '+str(round(dump['v_orbAGB'     ]*cgs.cms_kms()   , 2))+' km/s\n' )
-            f.write('Orbital velocity comp at final dump:     '+str(round(dump['v_orbComp'    ]*cgs.cms_kms()   , 2))+' km/s\n')
+            f.write('Orbital velocity AGB at final dump:      '+str(round(dump['v_orbAGB'     ]/cgs.kms        , 2))+' km/s\n' )
+            f.write('Orbital velocity comp at final dump:     '+str(round(dump['v_orbComp'    ]/cgs.kms        , 2))+' km/s\n')
             f.write('\n')
             f.write('Capture radius (Rcapt):    '+str(round(setup['Rcap'        ]                 , 2))+' au  \n')
-            f.write('Hill radius    (Rhill):    '+str(round(dump['rHill'        ]/cgs.AU_cm()     , 2))+' au  \n')
+            f.write('Hill radius    (Rhill):    '+str(round(dump['rHill'        ]/cgs.au          , 2))+' au  \n')
             f.write('\n')
             f.write('Capture radius / a:        '+str(round(setup['Rcap'        ]/setup['sma_ini']       , 2))+'  \n')
-            f.write('Hill radius    / a:        '+str(round((dump['rHill']/cgs.AU_cm())/setup['sma_ini'] , 2))+'  \n')
+            f.write('Hill radius    / a:        '+str(round((dump['rHill']/cgs.au)/setup['sma_ini']      , 2))+'  \n')
             f.write('\n')
-            f.write('Rhill / Rcapt:             '+str(round((dump['rHill']/cgs.AU_cm())/setup['Rcap'   ] , 2))+'  \n')
+            f.write('Rhill / Rcapt:             '+str(round((dump['rHill']/cgs.au)/setup['Rcap'   ]      , 2))+'  \n')
 
             f.write('\n')
             if setup['ecc'] == 0:
@@ -495,18 +492,18 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('       of the companion is used.\n')
         f.write('\n')
         f.write('Terminal velocities [km/s]:'+'\n'      )
-        f.write(str(round(terminal_speed['max' ]*cgs.cms_kms(), 3))+'\n' )
-        f.write(str(round(terminal_speed['mean']*cgs.cms_kms(), 3))+'\n' )
-        f.write(str(round(terminal_speed['min' ]*cgs.cms_kms(), 3))+'\n' )
+        f.write(str(round(terminal_speed['max' ]/cgs.kms, 3))+'\n' )
+        f.write(str(round(terminal_speed['mean']/cgs.kms, 3))+'\n' )
+        f.write(str(round(terminal_speed['min' ]/cgs.kms, 3))+'\n' )
         f.write('\n')
         if single_star == False:
             if setup['ecc'] == 0:
                 f.write('Wind speed at companion [km/s]:\n')
-                f.write(str(round(wind_comp['min' ]*cgs.cms_kms() , 2))+'\n')
-                f.write(str(round(wind_comp['mean']*cgs.cms_kms() , 2))+'\n')
-                f.write(str(round(wind_comp['max' ]*cgs.cms_kms() , 2))+'\n')
+                f.write(str(round(wind_comp['min' ]/cgs.kms , 2))+'\n')
+                f.write(str(round(wind_comp['mean']/cgs.kms , 2))+'\n')
+                f.write(str(round(wind_comp['max' ]/cgs.kms , 2))+'\n')
                 f.write('   average:\n')
-                f.write(str(round(wind_comp_mean   *cgs.cms_kms() , 2))+'\n')
+                f.write(str(round(wind_comp_mean   /cgs.kms , 2))+'\n')
                 f.write('\n')
                 f.write('eta1 = v_term/v_orb'+'\n')
                 f.write(str(round(eta1['min' ], 2))+'\n')
@@ -533,9 +530,9 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write(str(round(eta1['max' ][2], 2))+'\n')
                 f.write('\n')
                 f.write('Wind speed at companion [km/s]:\n')
-                f.write(str(round(wind_comp['min']*cgs.cms_kms() , 2))+'\n')
-                f.write(str(round(wind_comp['mean']*cgs.cms_kms(), 2))+'\n')
-                f.write(str(round(wind_comp['max']*cgs.cms_kms() , 2))+'\n')
+                f.write(str(round(wind_comp['min' ]/cgs.kms, 2))+'\n')
+                f.write(str(round(wind_comp['mean']/cgs.kms, 2))+'\n')
+                f.write(str(round(wind_comp['max' ]/cgs.kms, 2))+'\n')
                 f.write('\n')
                 f.write('eta2 = v_w(rcomp)/v_orb\n')
                 f.write('Apastron:'+'\n')
@@ -552,7 +549,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write(str(round(eta2['max' ][2], 2))+'\n')
             f.write('\n')
             f.write('Total mass the companion encounters at r = rcomp, within the Hill radius = Mwind [Msun]:\n')
-            f.write(str(massHill/cgs.Msun_gram())+'\n')
+            f.write(str(massHill/cgs.Msun)+'\n')
             f.write('\n')
             f.write('Q1 = 1e-6*Qp = 1e-6 (Mcomp*v_orb)/(Mwind*v_wind)\n')
             f.write(str(Qp_1)+'\n')
@@ -565,16 +562,16 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('Velocities [km/s] at the different orbital separations:\n')
             for key in wind_speed_single['min' ]:
                 f.write('At '+str(key)+' au:\n')
-                f.write(str(round(wind_speed_single['min' ][key]*cgs.cms_kms(), 2))+'\n')
-                f.write(str(round(wind_speed_single['mean'][key]*cgs.cms_kms(), 2))+'\n')
-                f.write(str(round(wind_speed_single['max' ][key]*cgs.cms_kms(), 2))+'\n')
+                f.write(str(round(wind_speed_single['min' ][key]/cgs.kms, 2))+'\n')
+                f.write(str(round(wind_speed_single['mean'][key]/cgs.kms, 2))+'\n')
+                f.write(str(round(wind_speed_single['max' ][key]/cgs.kms, 2))+'\n')
                 f.write('\n')
             f.write('\n')
             f.write('Mass in the Hill torus [Msun] at the different orbital separations:\n')
             for key in Hill:
                 f.write('At '+str(key/10)+' au:\n')
-                f.write(str(Hill[key][100][1] /cgs.Msun_gram())+'   for a    1 Msun comp\n')
-                f.write(str(Hill[key][1][1]   /cgs.Msun_gram())+'   for a 0.01 Msun comp\n')
+                f.write(str(Hill[key][100][1] /cgs.Msun)+'   for a    1 Msun comp\n')
+                f.write(str(Hill[key][1][1]   /cgs.Msun)+'   for a 0.01 Msun comp\n')
                 f.write('\n')
                 
         if single_star == False:
