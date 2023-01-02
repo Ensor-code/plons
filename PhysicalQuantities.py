@@ -16,7 +16,7 @@ def getPressure(density, u, gamma):
 Returns the temperature, given the pressure [Ba] and density [g/cm^3] in K (via Ideal Gas Law)
 '''
 def getTemp(pressure, density, gamma, mu, u):
-    temp = (gamma-1.) * mu * u * cgs.mH() / cgs.kB()
+    temp = (gamma-1.) * mu * u * cgs.mH / cgs.kB
     return temp
 
 '''

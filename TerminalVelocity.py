@@ -361,7 +361,7 @@ def getEpsilon(v, setup):
     mComp = setup['massComp_ini'] * cgs.Msun       # [Msun]
     mAGB  = setup['massAGB_ini' ] * cgs.Msun       # [Msun]
        
-    epsilon = (v**2 * sma)/(cgs.G() * (24 * (mComp)**2 * mAGB)**(1/3))
+    epsilon = (v**2 * sma)/(cgs.G * (24 * (mComp)**2 * mAGB)**(1/3))
     
     return epsilon
     
