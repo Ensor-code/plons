@@ -374,12 +374,12 @@ def Dustcooling(data1D):
 # Main directory of the data
 # mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/Low/single/', '/STER/matse/PHANTOM_Models/Lucy/Low/single_Lucy/', '/STER/matse/PHANTOM_Models/Lucy/Low/single_Atten/']
 # mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/High/single/', '/STER/matse/PHANTOM_Models/Lucy/High/single_Lucy/', '/STER/matse/PHANTOM_Models/Lucy/High/single_Atten/']
-mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/High/single_Atten/']
+mainPath   = ['/STER/matse/PHANTOM_Models/Lucy/High/singleLucy/']
 modelLabel = 'wind'
-dumpNumber = '00050'
+dumpNumber = '00100'
 
 # What do you want to plot?
-whichPlot = 'tau'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
+whichPlot = 'tau_lucy'       # vel, temp, v&T, dust, chem, dustcool, tau, tau_lucy
 xAxis     = 'r'          # r, Tgas
 
 #Number of vertical subplots, change second dimension of ax array for horizontal plots

@@ -133,7 +133,7 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
         ax1.set_ylabel('Acceleration parameter')
 
 # specifies the references of the x-axis to which the data is plotted
-def reference(axis, r_ref = 0, T_ref = 0, Tinj = 0):
+def referenceX(axis, r_ref = 0, T_ref = 0, Tinj = 0):
     if axis == 'r':
         references = {
             'x_axis'   : axis,
@@ -154,41 +154,51 @@ def reference(axis, r_ref = 0, T_ref = 0, Tinj = 0):
         }
     return references
 
-# Plots auxiliary quantities that are not strictly related to the 1D or 3D SPH data
-def plot_Auxiliary (data, setup, references, ax1):
-    if references['x_axis'] == 'r':
-        lns5 = ax1.axvline(x=r_last_shell(setup),ymin=0,ymax=3,color='orange',linestyle='-',label='last boundary shell')
-        return lns5
-    else:
-      pass
+# specifies the references of the x-axis to which the data is plotted
+def referenceY(whichPlots, data1D, dumpData):
+    references = {}
+    for plot in whichPlots:
+        if plot == 'vel':
+            references['vel_min' ] = 0.
+            references['vel_max' ] = 30.
+        elif plot == 'temp':
+            references['temp_min'] = 0.
+            references['temp_max'] = 3000.
+        elif plot == 'dust':
+            references['dust_min'] = 0.
+            references['dust_max'] = 3000.
+        elif plot == 'tau':
+            references['tau_min' ] = 0.
+            references['tau_max' ] = 1.1*max(max(dumpData['tau']), max(data1D['tau']))
+        elif plot == 'tau_lucy':
+            references['tauL_min'] = 0.
+            references['tauL_max'] = 1.1*max(max(dumpData['tauL']), max(data1D['tau_lucy']))
+    return references
     
-# Determines the position of the last boundary shell
-def r_last_shell (setup):
-    d_tang       = setup['wind_inject_radius']*2*(constants.golden*sqrt(5))**(-1/2)/(2*setup['iwind_resolution']-1)
-    d_rad        = setup['wind_shell_spacing']*d_tang
-    r_last_shell = setup['wind_inject_radius']+setup['iboundary_spheres']*d_rad
-    return r_last_shell
-
 # Plots the 3D SPH data
 def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False):
     if whichPlot == 'vel':
         if second == False:
-           ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.', label='v     SPH')
+            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.', label='v     SPH')
         else:
-          ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.')
+            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.')
+        ax1.set_ylim([references['vel_min'], references['vel_max']])
           
     if whichPlot == 'temp':
         ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'], 'r.', label=r'T$_{gas}$  SPH')
         if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
-          ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'm.', label=r'T$_{dust}$  SPH')
+            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'm.', label=r'T$_{dust}$  SPH')
+        ax1.set_ylim([references['temp_min'], references['temp_max']])
         
     if whichPlot == 'v&T':
-      lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.', label='v     SPH')
-      lns4 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'], 'b.', label=r'T$_{gas}$  SPH')
-      if setup['iget_tdust'] > 0:
-        lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'm.', label=r'T$_{dust}$  SPH')
-        lns4 = lns4 + lns41
-      return lns3, lns4
+        lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.', label='v     SPH')
+        lns4 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'], 'b.', label=r'T$_{gas}$  SPH')
+        if setup['iget_tdust'] > 0:
+            lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'm.', label=r'T$_{dust}$  SPH')
+            lns4 = lns4 + lns41
+        ax1.set_ylim([references['vel_min'], references['vel_max']])
+        ax2.set_ylim([references['temp_min'], references['temp_max']])
+        return lns3, lns4
     
     if whichPlot == 'dust':
         if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
@@ -206,6 +216,7 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
         elif setup['idust_opacity'] == 1:
             lns4 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['kappa'], 'g.', label=r'$\kappa_\mathrm{d}$ SPH')
             ax2.set_ylabel(r' $\kappa_\mathrm{d}$ [cm$^2$/g]')
+            ax1.set_ylim([references['dust_min'], references['dust_max']])
             return lns3, lns4
         else:
             return lns3
@@ -232,11 +243,11 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
 
     if whichPlot == 'tau':
         ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tau'], 'r.', label=r'$\tau$  SPH')
-        ax1.set_ylim([0,1.2*max(dumpData['tau'])])
+        ax1.set_ylim([references['tau_min'], references['tau_max']])
 
     if whichPlot == 'tau_lucy':
         ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tauL'], 'r.', label=r'$\tau_{Lucy}$  SPH')
-        ax1.set_ylim([0,0.7])
+        ax1.set_ylim([references['tauL_min'], references['tauL_max']])
 
     if whichPlot == 'alpha':
         alpha = 0
@@ -248,7 +259,6 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
             alpha = dumpData['Gamma'] + setup['alpha_rad']
         ax1.plot(dumpData[references['x_axis']]/references['x_ref'], alpha, 'r.', label=r'$\tau_{Lucy}$  SPH')
         ax1.set_ylabel('Acceleration parameter')
-        ax1.set_ylim([0,1.2*max(alpha)])
     
 # Computes and prints the L2 norm of the SPH data with reference to the 1D profile
 def L2norm(data1D,data3D,xaxis):
@@ -359,12 +369,6 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
     runName = os.path.join(loc,run)
     data1D = read1D(runName, setup)
 
-    # specify reference values
-    r_ref  = setup['primary_Reff']*au
-    references = reference('r', r_ref=r_ref)
-    references['T_ref']  = 1.
-    references['v_ref']  = 1.e5
-
     whichPlots = ['vel', 'temp', 'v&T']
     if setup['idust_opacity'] > 0: whichPlots.append('dust')
     if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
@@ -372,6 +376,13 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
         else: whichPlots.append('tau')
     if setup['isink_radiation'] > 0: whichPlots.append('alpha')
     
+    # specify reference values
+    r_ref  = setup['primary_Reff']*au
+    references = referenceX('r', r_ref=r_ref)
+    references.update(referenceY(whichPlots, data1D, dumpData))
+    references['T_ref']  = 1.
+    references['v_ref']  = 1.e5
+
     # ===== GENERATE PLOT ========================================================================
     for whichPlot in whichPlots:
         # ===== SET UP PLOT LAYOUT =============================================================
@@ -381,12 +392,12 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
         if whichPlot == 'dust' or whichPlot == 'chem' or whichPlot == 'v&T' or whichPlot == 'dustcool':
             ax2 = ax1.twinx()
             if setup['idust_opacity'] > 0:
-                lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
                 lns3,lns4 = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
+                lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
                 lns = lns1+lns2+lns3+lns4#+[lns5]
             else:
-                lns1      = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
                 lns3      = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
+                lns1      = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
                 lns = lns1+lns3#+[lns5]
             labs = [l.get_label() for l in lns]
             ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=13)
@@ -397,7 +408,6 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
         else:
             plot3D(dumpData, setup, references, whichPlot, ax1)
             plot1D(data1D, setup, references, whichPlot, ax1)
-            plot_Auxiliary(data1D, setup, references, ax1)
             ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=13)
         ax1.set_xlabel(references['x_label'])
             

@@ -1,5 +1,6 @@
 import healpy               as hp
 import numpy                as np
+import numba                as nb
 
 from scipy.spatial import cKDTree
 
@@ -8,21 +9,19 @@ from scipy.spatial import cKDTree
 Gives the function f which is used by the function 'smoothingKernelPhantom'
 From: Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031; Eq. 17
 '''
+@nb.njit()
 def get_f(d):
     f = np.zeros_like(d)
+    
+    for i in range(len(d)):
+        ind1 = (d[i] >= 0) & (d[i] < 1)
+        f[i][ind1] = 1-(3/2)*np.square(d[i][ind1])+(3/4)*np.power(d[i][ind1],3)
 
-    ind1 = (d >= 0) & (d < 1)
-    f[ind1] = get_f1(d[ind1])
-
-    ind2 = (d >= 1) & (d < 2)
-    f[ind2] = get_f2(d[ind2])
+        ind2 = (d[i] >= 1) & (d[i] < 2)
+        f[i][ind2] = (1/4)*np.power(2-d[i][ind2],3)
 
     return f
 
-def get_f1(d):
-    return 1-(3/2)*np.square(d)+(3/4)*np.power(d,3)
-def get_f2(d):
-    return (1/4)*np.power(2-d,3)
 
 Cnorm = 1/np.pi
 hfact = 1.2
@@ -36,6 +35,7 @@ Smoothing kernel from phantom from the phantom paper Price 2018 (Sect. 2.1.5, 2.
 RETURNS:
      np.array with the values of the smoothing kernel W_ab for every closest neighbour b 
 '''
+@nb.njit()
 def smoothingKernelPhantom(dist,h_list):
     d = np.abs(dist/h_list)
     W_ab = (Cnorm/hfact**3)*get_f(d)
@@ -46,7 +46,7 @@ Get a parameter in a certain point (not one that exists), using the PHANTOM smoo
     par = sum(par_i*W_i)
     'param' is the string of the parameters
 '''
-def getParamSmoothingKernel(closest_points, W_list,param):
+def getParamSmoothingKernel(closest_points, W_list, param):
     param_list = param[closest_points]
     par =  param_list*W_list
     par_final = np.sum(par, axis = 1)
@@ -179,16 +179,13 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta
     h_closest_points        = data['h'       ][closest_points]
 
     # Get the smoothing kernel W_ab for all nearest neighbours for every pixel in 'sphere'
-    # W_ab = []
-    # for i in range(len(pixCoord)):
-    #     W_ab.append(smoothingKernelPhantom(distances[i], h_closest_points[i]))
     
     W_ab = smoothingKernelPhantom(distances, h_closest_points)
 
-    results = {}
-    for i in range(len(params)):
+    results = dict()
+    for param in params:
         # Get the corresponding values for the parameter 'param' for every pixel, by param = sum(param_i*W_i), for i ~ [0,neighbours]
-        results[str(params[i])] = getParamSmoothingKernel(closest_points, W_ab, data[params[i]]) 
+        results[param] = getParamSmoothingKernel(closest_points, W_ab, data[param]) 
 
     if shape == 'r':
         return results
@@ -212,6 +209,8 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta
 
         else:
             return results, pixCoord[0], pixCoord[1], pixCoord[2]
+
+            
 '''
 Transform one dimensional arrays to a 2D mesh. 
     'n' is the length of the arrays
@@ -255,6 +254,7 @@ def convertToMesh(n, x, y, z, data_params, params, theta):
 
     return [X, Y, Z, data_params]
 
+@nb.njit()
 def rotatePixCoordAroundZ(theta, pixCoord):
     n = len(pixCoord)
     x = pixCoord[:, 0]
@@ -272,6 +272,7 @@ def rotatePixCoordAroundZ(theta, pixCoord):
 
     return rotatedArray
 
+@nb.njit()
 def rotateOrbitalPlaneAroundZ(theta, X, Y, Z):
     # Subtract the angle of the companion from the orbital plane
     theta = -theta
