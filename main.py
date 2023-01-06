@@ -47,7 +47,7 @@ runParts = args.options
 def run_main(outputloc,runParts,numbers, models):
     for number in numbers:
         run = models[int(number)][1]
-        print('------ MODEL '+number+': '+run+' ------')
+        print('------ MODEL '+str(number)+': '+run+' ------')
         saveloc = os.path.join(outputloc, run)
         try:
             os.makedirs(os.path.join(saveloc, 'png'))
@@ -163,10 +163,11 @@ if any(model in ('q', 'exit') for model in runModels):
     print('')
     #print('------------------END:', dt.datetime.now(),'---------------------')
 else:
-    if runModels in ('a', 'all'):
+    if any(model in ('a', 'all') for model in runModels):
         models = range(len(foundModels))
     else:
         models = runModels
+    print(models)
     if runParts == '':
         print('')
         print('Which components of the pipeline do you want to run?')
