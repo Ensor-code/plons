@@ -5,6 +5,7 @@ import sys
 import os
 import warnings
 warnings.filterwarnings("ignore")
+import argparse                     as ap
 
 # own scripts
 import RadialStructurePlots1D       as rs
@@ -28,6 +29,20 @@ options = { '1': '(1) 2D slice plots',
             '6': '(6) 1D spherical model'
             }
 
+
+# ***************************************
+# ************ USER INPUT ***************
+# ***************************************
+
+p = ap.ArgumentParser(description="This pipeline reduces PHANTOM output to usable plots and datasets.", formatter_class=ap.RawTextHelpFormatter)
+p.add_argument("-m", "--models", action="store", default='', type = str, nargs='*', dest = "models", help = "The integers of models you want to run, split with spaces. To see the corresponding integers, run without this option")
+helpoptions = "The integers of options you want to run:"
+for option in options:
+    helpoptions+='\n'+options[option]
+p.add_argument("-o", "--options", action="store", default='', type = str, nargs='*', dest = "options", help = helpoptions)
+args = p.parse_args()
+runModels = args.models
+runParts = args.options
 
 def run_main(outputloc,runParts,numbers, models):
     for number in numbers:
@@ -128,16 +143,19 @@ else: observables = ['rho', 'Tgas', 'speed']
 factor      = 3   # the without inner, is without r< factor * sma
 bound       = None
 foundModels = searchModels(loc, prefix)
-print("The following models within %s "
-      "have been found based on the prefix '%s' "%(loc, prefix))
-print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q or exit to quit, a or all to run all models):')
-for i in range(len(foundModels)):
-    if foundModels[i][1] == "": print("\t(%d) %s"%(i, foundModels[i][0]))
-    else: print("\t(%d) /...%s"%(i, foundModels[i][1]))
+if runModels == '':
+    print("The following models within %s "
+        "have been found based on the prefix '%s' "%(loc, prefix))
+    print('Enter the numbers of the models that you would like to analyse, split multiple models by a space (q or exit to quit, a or all to run all models):')
+    for i in range(len(foundModels)):
+        if foundModels[i][1] == "": print("\t(%d) %s"%(i, foundModels[i][0]))
+        else: print("\t(%d) /...%s"%(i, foundModels[i][1]))
 
-print()
-runModels = str(input( '  >>>   '))
-if runModels in ('q', 'exit'):
+    print()
+    runModels = str(input( '  >>>   '))
+    runModels = runModels.split()
+
+if any(model in ('q', 'exit') for model in runModels):
     print('')
     print('Program is stopped by the user!!')
     print('')
@@ -148,20 +166,22 @@ else:
     if runModels in ('a', 'all'):
         models = range(len(foundModels))
     else:
-        models    = runModels.split()
-    print('')
-    print('Which components of the pipeline do you want to run?')
-    print()
-    print('     (1) 2D slice plots of the global structure of the last dump full of the model.')
-    print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
-    print('     (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
-    print('     (4) Cummulative mass fraction in function of the polar coordinate theta.')
-    print('     (5) Information of the orbital evolution.')
-    print('     (6) 1D spherical profiles for single star models.')
-    print()
-    print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
-    part = input('  >>>   ')
-    if part in ('q', 'exit'):
+        models = runModels
+    if runParts == '':
+        print('')
+        print('Which components of the pipeline do you want to run?')
+        print()
+        print('     (1) 2D slice plots of the global structure of the last dump full of the model.')
+        print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
+        print('     (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
+        print('     (4) Cummulative mass fraction in function of the polar coordinate theta.')
+        print('     (5) Information of the orbital evolution.')
+        print('     (6) 1D spherical profiles for single star models.')
+        print()
+        print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
+        runParts = input('  >>>   ')
+        runParts = runParts.split()
+    if any(part in ('q', 'exit') for part in runParts):
         print('')
         print('Program is stopped by the user!!')
         print('')
@@ -169,7 +189,6 @@ else:
         print('')
         #print('------------------END:', dt.datetime.now(),'---------------------')
     else:
-        runParts = part.split()
         for i in range(len(runParts)):
             if runParts[i] in ('0', 0):
                 for option in options: print(options[option])
