@@ -47,48 +47,48 @@ def read1D(runName, setup):
 def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
     if whichPlot == 'vel':
         if second == False:
-            ax1.plot(data[references['x_axis']]/references['x_ref'], data['v'] /references['v_ref'],    color='black', linestyle='-',  label='v     analytic')
-            ax1.plot(data[references['x_axis']]/references['x_ref'], data['cs']/references['v_ref'],    color='green', linestyle='--', label='sound speed')
+            ax1.plot(data[references['x_axis']]/references['x_ref'], data['v'] /references['vel_ref'],    color='black', linestyle='-',  label='v     analytic')
             if setup['isink_radiation']>0 and 'alpha_rad' in setup:
               pass
             else:
-              ax1.plot(data[references['x_axis']]/references['x_ref'], data['v_esc']/references['v_ref'], color='blue',  linestyle='-',  label='escape vel')
+              ax1.plot(data[references['x_axis']]/references['x_ref'], data['v_esc']/references['vel_ref'], color='blue',  linestyle='-',  label='escape vel')
         else:
-            ax1.plot(data[references['x_axis']]/references['x_ref'], data['v']/references['v_ref'],    color='black', linestyle='--')
+            ax1.plot(data[references['x_axis']]/references['x_ref'], data['v']/references['vel_ref'],    color='black', linestyle='--')
         ax1.set_ylabel(r'$v$ [km s$^{-1}$]')
 
     if whichPlot == 'temp':
-        ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['T_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
+        ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
         ax1.set_ylabel('Temperature [K]')
         if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
-          ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['T_ref'], color='magenta',  linestyle='-',  label=r'T$_{dust}$  analytic')
+          ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['temp_ref'], color='magenta',  linestyle='-',  label=r'T$_{dust}$  analytic')
+
+    if whichPlot == 'rho':
+        ax1.plot(data[references['x_axis']]/references['x_ref'], data['rho'], color='black',  linestyle='-',  label=r'$\rho$  analytic')
           
     if whichPlot == 'dustcool':
-        lns11 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['T_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
+        lns11 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
         ax1.set_ylabel('Temperature [K]')
         lns12,lns2 = Dustcooling(data, references, ax1, ax2)
         lns1 = lns11 + lns12        
         return lns1, lns2
         
     if whichPlot == 'v&T':
-       lns21 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['T_ref'], color='grey',  linestyle='-',  label=r'T$_{gas}$  analytic')
+       lns2 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='grey',  linestyle='-',  label=r'T$_{gas}$  analytic')
        if setup['iget_tdust'] > 0:
-          lns23 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['T_ref'], color='magenta',  linestyle='-',  label=r'T$_{dust}$  analytic')
-          lns21 = lns21 + lns23
-       lns11 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['cs']/references['v_ref'],    color='green', linestyle='--', label='sound speed')
-       lns12  = ax1.plot(data[references['x_axis']]/references['x_ref'], data['v'] /references['v_ref'],    color='black', linestyle='-',  label='v     analytic')
-       lns1  = lns11 + lns12
-       lns2  = lns21
+          lns23 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['temp_ref'], color='magenta',  linestyle='-',  label=r'T$_{dust}$  analytic')
+          lns2 = lns2 + lns23
+       lns1  = ax1.plot(data[references['x_axis']]/references['x_ref'], data['v'] /references['vel_ref'],    color='black', linestyle='-',  label='v     analytic')
+       lns2  = lns2
        ax1.set_ylabel(r'$v$ [km s$^{-1}$]')
        ax2.set_ylabel('Temperature [K]')
        return lns1, lns2
      
     if whichPlot == 'dust':
         if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
-            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['T_ref'], color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
+            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['temp_ref'], color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
             ax1.set_ylabel('Temperature [K]')
         else:
-            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['T_ref'],     color='red',  linestyle='-', label=r'T$_{dust}$=T$_{gas}$ analytic')
+            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'],     color='red',  linestyle='-', label=r'T$_{dust}$=T$_{gas}$ analytic')
             ax1.set_ylabel('Temperature [K]')
         if setup['idust_opacity'] == 2:
             lns21 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['kappa'], color='green',  linestyle='-', label=r'$\kappa_\mathrm{d}$ analytic')
@@ -107,10 +107,10 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
 
     if whichPlot == 'chem':
         if setup['iget_tdust'] > 0:
-            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['T_ref'], color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
+            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['temp_ref'], color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
             ax1.set_ylabel('Temperature [K]')
         else:
-            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['T_ref'],     color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
+            lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'],     color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
             ax1.set_ylabel('Temperature [K]')
         if setup['idust_opacity'] == 2:
             lns21 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['gamma'],   color='green',   linestyle='-', label=r'$\gamma$ analytic')
@@ -133,7 +133,7 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
         ax1.set_ylabel('Acceleration parameter')
 
 # specifies the references of the x-axis to which the data is plotted
-def referenceX(axis, r_ref = 0, T_ref = 0, Tinj = 0):
+def referenceX(axis, r_ref = 0, temp_ref = 0, Tinj = 0):
     if axis == 'r':
         references = {
             'x_axis'   : axis,
@@ -146,11 +146,11 @@ def referenceX(axis, r_ref = 0, T_ref = 0, Tinj = 0):
     elif axis == 'Tgas':
         references = {
             'x_axis'   : axis,
-            'x_ref'    : T_ref,
+            'x_ref'    : temp_ref,
             'x_label'  : r'$Temperature$ [$T_{inj}]$',
             'x_in'     : 1.1*Tinj,
             'x_out'    : 0.1*Tinj,
-            'x_limits' : [1.1*Tinj/T_ref,0.1*Tinj/T_ref]
+            'x_limits' : [1.1*Tinj/temp_ref,0.1*Tinj/temp_ref]
         }
     return references
 
@@ -161,9 +161,11 @@ def referenceY(whichPlots, data1D, dumpData):
         if plot == 'vel':
             references['vel_min' ] = 0.
             references['vel_max' ] = 30.
+            references['vel_ref' ] = 1.e5
         elif plot == 'temp':
             references['temp_min'] = 0.
             references['temp_max'] = 3000.
+            references['temp_ref'] = 1.
         elif plot == 'dust':
             references['dust_min'] = 0.
             references['dust_max'] = 3000.
@@ -179,22 +181,26 @@ def referenceY(whichPlots, data1D, dumpData):
 def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False):
     if whichPlot == 'vel':
         if second == False:
-            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.', label='v     SPH')
+            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['vel_ref'], 'r.', label='v     SPH')
         else:
-            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.')
+            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['vel_ref'], 'r.')
         ax1.set_ylim([references['vel_min'], references['vel_max']])
           
     if whichPlot == 'temp':
-        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'], 'r.', label=r'T$_{gas}$  SPH')
+        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['temp_ref'], 'r.', label=r'T$_{gas}$  SPH')
         if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
-            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'm.', label=r'T$_{dust}$  SPH')
+            ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['temp_ref'], 'm.', label=r'T$_{dust}$  SPH')
         ax1.set_ylim([references['temp_min'], references['temp_max']])
+
+    if whichPlot == 'rho':
+        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['rho'], 'r.', label=r'$\rho$  SPH')
+        ax1.set_ylabel(r'Density $\rho$ [g/cm$^3$]')
         
     if whichPlot == 'v&T':
-        lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['v_ref'], 'r.', label='v     SPH')
-        lns4 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'], 'b.', label=r'T$_{gas}$  SPH')
+        lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['vel_ref'], 'r.', label='v     SPH')
+        lns4 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['temp_ref'], 'b.', label=r'T$_{gas}$  SPH')
         if setup['iget_tdust'] > 0:
-            lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'm.', label=r'T$_{dust}$  SPH')
+            lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['temp_ref'], 'm.', label=r'T$_{dust}$  SPH')
             lns4 = lns4 + lns41
         ax1.set_ylim([references['vel_min'], references['vel_max']])
         ax2.set_ylim([references['temp_min'], references['temp_max']])
@@ -202,9 +208,9 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
     
     if whichPlot == 'dust':
         if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
-            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'r.', label=r'T$_{dust}$  SPH')
+            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['temp_ref'], 'r.', label=r'T$_{dust}$  SPH')
         else:
-            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'],  'r.', label=r'T$_{dust}$=T$_{gas}$  SPH')
+            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['temp_ref'],  'r.', label=r'T$_{dust}$=T$_{gas}$  SPH')
         if setup['idust_opacity'] == 2:
             ax2=ax1.twinx()
             lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['kappa'],  'g.', label=r'$\kappa_\mathrm{d}$  SPH')
@@ -223,9 +229,9 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
 
     if whichPlot == 'chem':
         if ['iget_tdust'] > 0:
-            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['T_ref'], 'r.', label=r'T$_{dust}$  SPH')
+            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['temp_ref'], 'r.', label=r'T$_{dust}$  SPH')
         else:
-            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['T_ref'],  'r.', label=r'T$_{dust}$  SPH')
+            lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['temp_ref'],  'r.', label=r'T$_{dust}$  SPH')
         if ['idust_opacity'] == 2:            
             ax2   = ax1.twinx()
             lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['gamma'],   'g.', label=r'$\gamma$ SPH')
@@ -369,7 +375,7 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
     runName = os.path.join(loc,run)
     data1D = read1D(runName, setup)
 
-    whichPlots = ['vel', 'temp', 'v&T']
+    whichPlots = ['vel', 'temp', 'rho', 'v&T']
     if setup['idust_opacity'] > 0: whichPlots.append('dust')
     if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
         if setup['iget_tdust'] == 3: whichPlots.append('tau_lucy')
@@ -380,8 +386,6 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
     r_ref  = setup['primary_Reff']*au
     references = referenceX('r', r_ref=r_ref)
     references.update(referenceY(whichPlots, data1D, dumpData))
-    references['T_ref']  = 1.
-    references['v_ref']  = 1.e5
 
     # ===== GENERATE PLOT ========================================================================
     for whichPlot in whichPlots:
