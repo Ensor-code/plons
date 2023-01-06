@@ -32,7 +32,7 @@ options = { '1': '(1) 2D slice plots',
 def run_main(outputloc,runParts,numbers, models):
     for number in numbers:
         run = models[int(number)][1]
-        print('---- MODEL '+run+' ----')
+        print('------ MODEL '+number+': '+run+' ------')
         saveloc = os.path.join(outputloc, run)
         try:
             os.makedirs(os.path.join(saveloc, 'png'))
@@ -58,12 +58,11 @@ def run_main(outputloc,runParts,numbers, models):
 def searchModels(loc, prefix):
     result = []
     for path, directories, files in os.walk(loc):
-        dumpFiles = list(filter(lambda x: prefix+'_' in x, files))
+        dumpFiles = list(filter(lambda x: (prefix+'_' in x and not '.tmp' in x), files))
         if len(dumpFiles) != 0:
             slicedString = path.replace(loc, "")
             result.append([path, slicedString])
-
-    return result
+    return sorted(result)
 
 def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
     if part == '1':
