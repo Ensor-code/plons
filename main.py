@@ -17,6 +17,7 @@ import TerminalVelocity             as tmv
 import Tubes                        as tb
 import Profiles1D                   as dp
 import userSettings                 as us
+import ArchimedianSpiral            as ars
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
@@ -26,7 +27,8 @@ options = { '1': '(1) 2D slice plots',
             '3': '(3) velocity related quantities and Morphological parameters',
             '4': '(4) Cummulative mass fraction',
             '5': '(5) Orbital evolution',
-            '6': '(6) 1D spherical model'
+            '6': '(6) 1D spherical model',
+            '7': '(7) ArchimedianSpiral'
             }
 
 
@@ -117,6 +119,11 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('(6)  Start calculating for the 1D spherical plots')
         dp.profiles_main(run, loc, saveloc, dumpData, setup)
 
+    if part == '7':
+        print('')
+        print('(7)  Archimedian spiral')
+        ars.ArchimedianSpiral(run, saveloc, setup)
+
 print('')
 print('-------------------------------------------------------')
 print('     Welcome to the very first PHANTOM pipeline!'        )
@@ -167,7 +174,6 @@ else:
         models = range(len(foundModels))
     else:
         models = runModels
-    print(models)
     if runParts == '':
         print('')
         print('Which components of the pipeline do you want to run?')
