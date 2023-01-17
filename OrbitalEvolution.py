@@ -369,7 +369,7 @@ def plotMassAccrRate(setup, sinkData, run, loc):
 
 
     # Plot vertical lines indicating where there are apastron and periastron passages
-    period = setup['period'] * cgs.year
+    period = setup['period'] / cgs.year
     #print('period in years: ',period)
     i = 0         # Start at apastron
     mini = 0
