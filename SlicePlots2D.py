@@ -8,6 +8,7 @@ import math
 import SmoothingKernelScript    as sk
 import ConversionFactors_cgs    as cgs
 import PhysicalQuantities       as pq
+import ArchimedianSpiral        as ars
 
 # import certain things from packages
 from matplotlib                 import colors
@@ -103,7 +104,7 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - loc           output directory
     - rAccComp      accretion radius of the companion
 '''
-def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = -1):
+def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = -1, plot=True):
 
     cm_rho  = plt.cm.get_cmap('inferno')
     fig, ax = plt.subplots(1, figsize=(7, 7))
@@ -157,6 +158,11 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     ax.set_ylabel(r"$y$ [AU]", fontsize=22)
 
     ax.tick_params(labelsize=20)
+
+    if ars.velocities(run):
+        xi, yi, theta, xo, yo = ars.ArchSpiral(run, setup, thetaIni = np.pi)
+        ax.plot(xi, yi, 'k', linestyle = 'dotted',label = 'BSE',linewidth = 1.4)
+        ax.plot(xo, yo, 'k-',label = 'FSE',linewidth = 1.4)
 
     if number == -1:
         fig.savefig(os.path.join(loc, 'png/2Dplot_density_zoom{0:01d}.png'.format(zoom)), dpi=300, bbox_inches="tight")
