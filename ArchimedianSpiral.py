@@ -17,18 +17,21 @@ def velocities(run):
     elif run == 'Lucy/High/binary9Lucy':
         v_i = 16e5   # km/s
         v_o = 22e5   # km/s 
-    elif run == 'Lucy2/High/binary6':
-        v_i = 22e5   # km/s
-        v_o = 26e5   # km/s 
+    # elif run == 'Lucy2/High/binary6':
+    #     v_i = 22e5   # km/s
+    #     v_o = 26e5   # km/s 
     else:
-        print(run)
         return False
     return v_i, v_o
 
 def ArchimedianSpiral(run, saveLoc, setup):
     thetaIni = np.pi
     
-    xi, yi, theta, xo, yo = ArchSpiral(run, setup, thetaIni)
+    if velocities(run):
+        xi, yi, theta, xo, yo = ArchSpiral(run, setup, thetaIni)
+    else:
+        print(run)
+        return
 
     a_AGB  = setup['massAGB_ini']/(setup['massAGB_ini']+setup['massComp_ini'])*setup['sma_ini']*au
     e      = setup['ecc']
@@ -80,7 +83,8 @@ def ArchSpiral(run, setup, thetaIni = np.pi):
     
     rcomp0 = a_comp*(1.0-e**2)/(1.0+e*np.cos(theta[0]))
 
-    v_i, v_o = velocities(run)
+    if velocities(run):
+        v_i, v_o = velocities(run)
     
     rspiralOuter = integrate.odeint(rprime, rcomp0, theta,    args=(P, a_comp, e, v_o,))
     rspiralInner = integrate.odeint(rprime, rcomp0, thetaBSE, args=(P, a_comp, e, v_i,))
