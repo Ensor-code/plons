@@ -74,7 +74,7 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
         
     if whichPlot == 'v&T':
        lns2 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='grey',  linestyle='-',  label=r'T$_{gas}$  analytic')
-       if setup['iget_tdust'] > 0:
+       if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
           lns23 = ax2.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['temp_ref'], color='magenta',  linestyle='-',  label=r'T$_{dust}$  analytic')
           lns2 = lns2 + lns23
        lns1  = ax1.plot(data[references['x_axis']]/references['x_ref'], data['v'] /references['vel_ref'],    color='black', linestyle='-',  label='v     analytic')
@@ -106,7 +106,7 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
             return lns1
 
     if whichPlot == 'chem':
-        if setup['iget_tdust'] > 0:
+        if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
             lns1 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['Tdust']/references['temp_ref'], color='red',  linestyle='-', label=r'T$_{dust}$ analytic')
             ax1.set_ylabel('Temperature [K]')
         else:
@@ -199,7 +199,7 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
     if whichPlot == 'v&T':
         lns3 = ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['speed']*1e5/references['vel_ref'], 'r.', label='v     SPH')
         lns4 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tgas']/references['temp_ref'], 'b.', label=r'T$_{gas}$  SPH')
-        if setup['iget_tdust'] > 0:
+        if setup['isink_radiation'] > 1 and setup['iget_tdust'] > 0:
             lns41 = ax2.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['Tdust']/references['temp_ref'], 'm.', label=r'T$_{dust}$  SPH')
             lns4 = lns4 + lns41
         ax1.set_ylim([references['vel_min'], references['vel_max']])
