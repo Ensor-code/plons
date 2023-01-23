@@ -104,7 +104,7 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - loc           output directory
     - rAccComp      accretion radius of the companion
 '''
-def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = -1, plot=True):
+def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = -1, orbital=True):
 
     cm_rho  = plt.cm.get_cmap('inferno')
     fig, ax = plt.subplots(1, figsize=(7, 7))
@@ -113,15 +113,26 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     ax.set_facecolor('k')
 
     axPlot = None
-    dataRho = np.log10(smooth[zoom]['smooth_z']["rho"])
-    if mesh == False:
-        axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.au, smooth[zoom]['y_z']/cgs.au,
-                            s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
-                            rasterized=True)
+    if orbital:
+        dataRho = np.log10(smooth[zoom]['smooth_z']["rho"])
+        if mesh == False:
+            axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.au, smooth[zoom]['y_z']/cgs.au,
+                                s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
+                                rasterized=True)
+        else:
+            axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
+                                dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
+                                rasterized=True)
     else:
-        axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
-                               dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
-                               rasterized=True)
+        dataRho = np.log10(smooth[zoom]['smooth_y']["rho"])
+        if mesh == False:
+            axPlot = ax.scatter(smooth[zoom]['x_y']/cgs.au, smooth[zoom]['z_y']/cgs.au,
+                                s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
+                                rasterized=True)
+        else:
+            axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au,
+                                dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
+                                rasterized=True)
 
     if setup['single_star']== False:
         xAGB  = dumpData['posAGB' ][0] / cgs.au
@@ -137,7 +148,9 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
         if setup['triple_star']==True:
             xcomp_in = dumpData['posComp_in' ][0] / cgs.au
             ycomp_in = dumpData['posComp_in' ][1] / cgs.au
-            circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
+            zcomp_in = dumpData['posComp_in' ][2] / cgs.au
+            if orbital: circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
+            else:       circleComp_in = plt.Circle((xcomp_in, zcomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleComp_in)
             
 
@@ -155,21 +168,24 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     ax.yaxis.set_major_locator(MultipleLocator(lim / 2.))
     ax.yaxis.set_minor_locator(MultipleLocator(lim / 8.))
     ax.set_xlabel(r"$x$ [AU]", fontsize=22)
-    ax.set_ylabel(r"$y$ [AU]", fontsize=22)
+    if orbital: ax.set_ylabel(r"$y$ [AU]", fontsize=22)
+    else:       ax.set_ylabel(r"$z$ [AU]", fontsize=22)
 
     ax.tick_params(labelsize=20)
 
-    if ars.velocities(run):
+    if orbital and ars.velocities(run):
         xi, yi, theta, xo, yo = ars.ArchSpiral(run, setup, thetaIni = np.pi)
         ax.plot(xi, yi, 'k', linestyle = 'dotted',label = 'BSE',linewidth = 1.4)
         ax.plot(xo, yo, 'k-',label = 'FSE',linewidth = 1.4)
 
+    if orbital: name = '2Dplot_density_orbital'
+    else:       name = '2Dplot_density_meridional'
     if number == -1:
-        fig.savefig(os.path.join(loc, 'png/2Dplot_density_zoom{0:01d}.png'.format(zoom)), dpi=300, bbox_inches="tight")
-        fig.savefig(os.path.join(loc, 'pdf/2Dplot_density_zoom{0:01d}.pdf'.format(zoom)), dpi=300, bbox_inches="tight")
+        fig.savefig(os.path.join(loc, 'png/'+name+'_zoom{0:01d}.png'.format(zoom)), dpi=300, bbox_inches="tight")
+        fig.savefig(os.path.join(loc, 'pdf/'+name+'_zoom{0:01d}.pdf'.format(zoom)), dpi=300, bbox_inches="tight")
     else:
         fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
-        fig.savefig(os.path.join(loc, 'animation/2Dplot_density_zoom{0:01d}_{1:04d}.png'.format(zoom, int(
+        fig.savefig(os.path.join(loc, 'animation/'+name+'_zoom{0:01d}_{1:04d}.png'.format(zoom, int(
             number / setup['nfulldump']))), dpi=200,
                     bbox_inches="tight")
     plt.close()
@@ -560,10 +576,10 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
     
     elif customRanges:
         if "rho" in observables:
-            limits["rho"][1]  = [-21, -14]
-            limits["rho"][2]  = [-21, -14]
-            limits["rho"][5]  = [-21, -14]
-            limits["rho"][10] = [-21, -14]
+            limits["rho"][1]  = [-19, -14]
+            limits["rho"][2]  = [-19, -14]
+            limits["rho"][5]  = [-19, -14]
+            limits["rho"][10] = [-19, -14]
 
         if "speed" in observables:
             limits["speed"][1]  = [0., 20.]
@@ -626,8 +642,20 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
             if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
 
+        try:
+            os.makedirs(os.path.join(loc, 'txt/SlicePlots2D'))
+        except OSError:
+            pass
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_z'.format(zoom)), smooth[zoom]['x_z']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_y_z'.format(zoom)), smooth[zoom]['y_z']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_z'.format(zoom)), smooth[zoom]['smooth_z']["rho"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_y'.format(zoom)), smooth[zoom]['x_y']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_z_y'.format(zoom)), smooth[zoom]['z_y']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_y'.format(zoom)), smooth[zoom]['smooth_y']["rho"])
+
         # Make plots
-        densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number)
+        densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number, orbital=True)
+        densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number, orbital=False)
         allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, observables, number = number)
 
     
