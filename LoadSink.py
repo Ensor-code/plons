@@ -151,8 +151,9 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     
     
     # orbital information 
+    # NOT CORRECT!!!
+    #period          = pq.getPeriod(mass1, mass2, setup['sma_ini'] )
     
-    period          = pq.getPeriod(mass1, mass2, setup['sma_ini'] )
     #print('period 1',period)
     #print('period 2',setup['period'])
     #periodFixed = setup['period']
@@ -189,7 +190,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
                 'maccrComp'   : maccr2,
                 'rComp'       : r2,
                 'time'        : t1,                     # [yrs]
-                'period_t'    : period,                 # [s]
+                #'period_t'    : period,                 # [s]
                 'v_orbAGB_t'  : orbitalVel_AGB,         # [cm/s]
                 'v_orbComp_t' : orbitalVel_comp,        # [cm/s]
                 'rHill_t'     : rHill,                  # [cm]
@@ -214,7 +215,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
                 'maccrComp'   : maccr2,
                 'rComp'       : r2,
                 'time'        : t1,                     # [yrs]
-                'period_t'    : period,                 # [s]
+                #'period_t'    : period,                 # [s]
                 'v_orbAGB_t'  : orbitalVel_AGB,         # [cm/s]
                 'v_orbComp_t' : orbitalVel_comp,        # [cm/s]
                 'rHill_t'     : rHill                  # [cm] 

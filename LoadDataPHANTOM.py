@@ -66,7 +66,7 @@ def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, 
     dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
     dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
                                                   
-    dumpData['period_fi'] = sinkData['period_t'   ][-1]
+    #dumpData['period_fi'] = sinkData['period_t'   ][-1]
                                                   
     #dumpData['rHill'    ] = sinkData['rHill_t'    ][-1]
                                                   
@@ -74,12 +74,12 @@ def LoadData_binary_cgs(run, loc, factor, bound, setup, userSettingsDictionary, 
     dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
     
     dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
-    dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.AU_cm() )
+    #dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.AU_cm() )
 
     if setup['triple_star']==True:
         dumpData['velComp_in'  ] = sinkData['velComp_in'    ][-1]
         dumpData['maccrComp_in'] = sinkData['maccrComp_in'  ][-1]
-        dumpData['period_fi_in'] = sinkData['period_t_in'   ][-1]
+        #dumpData['period_fi_in'] = sinkData['period_t_in'   ][-1]
         dumpData['v_orbComp_in'] = sinkData['v_orbComp_in_t'][-1]
 
 
