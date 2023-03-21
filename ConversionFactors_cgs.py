@@ -14,7 +14,7 @@ c = 2.99792458e10               # speed of light             [cm s^-1]
 au = 1.496e+13                  # length: astronomical unit  [cm]
 Msun = 1.98847e+33              # mass: solar mass           [g]
 Lsun = 3.826e33                 # lumin: solar luminocity    [ergs s^-1]
-year = 60*60*24*365         # time: year                 [s]
+year = 60*60*24*365             # time: year                 [s]
 kms = 1e5                       # speed: km/s                [cm s^-1]
 
 

@@ -47,7 +47,7 @@ def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
     if not setup['single_star']:
         dumpData['velComp'  ] = sinkData['velComp'    ][-1]
         dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
-        dumpData['period_fi'] = sinkData['period_t'   ][-1]
+        # dumpData['period_fi'] = sinkData['period_t'   ][-1]
         dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
         dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
         dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
@@ -56,7 +56,7 @@ def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
     if setup['triple_star']:
         dumpData['velComp_in'  ] = sinkData['velComp_in'    ][-1]
         dumpData['maccrComp_in'] = sinkData['maccrComp_in'  ][-1]
-        dumpData['period_fi_in'] = sinkData['period_t_in'   ][-1]
+        # dumpData['period_fi_in'] = sinkData['period_t_in'   ][-1]
         dumpData['v_orbComp_in'] = sinkData['v_orbComp_in_t'][-1]
 
     return setup, dumpData, sinkData, outerData

@@ -3,6 +3,8 @@ import numpy                    as np
 import matplotlib.pyplot        as plt
 import matplotlib.lines         as mlines
 import math                     as math
+from scipy.signal import argrelextrema,find_peaks
+
 import os
 from matplotlib                 import rcParams, rc
 # Change the matplotlib default parameters
@@ -16,85 +18,17 @@ import ConversionFactors_cgs    as cgs
 import PhysicalQuantities       as pq
 import Tools                    as tl
 
-'''
-Calculates:
-    - times at which orbit is in apastron and periastron          (timeApa, timePer)
-    - orbital separation at all apastron and periastron passages  (apastronOS, periastronOS)
-
-returns first maximum, last maximum, first minimum, last minumimum
-uses sinkData = data
-'''
-def orbSep_apa_per(data, setup):
-
-    period = setup['period'] / cgs.year
-    time   = data['time'   ]
-    ecc    = setup['ecc'   ]
-    rc     = data['rComp'  ]
-    rAGB   = data['rAGB' ]
-    
-    
-    if setup['triple_star']==True:
-        M1   = data['massComp']
-        M2   = data['massAGB' ]
-        rCOM = (M1*rc + M2 * rAGB)/(M1+M2)
-        orbSep = data['rComp_in'] + rCOM
-    else:
-        orbSep = rc + rAGB
-
-    apastronOS   = []
-    periastronOS = []  
-    timeApa      = []
-    timePer      = []
-    i=0
-
-    while i<math.floor(max(time)/period):
-        # Model starts in apastron passage, so apastron passages are at i*period for i = 0, 1, ...
-        # Not sure if this is true for triples.. :(
-        tApa     = i*period
-        # The exact apastron is defined as where the orbital separation is maximal
-        # Find the index of that maximum
-        # time will be between tminApa and tmaxApa
-        tminApa  = tApa - 0.5
-        tmaxApa  = tApa + 0.5
-        # index will be between Iapa1 and Iapa2
-        Iapa1    = np.abs(time - tminApa).argmin()
-        Iapa2    = np.abs(time - tmaxApa).argmin()
-        indexApa = (orbSep[Iapa1:Iapa2]).argmax() + Iapa1
-
-        # Periastron passages are at period*(i+0.5) for i = 0, 1, ...
-        tPer     = (i+0.5)*period
-        # The exact periastron is defined as where the orbital separation is minimal
-        # Find the index of that miniimum
-        # time will be between tminPer and tmaxPer
-        tminPer  = tPer - 0.5
-        tmaxPer  = tPer + 0.5
-        # index will be between Iper1 and Iper2
-        Iper1    = np.abs(time - tminPer).argmin()
-        Iper2    = np.abs(time - tmaxPer).argmin()
-        indexPer = (orbSep[Iper1:Iper2].argmin()) + Iper1
-        
-        #Make arrays with all apastron and periastron orbital separations
-        apastronOS.append(orbSep[indexApa])
-        periastronOS.append(orbSep[indexPer])
-        #Make arrays with all apastron and periastron times
-        timeApa.append(time[indexApa])#*timeUnit)
-        timePer.append(time[indexPer])#*timeUnit)
-        
-        i = i+1
-        
-    return apastronOS, periastronOS, timeApa, timePer
-
-
 
 '''
 Visualises the orbit of the system
 Uses sinkData = data
 '''
-def plot_orbit(data, setup, ax): 
-    #t  = data['time' ]
-    #rC = data['rComp']
-    #rA = data['rAGB' ]
-
+def plot_orbit(data, setup,loc): 
+    
+    # Visualise the orbit of the system
+    fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    fig.set_size_inches(7, 7)
+    
     xc = data['posComp'].transpose()[0] 
     xa = data['posAGB' ].transpose()[0]
     yc = data['posComp'].transpose()[1]
@@ -119,18 +53,16 @@ def plot_orbit(data, setup, ax):
         MCOM_in = M_in + M2
         xCOM_out = ( MCOM_in*xCOM_in + M1 *xc)/(MCOM_in+M1)
         yCOM_out = ( MCOM_in*yCOM_in + M1 *yc)/(MCOM_in+M1)
-        #ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'k', label = 'CoM_inner')
-        #ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'k', label = 'CoM_outer', markersize = 5)
-        #ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'g', label = 'inner comp')
-        #ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'r', label = 'outer comp')
-        #FOR SCIENTIST@SCHOOL
-        ax.set_facecolor('k')
-        ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'white')#, label = 'MM')
-        ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'white')#, label = 'MM', markersize = 5)
-        ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'yellow')#, label = 'S2')
-        ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'yellow')#, label = 'S3')
-
-
+        ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'k', label = 'CoM_inner')
+        ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'k', label = 'CoM_outer', markersize = 5)
+        ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'g', label = 'inner comp')
+        ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'r', label = 'outer comp')
+        #  #FOR SCIENTIST@SCHOOL
+        #ax.set_facecolor('k')
+        #ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'white')#, label = 'MM')
+        #ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'white')#, label = 'MM', markersize = 5)
+        #ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'yellow')#, label = 'S2')
+        #ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'yellow')#, label = 'S3')
 
     else:
         xCOM = (M1*xc + M2 * xa)/(M1+M2)
@@ -139,124 +71,157 @@ def plot_orbit(data, setup, ax):
         ax.plot(xCOM/cgs.au,yCOM/cgs.au,'*', color = 'k', label = 'CoM')
         ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'r', label = 'companion')
     
-    #ax.plot(xa[1:]/cgs.au,ya[1:]/cgs.au, c = 'b', label = 'AGB'      )
-    #FOR SCIENTIST@SCHOOL
-    ax.plot(xa[1:]/cgs.au,ya[1:]/cgs.au, c = 'r')#, label = 'AGB'      )
 
-    #ax.set_ylabel('$y$ [cm]',fontsize = 15)
-    #ax.set_xlabel('$x$ [cm]',fontsize = 15)
+    ax.plot(xa[1:]/cgs.au,ya[1:]/cgs.au, c = 'b', label = 'AGB'      )
     ax.set_ylabel('$y$ [au]',fontsize = 15)
     ax.set_xlabel('$x$ [au]',fontsize = 15)
     ax.set_title('$e = $'+str(setup['ecc'])+', $a = $'+ str(setup['sma_ini'])+' AU, $q = $'+ str(setup['massAGB_ini']/setup['massComp_ini']), fontsize = 15)
     ax.tick_params(labelsize=12)
+    ax.axis('equal')
+    ax.legend(fontsize = 15, loc = 'lower right')
+    fig.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/orbit.png'))
+    plt.savefig(os.path.join(loc, 'pdf/orbit.pdf'))
     
+
 
 '''
 Calculates:
-    - semi-major axis of each orbit
-    - time at middle of each orbit
+    - times at which orbit is in apastron and periastron          (timeApa, timePer)
+    - orbital separation at all apastron and periastron passages  (apastronOS, periastronOS)
+returns times and values of relative maxima and minima of orbital separation
+uses sinkData = data
 '''
-def calcSMA(OrbSep_a_p):
-    i = OrbSep_a_p
-    sma  = []
-    tOrbit = []
-    for j in range(len(i[0])):
-        # sma is (apastronOS+periastronOS)/2
-        sma.append((i[0][j]+i[1][j])/2)
-        # tOrbit is mean time of timeApa and timePer
-        tOrbit.append((i[2][j]+i[3][j])/2)
-    return (sma,tOrbit)
+def orbSep_apa_per(data, setup):
 
+    #data from sink files (so about evolution)
+    time   = data['time'   ]
+    rc     = data['rComp'  ]
+    rAGB   = data['rAGB' ]
 
-
-'''
-- Makes plots of the evolution of the semi-major axis and of 
-    the orbital separation at the apastron and periastron passages.
-- Calculates the change in eccentricity and semi-major axis.
-- Returns text file with data to make the evolution plot and 
-    with the calculated delta(e) and delta(a).
-'''
-def plotChangeOrbSep(info, sinkData, setup, run, loc):#, ylabel, unit, name, title):
+    #input value
+    ecc    = setup['ecc'   ]
     
-    fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    if setup['triple_star']==True:
+        M1   = data['massComp']
+        M2   = data['massAGB' ]
+        rCOM = (M1*rc + M2 * rAGB)/(M1+M2)
+        #orbSep of outer orbit
+        orbSep = data['rComp_in'] + rCOM
+    else:
+        orbSep = rc + rAGB
     
-    # Legend
-    apastron      = mlines.Line2D([],[], color = 'k', linestyle = 'None'  , marker = '$a$' ,label = 'Apastron', markersize = 8)
-    periastron    = mlines.Line2D([],[], color = 'k', linestyle = 'None'  , marker = '$p$', label = 'Periastron', markersize =8)
-    sma           = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', label = 'sma')
-    handles1      = [apastron,sma, periastron]
-
-    
-    fig.set_size_inches(7, 5)
-    c = 'k'
-    
-    # The data to plot are the orbital separations at apastron and periastron passages
-    toPlot        = info['OrbSep_a_p']
-    # Calculate the sma and mean time at every orbit
-    [sma,orbit_t] = calcSMA(info['OrbSep_a_p'])
-    
-    # t_total is the final timestep
-    t_total     = max(sinkData['time']) #in years
-
-    # The change in sma per year is: delta a = (delta r_apa + delta r_per) / (2*time)
-    delta_a              = (((toPlot[0]-toPlot[0][0] + (toPlot[1]-toPlot[1][0]) )/2)[-1]) / t_total
-    ratio_delta_a_per_yr = (delta_a/(setup['sma_ini']*cgs.au))
-    
-    # The change in ecc per year is: delta e = (delta r_apa - delta r_per) / (2*(a+delta a) *time)
-    delta_e              = (((toPlot[0]-toPlot[0][0] - (toPlot[1]-toPlot[1][0]) )/(2*setup['sma_ini']*cgs.au + 2*delta_a) )[-1])/t_total
-    ratio_delta_e_per_yr = (delta_e/setup['ecc'] ) 
-
-    # Plot the change in orbital separation at apastron and periastron passages for each orbit
-    ax.plot(orbit_t,toPlot[0]-toPlot[0][0],color = c, marker = '$a$', linestyle = 'dashed', markersize = 10)
-    ax.plot(orbit_t,toPlot[1]-toPlot[1][0],color = c, marker = '$p$', linestyle = 'dashed', markersize = 10)
-    # Change markers to 'a' and 'p'
-    for i in range(len(orbit_t)):
-        ax.plot(orbit_t[i],toPlot[0][i]-toPlot[0][0],color = 'white', marker = 'o'  , markersize = 12)
-        ax.plot(orbit_t[i],toPlot[0][i]-toPlot[0][0],color = c      , marker = '$a$', markersize = 11)
-        ax.plot(orbit_t[i],toPlot[1][i]-toPlot[1][0],color = 'white', marker = 'o', markersize = 12)
-        ax.plot(orbit_t[i],toPlot[1][i]-toPlot[1][0],color = c      , marker = '$p$', markersize = 11)
-    # Plot the change in sma at each orbit
-    ax.plot(orbit_t, sma-sma[0], color = c, linestyle = 'dotted', markersize = 10)
-    
-    # Change xticks to orbit numbers
-    ax.tick_params(labelsize=12)     
-    period = setup['period'] / cgs.year
-    tickorbit = []
-    for p in range(1, int(t_total/period)+1,1):
-        tickorbit.append(str(p))
+    #find relative maxima and minima
+    #indicesApa, _ = find_peaks(orbSep,200*cgs.au)
+    indicesApa   = argrelextrema(orbSep, np.greater, order=1500)  #order indicates how many neighbouring datapoints are considered when checking maxima/minima
+    indicesPer   = argrelextrema(orbSep, np.less, order=1500)
         
-    plt.setp(ax, xticks= orbit_t, xticklabels=tickorbit)
+    apastronOS   = np.array(orbSep[indicesApa])
+    periastronOS = np.array(orbSep[indicesPer])
+    timeApa      = np.array(time[indicesApa])
+    timePer      = np.array(time[indicesPer])
     
-    ax.set_xlabel('Orbit', fontsize = 18)
-    ax.set_ylabel('$\Delta$Orb sep [cm]', fontsize = 16)
-    ax.set_title('Orbital evolution')
-    ax.legend(handles = handles1, fontsize = 12)
+    #Simulations stars in apastron, so its possible that there is one apastron separation value mores
+    if len(apastronOS)>len(periastronOS):
+        apastronOS   = apastronOS[:-1]
+        timeApa      = timeApa[:-1]
+                    
+    return apastronOS, periastronOS, timeApa, timePer
+
+
+'''
+Makes plot of the evolution of the orbital separation at apastron and periastron passage
+'''
+def plotApaPerChange(sinkData, setup, loc):
+    fig, (ax1)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    fig.set_size_inches(7, 5)
+    #Calculate orbital separation and time at apastron and periastron 
+    [apastronOS, periastronOS, timeApa, timePer] = orbSep_apa_per(sinkData, setup) 
+    
+    ax1.set_xlabel('time [yrs]', fontsize = 16)
+    # Plot the apastron orbital separations
+    colorA = 'tab:red'
+    ax1.plot(timeApa,apastronOS/cgs.au, c=colorA, marker= '$*$', linestyle = 'dashed', markersize = 10)
+    ax1.vlines(timeApa, 0.99*np.min(apastronOS)/cgs.au,1.01*np.max(apastronOS)/cgs.au, linestyle = 'dotted',color=colorA , linewidth = 0.5)   
+    ax1.tick_params(axis='y',labelsize=12, labelcolor = colorA)     
+    ax1.set_ylabel('Apastron orb sep [au]', fontsize = 16, color=colorA)
+    #add second yaxis
+    ax2 = ax1.twinx()
+    # Plot the apastron orbital separations
+    colorP = 'tab:blue'
+    ax2.plot(timePer,periastronOS/cgs.au, c=colorP, marker = '$*$', linestyle = 'dashed', markersize = 10)
+    ax2.vlines(timePer, 0.99*np.min(periastronOS)/cgs.au,1.01*np.max(periastronOS)/cgs.au, linestyle = 'dotted',color=colorP , linewidth = 0.5)   
+    ax2.set_ylabel('Periastron orb sep [au]', fontsize = 16, color=colorP)
+    ax2.tick_params(axis='y',labelsize=12, labelcolor = colorP)     
+    ax1.set_title('Evolution apastron and periastron separation')
     fig.tight_layout()
-
-    plt.savefig(os.path.join(loc, 'pdf/evolution_OrbitalSeparation.pdf'))
-    plt.savefig(os.path.join(loc, 'png/evolution_OrbitalSeparation.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_ApaPer.pdf'))
+    plt.savefig(os.path.join(loc, 'png/evolution_ApaPer.png'))
     
-    # Write text file with usefull info
-    title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
-    with open (title,'a') as f:
-        f.write('\n')
-        if setup['ecc']>0:
-            f.write('The change in eccentricity: delta_e/e =         '+ str(round(ratio_delta_e_per_yr,9))+ '/yr'+'\n')
-        else:
-            f.write('The change in eccentricity: delta_e   =         '+ str(round(delta_e,9))+ '/yr'+'\n')
-        f.write('The change in sma:          delta_a/a =         '+ str(round(ratio_delta_a_per_yr,9))+ '/yr'+'\n')
-        f.write('\n')
-        f.write('To plot the change in eccentricity and change in sma, use the following: '+ '\n')
-        f.write('\n')
-        f.write('Times of middle of each orbit, to plot on x axis [yrs]: '+ '\n')
-        f.write(str(orbit_t)+'\n' )
-        f.write('Orbital separation at apastron passages [cm] : '+ '\n')
-        f.write(str(toPlot[0])+ '\n')
-        f.write('Orbital separation at periastron passages [cm]: '+ '\n')
-        f.write(str(toPlot[1])+ '\n')
-        f.write('Semi major axis at times of periastron passage [cm]: '+ '\n')
-        f.write(str(sma)+ ' \n')
+'''
+Makes plot of the evolution of the orbital period
+And
+Makes plot of the estimates of the evolution of the semi-major axis and eccentricity (are related, no exact values)
+Uses
+    # ra = a (1+e) = a + ae
+    # rp = a (1-e) = a - ae
+    # rp + ra = 2a
+    # ra - rp = 2ae
+'''
+def plotEstimate_a_Per(sinkData,setup,loc):
+    #Calculate orbital separation and time at apastron and periastron 
+    [apastronOS, periastronOS, timeApa, timePer] = orbSep_apa_per(sinkData, setup) 
+    # Estimates a and e, using the orbital separation at consequent apastron and periastron
+    est_a = (apastronOS + periastronOS)/2
+    est_e = (apastronOS - periastronOS)/(2*est_a)
+    # Times corresponding best to estimates are times inbetween the apastron and periastron used
+    t = (timeApa+timePer)/2
+    
+    # Find indices corresponding to these times
+    ind  = []
+    for time in t:
+        i  = tl.find_nearest(sinkData['time'], time)
+        ind.append(i)
+    
+    # Estimate period using the estimate of a [au], and the masses of the AGB and companion [gram] at these times t
+    est_p     = pq.getPeriod(sinkData['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
+    
+    # Make plot of orbital period, and add linear line for visualisation 
+    fig_p, ((ax_p))= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    ax_p.plot(t, est_p, label = 'orbital period',marker= '$*$', linestyle = 'dashed', markersize = 10)
+    ax_p.plot([t[0],t[-1]],[est_p[0],est_p[-1]],'--',label='linear')
+    ax_p.set_ylabel('estimate orbital period [yrs]', fontsize = 12)
+    ax_p.set_xlabel('time[yrs]', fontsize = 10)
+    ax_p.tick_params(labelsize=10)
+    ax_p.grid(which='both')
+    plt.title('Orbital Period', fontsize = 15)
+    plt.legend()
+    fig_p.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/evolution_OrbitalPeriod.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_OrbitalPeriod.pdf'))
+    plt.close
 
+    #Make plot of estimates of a and e
+    fig, (ax1)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    fig.set_size_inches(7, 5)
+    ax1.set_xlabel('time [yrs]', fontsize = 16)
+    # Plot the estimates of a
+    color_a = 'tab:red'
+    ax1.plot(t,est_a/cgs.au, c=color_a, marker= '$*$', linestyle = 'dashed', markersize = 10)
+    ax1.vlines(t, 0.99*np.min(est_a)/cgs.au,1.01*np.max(est_a)/cgs.au, linestyle = 'dotted',color=color_a , linewidth = 0.5)   
+    ax1.tick_params(axis='y',labelsize=12, labelcolor = color_a)     
+    ax1.set_ylabel('estimate semi-major axis [au]', fontsize = 16, color=color_a)
+    # Plot the estimates of e, with seperate y-axis    
+    ax2 = ax1.twinx()
+    color_e = 'tab:blue'
+    ax2.plot(t,est_e, c=color_e, marker = '$*$', linestyle = 'dashed', markersize = 10)
+    ax2.vlines(t, 0.99*np.min(est_e),1.01*np.max(est_e), linestyle = 'dotted',color=color_e , linewidth = 0.5)   
+    ax2.set_ylabel('estimate eccentricity', fontsize = 16, color=color_e)
+    ax2.tick_params(axis='y',labelsize=12, labelcolor = color_e)     
+    ax1.set_title('Evolution semi-major axis and eccentricity')
+    fig.tight_layout()
+    plt.savefig(os.path.join(loc, 'pdf/evolution_a_e.pdf'))
+    plt.savefig(os.path.join(loc, 'png/evolution_a_e.png'))
 
 
 '''
@@ -277,10 +242,10 @@ def plotMassAccr(setup, sinkData, run, loc):
         comp_out       = mlines.Line2D([],[], color = 'royalblue', linestyle = 'solid', linewidth = 0.5, label = 'outer comp')
         comp_in        = mlines.Line2D([],[], color = 'r', linestyle = 'solid', linewidth = 0.5, label = 'inner comp')
         handles_ap    = [periodLine,comp_in,comp_out]
-    else:
+    #else:
         handles_ap    = [apaLine, perLine]
-
-    # Plot vertical lines indicating where there are apastron and periastron passages
+    '''
+    # Plot vertical lines indicating where there should be apastron and periastron passages
     period = setup['period'] / cgs.year
     #print('period in years: ',period)
     i = 0         # Start at apastron
@@ -301,19 +266,19 @@ def plotMassAccr(setup, sinkData, run, loc):
             j = j+period
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-   
+    '''
     ax = plt.subplot(111)
+    ax.grid(which='both')
     plt.xlabel('Time[yrs]', fontsize = 16)
     plt.ylabel('Accreted mass [Msun]', fontsize = 16)
 
     plt.title('Total accreted mass by the companion', fontsize = 18)
-    plt.legend(handles = handles_ap)
+    if setup['triple_star']==True:
+        plt.legend(handles = handles_ap)
     fig.tight_layout()
 
     plt.savefig(os.path.join(loc, 'png/evolution_Maccr_companion.png'))
     plt.savefig(os.path.join(loc, 'pdf/evolution_Maccr_companion.pdf'))
-
-
 
 '''
 Makes plot of the evolution of mass accretion rate by the companion
@@ -326,7 +291,6 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
     perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
     periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
-    #print(min(sinkData['time']),max(sinkData['time']), len(sinkData['time']))
     
     # Make empty array for accrRates per year
     accrRates    = []
@@ -363,11 +327,10 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         comp_out       = mlines.Line2D([],[], color = 'royalblue', linestyle = 'solid', linewidth = 0.5, label = 'outer comp')
         comp_in        = mlines.Line2D([],[], color = 'r', linestyle = 'solid', linewidth = 0.5, label = 'inner comp')
         handles_ap    = [periodLine,comp_in,comp_out]
-    else:
-        handles_ap    = [apaLine, perLine]
+    #else:
+        #handles_ap    = [apaLine, perLine]
 
-
-
+    '''
     # Plot vertical lines indicating where there are apastron and periastron passages
     period = setup['period'] / cgs.year
     #print('period in years: ',period)
@@ -389,19 +352,21 @@ def plotMassAccrRate(setup, sinkData, run, loc):
             j = j+period
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-   
-    #ax = plt.subplot(111)
+    '''   
+    ax = plt.subplot(111)
+    ax.grid()
     plt.xlabel('Time[yrs]', fontsize = 14)
     plt.ylabel('Mass accretion rate [Msun/yr]', fontsize = 14)
 
     plt.title('Mass accretion rate by the companion', fontsize = 18)
-    plt.legend(handles = handles_ap)
+    if setup['triple_star']==True:
+        plt.legend(handles = handles_ap)
     fig.tight_layout()
 
     plt.savefig(os.path.join(loc, 'png/evolution_MaccrRate_companion.png'))
     plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion.pdf'))
     
-    return(t_yrs[:-1], accrRates)
+    #return(t_yrs[:-1], accrRates)
 
 
 '''
@@ -414,7 +379,6 @@ def plotOrbVel(setup,sinkData, run, loc):
     ax.plot(t, sinkData['v_orbAGB_t'][1:]/cgs.kms, label = 'AGB')
     ax.plot(t, sinkData['v_orbComp_t'][1:]/cgs.kms, label ='companion')
     
-
     if setup['triple_star']==True:
         ax.plot(t, sinkData['v_orbComp_in_t'][1:]/cgs.kms, label ='inner companion')
 
@@ -440,10 +404,8 @@ def plotOrbVel(setup,sinkData, run, loc):
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
         #handles_ap    = [apaLine, perLine]
-    
    
     ax.set_ylabel('$v_{orb}$ [km/s]', fontsize = 12)
-
     ax.set_xlabel('time[yrs]', fontsize = 10)
 
     ax.tick_params(labelsize=10)
@@ -455,20 +417,16 @@ def plotOrbVel(setup,sinkData, run, loc):
     plt.savefig(os.path.join(loc, 'pdf/evolution_OrbitalVelocity.pdf'))
 
 
-
-
 '''
 Makes 1 plot of the evolution of the orbital radii of the AGB star and companion 
 '''
 def plotOrbRad(setup,sinkData, run, loc):
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
 
-    #ax.set_ylabel('$r$ [cm]', fontsize = 12)
     ax.set_ylabel('$r$ [au]', fontsize = 12)
     ax.set_title('orbital radii', fontsize = 15)
     ra   = sinkData['rAGB'][1:] /cgs.au
     t    = sinkData['time'][1:]
-    
     
     ax.plot(t, ra, label ='r AGB')
     if setup['triple_star']==True:
@@ -488,12 +446,12 @@ def plotOrbRad(setup,sinkData, run, loc):
     else:
         ax.plot(t, sinkData['rComp'][1:]/cgs.au, label= 'r comp')
         ax.plot(t, ra +sinkData['rComp'][1:]/cgs.au, label = 'Orb sep')
-        
-    # Plot vertical lines indicating where there are apastron and periastron passages
+    '''        
+    # Plot vertical lines indicating where there should be apastron and periastron passages
     # Legend
-    #apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
-    #perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
-    #periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
+    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
     period = setup['period'] / cgs.year
     #print('period in years: ',period)
     i = 0         # Start at apastron
@@ -517,8 +475,8 @@ def plotOrbRad(setup,sinkData, run, loc):
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
         #handles_ap    = [apaLine, perLine]
-
-        
+    '''
+    ax.grid()
     ax.set_xlabel('time [yrs]', fontsize = 14)
     ax.tick_params(labelsize=10)
 
@@ -541,7 +499,6 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
     ra   = sinkData['rAGB'][1:] /cgs.au
     t    = sinkData['time'][1:]
     
-    
     if setup['triple_star']==True:
         ax1 = axs[0][0]
         ax2 = axs[0][1]
@@ -563,9 +520,8 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
         rCOM_in = (Mc_in*rc_in + Ma *ra )/(Mc_in+Ma)
 
         ax4.plot(t, rCOM_in+rc_out, label = 'Orb sep outer')
-        ax4.set_ylabel('orb sep outer [au]', fontsize = 12)        
- 
-        #ax.plot(sinkData['time'], sinkData['rAGB']+sinkData['rComp'], label = 'Orb sep')
+        ax4.set_ylabel('orb sep outer [au]', fontsize = 12)  
+        
     else:
         ax1 = axs[0]
         ax2 = axs[1]
@@ -576,15 +532,14 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
         ax2.plot(t, sinkData['rComp'][1:]/cgs.au, label= 'r comp')
         ax3.set_ylabel('Orb Sep [au]', fontsize = 12)
         ax3.plot(t, ra +sinkData['rComp'][1:]/cgs.au, label = 'Orb sep')
-        
-    # Plot vertical lines indicating where there are apastron and periastron passages
+ 
+    '''
+    # Plot vertical lines indicating where there should be apastron and periastron passages
     # Legend
     #apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
     #perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
     #periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
     period = setup['period'] / cgs.year
-    #print('period in years: ',period)
-    '''
     i = 0         # Start at apastron
     mini = 0
     if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
@@ -594,7 +549,6 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
             i = i+period
         ax1.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)   
         #handles_ap    = [periodLine,comp_in,comp_out]
-
     else:
         maxi = np.max(ra +sinkData['rComp'][1:]/cgs.au)
         j = period/2  # First periastron
@@ -606,18 +560,16 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
         ax1.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         ax1.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
         #handles_ap    = [apaLine, perLine]
-
     '''    
     ax3.set_xlabel('time [yrs]', fontsize = 14)
-    #ax.tick_params(labelsize=10)
-
+    ax1.grid()
+    ax2.grid()
+    ax3.grid()
     #plt.legend()
     fig.tight_layout()
 
-    plt.savefig(os.path.join(loc, 'png/new_evolution_rComp_rAGB_orbSep.png'))
-    plt.savefig(os.path.join(loc, 'pdf/new_evolution_rComp_rAGB_orbSep.pdf'))
-
-
+    plt.savefig(os.path.join(loc, 'png/evolution_rComp_rAGB_orbSep.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep.pdf'))
 
 
 '''
@@ -629,6 +581,34 @@ def orbEv_main(run,loc, sinkData, setup):
         return
         
     else:
+        print('(5)  Start calculations for orbital evolution...')
+        
+        # Visualise the orbit of the system
+        plot_orbit(sinkData,setup,loc)
+        
+        #For eccentric binaries
+        if setup['ecc']>0 and setup['triple_star']==False and setup['single_star']==False:
+            # Make plot of estimates of orbital period, a and e, using apastron and periastron passages           
+            plotEstimate_a_Per(sinkData,setup,loc)       
+            # Make plot of change in orbital separation at apastron and periastron passages
+            plotApaPerChange(sinkData,setup,loc)
+          
+        # Plot evolution of the mass accretion by the companion
+        plotMassAccr(setup,sinkData, run, loc)
+        
+        # Plot evolution of the mass accretion rate by the companion
+        plotMassAccrRate(setup,sinkData, run, loc)
+        # Plot evolution of orbital velocities 
+        plotOrbVel(setup,sinkData, run, loc)
+        
+        # Plot evolution of orbital radii and orbital separation
+        #if setup['ecc'] == 0:
+        plotOrbRadSeperate(setup,sinkData, run, loc)            
+        #else:
+        plotOrbRad(setup,sinkData, run, loc)
+
+        '''
+        #   UNCOMMENT (PARTS) IF YOU WANT TO WRITE OUT INFO IN TEXT FILE
         # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
         # Save it in dictionary 'info'
         info = {}
@@ -641,7 +621,6 @@ def orbEv_main(run,loc, sinkData, setup):
             info['RatioMaC_in_MLAGB'] = info['TotMaC_in']/ info['MassLostAGB']
 
             
-        
         # Write text file with this info
         title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
         with open (title,'w') as f:
@@ -657,44 +636,7 @@ def orbEv_main(run,loc, sinkData, setup):
                 f.write('The total mass accreted by the inner companion is                                    : '+ str(info['TotMaC_in'      ]) +' g \n')
                 f.write('The ratio of the mass accreted by the inner companion to the mass lost by the AGB is : '+ str(round(info['RatioMaC_in_MLAGB'],5)))
 
-
-        # Visualise the orbit of the system
-        fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
-        fig.set_size_inches(7, 7)
-        plot_orbit(sinkData,setup, ax)
-        ax.axis('equal')
-        #ax.legend(fontsize = 15, loc = 'lower right')
-        fig.tight_layout()
-
-        plt.savefig(os.path.join(loc, 'png/orbit_sc@sc.png'))
-        plt.savefig(os.path.join(loc, 'pdf/orbit_sc@sc.pdf'))
-
-# werkt nog niet voor triples in elk geval
-        '''
-        if setup['triple_star']==False and setup['single_star']==False:
-            # Calculate orbital separation and time in apastron and periastron passages
-            info['OrbSep_a_p'] = orbSep_apa_per(sinkData, setup) 
-            # Make plots of the change in sma and OrbSep 
-            plotChangeOrbSep(info, sinkData, setup, run,loc)
-        '''
-        
-        # Plot evolution of the mass accretion by the companion
-        plotMassAccr(setup,sinkData, run, loc)
-        
-        # Plot evolution of the mass accretion rate by the companion
-        (t_yrs, accrRates) = plotMassAccrRate(setup,sinkData, run, loc)
-        #if setup['triple_star']==False:
-            # Plot evolution of orbital velocities 
-        plotOrbVel(setup,sinkData, run, loc)
-        
-        # Plot evolution of orbital radii and orbital separation
-        #if setup['ecc'] == 0:
-        plotOrbRadSeperate(setup,sinkData, run, loc)            
-        #else:
-        plotOrbRad(setup,sinkData, run, loc)
-
-
-        # Write text file with usefull info
+        # Write text file with usefull info; if you want to do this, first save t_yrs and accrRates from plotMassAccrRate function
         title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
         with open (title,'a') as f:
             f.write('\n')
@@ -718,6 +660,6 @@ def orbEv_main(run,loc, sinkData, setup):
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 35 character width
             for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
                     f.write(col_format.format(*i))
-                    
-
+        '''
+        
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
