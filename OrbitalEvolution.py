@@ -581,7 +581,6 @@ def orbEv_main(run,loc, sinkData, setup):
         return
         
     else:
-        print('(5)  Start calculations for orbital evolution...')
         
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)

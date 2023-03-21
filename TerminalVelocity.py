@@ -401,9 +401,6 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     if single_star == False:
 
         terminal_speed, binned_term_speed, wind_comp, index = getTerminalVelocity(setup, dump)
-        print('')
-        print('(3) Start calculations for morphological parameters eta, Qp and epsilon...')
-        print('')
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
         massHill                     = getMassHillTorus(setup, dump)
         Qp_1, Qp_2, wind_comp_mean   = getQp(setup, wind_comp, massHill)
@@ -575,7 +572,6 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write('\n')
                 
         if single_star == False:
-            print('         The output of (3) terminal velocity and (4) morphological parameters is saved in a text file!')
         if single_star == True:
             print('     The terminal velocity data is ready and saved!')
         print('')
