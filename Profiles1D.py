@@ -121,12 +121,12 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
             return lns1, lns2
 
     if whichPlot == 'tau':
-        ax1.plot(data[references['x_axis']]/references['x_ref'], data['tau'], color='black',  linestyle='-',  label=r'$\tau$  analytic')
-        ax1.set_ylabel('optical depth')
+        ax1.plot(data[references['x_axis']]/references['x_ref'], data['tau'], color='black',  linestyle='-',  label=r'$\tau_{\rm 1D}$')
+        ax1.set_ylabel(r'$\tau$')
 
     if whichPlot == 'tau_lucy':
-        ax1.plot(data[references['x_axis']]/references['x_ref'], data['tau_lucy'], color='black',  linestyle='-',  label=r'$\tau_{Lucy}$  analytic')
-        ax1.set_ylabel('Lucy optical depth')
+        ax1.plot(data[references['x_axis']]/references['x_ref'], data['tau_lucy'], color='black',  linestyle='-',  label=r'$\tau_{L{\rm, 1D}}$')
+        ax1.set_ylabel(r'$\tau_{Lucy}$')
 
     if whichPlot == 'alpha':
         ax1.plot(data[references['x_axis']]/references['x_ref'], data['alpha'], color='black',  linestyle='-',  label=r'$\alpha$  analytic')
@@ -138,7 +138,7 @@ def referenceX(axis, r_ref = 0, temp_ref = 0, Tinj = 0):
         references = {
             'x_axis'   : axis,
             'x_ref'    : r_ref,
-            'x_label'  : r'$Distance$ [$R_*]$',
+            'x_label'  : r'$r$ [au]',
             'x_in'     : 0.*r_ref,
             'x_out'    : 12.*r_ref,
             'x_limits' : [0.,12.]
@@ -248,11 +248,11 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
             sys.exit()
 
     if whichPlot == 'tau':
-        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tau'], 'r.', label=r'$\tau$  SPH')
+        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tau'], 'r.', label=r'$\tau_{\rm SPH}$')
         ax1.set_ylim([references['tau_min'], references['tau_max']])
 
     if whichPlot == 'tau_lucy':
-        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tauL'], 'r.', label=r'$\tau_{Lucy}$  SPH')
+        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tauL'], 'r.', label=r'$\tau_{L{\rm, SPH}}$')
         ax1.set_ylim([references['tauL_min'], references['tauL_max']])
 
     if whichPlot == 'alpha':
@@ -404,7 +404,7 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
                 lns1      = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
                 lns = lns1+lns3#+[lns5]
             labs = [l.get_label() for l in lns]
-            ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=13)
+            ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=16)
             for item in (  [ax2.title, ax2.xaxis.label, ax2.yaxis.label]
                     + ax2.get_xticklabels() + ax2.get_yticklabels()
                         ):
@@ -412,14 +412,14 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
         else:
             plot3D(dumpData, setup, references, whichPlot, ax1)
             plot1D(data1D, setup, references, whichPlot, ax1)
-            ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=13)
+            ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=16)
         ax1.set_xlabel(references['x_label'])
             
         #---------- Font size ----------
         for item in (  [ax1.title, ax1.xaxis.label, ax1.yaxis.label]
                     + ax1.get_xticklabels() + ax1.get_yticklabels()
                     ):
-            item.set_fontsize(16)
+            item.set_fontsize(20)
         
         #---------- Finalize plot ----------
         #txt = ['high resolution, q=20','mid resolution, q=10','low resolution, q=3']
@@ -427,6 +427,5 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
         ax1.set_xlim(references['x_limits'])
         #ax2.set_ylim([0,40])
         #ax2.set_yscale('log')
-        plt.title('BowenDust model',fontsize=16)
         plt.savefig(os.path.join(saveloc, 'png/1DProfile_'+whichPlot+'.png'), dpi=200, bbox_inches="tight")
         fig.savefig(os.path.join(saveloc, 'pdf/1DProfile_'+whichPlot+'.pdf'), bbox_inches="tight")

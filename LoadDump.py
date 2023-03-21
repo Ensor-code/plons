@@ -93,6 +93,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     u = dump["blocks"][0]["data"]["u"]
 
     filter = h > 0.0
+    # dir   = '/STER/matse/Magritte/Lucy/'
+    # filter[len(np.load(dir+'xtemp.npy')):] = False
+    # filter[-1] = False
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [filter] * unit_dist          # position coordinates          [cm]
     y     = y                     [filter] * unit_dist     
@@ -120,6 +123,20 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             Gamma = pq.getGamma(kappa, lumAGB, massAGB, tau)
         else:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB)
+        if setup['isink_radiation'] == 0: Gamma = 0.
+        if setup['isink_radiation'] == 1: Gamma = np.ones_like(Gamma)*setup['alpha_rad']
+        if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
+        
+    # σ     = 5.670374419e-8 # W m^-2 K^-4
+    # Tdust = (np.load(dir+'Jfull.npy')*np.pi/σ)**(1/4)
+    # kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
+    # rho   = np.load(dir+'Errfull.npy')
+    # Gamma = np.load(dir+'Gamma.npy')
+    # x     = np.load(dir+'xtemp.npy')*unit_dist
+    # y     = np.load(dir+'ytemp.npy')*unit_dist
+    # z     = np.load(dir+'ztemp.npy')*unit_dist
+    # h     = np.load(dir+'htemp.npy')*unit_dist
+
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates

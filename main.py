@@ -42,9 +42,11 @@ helpoptions = "The integers of options you want to run:"
 for option in options:
     helpoptions+='\n'+options[option]
 p.add_argument("-o", "--options", action="store", default='', type = str, nargs='*', dest = "options", help = helpoptions)
+p.add_argument("-z", "--zoom", action="store", default='', type = str, nargs='*', dest = "zoom", help = helpoptions)
 args = p.parse_args()
 runModels = args.models
 runParts = args.options
+zoomin = args.zoom
 
 def run_main(outputloc,runParts,numbers, models):
     for number in numbers:
@@ -85,7 +87,11 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
     if part == '1':
         print('')
         print('(1)  Start calculations for slice plots...')
-        sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
+        if zoomin != '':
+            for i in range(len(zoomin)): zoomin[i] = int(zoomin[i])
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
+        else:
+            sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
         
     if part == '2':
         print('')

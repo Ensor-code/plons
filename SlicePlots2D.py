@@ -28,7 +28,7 @@ matplotlib.use("Agg")
 import warnings
 warnings.filterwarnings("ignore")
 
-n_grid          = 500
+n_grid          = 2000
 n_grid_vec      = 25
 mesh            = True
 roundToInteger  = True
@@ -42,7 +42,7 @@ maxInfLog       = 300
 maxInf          = 10.**maxInfLog
 sigma_bounds_u  = 3.
 sigma_bounds_l  = 2.
-nneighb = 20
+nneighb = 100
 
 
 '''
@@ -106,6 +106,7 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
 '''
 def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, number = -1, orbital=True):
 
+    # cm_rho  = plt.cm.get_cmap('gist_heat')
     cm_rho  = plt.cm.get_cmap('inferno')
     fig, ax = plt.subplots(1, figsize=(7, 7))
 
@@ -210,6 +211,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
           'Tgas': plt.cm.get_cmap('hot'), #nipy_spectral
           'tau': plt.cm.get_cmap('viridis_r'),
           'kappa': plt.cm.get_cmap('Spectral_r'),
+          'Tdust': plt.cm.get_cmap('Spectral_r'),
           'Gamma': plt.cm.get_cmap('Spectral_r')
           }
 
@@ -219,6 +221,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             'Tgas': r'$\log \, T$ [K]',
             'tau': r'$\tau [/]$',
             'kappa': r'$\kappa$ [g/cm$^3$]',
+            'Tdust': r'$T_{\rm eq}$ [g/cm$^3$]',
             'Gamma': r'$\Gamma$ [/]'
             }
     logtau = False
@@ -480,7 +483,7 @@ main definition
 '''
 
 
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], observables = ['rho', 'Tgas', 'speed']):
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 2, 5, 10, 20], observables = ['rho', 'Tgas', 'speed']):
     rAccComp_in = 0
     theta=0
     rAccComp = 0
@@ -578,38 +581,45 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
         if "rho" in observables:
             limits["rho"][1]  = [-19, -14]
             limits["rho"][2]  = [-19, -14]
-            limits["rho"][5]  = [-19, -14]
+            limits["rho"][4]  = [-17, -14]
+            limits["rho"][5]  = [-17, -14]
             limits["rho"][10] = [-19, -14]
+            limits["rho"][20] = [-18, -13]
 
         if "speed" in observables:
             limits["speed"][1]  = [0., 20.]
             limits["speed"][2]  = [0., 20.]
             limits["speed"][5]  = [0., 20.]
             limits["speed"][10] = [0., 20.]
+            limits["speed"][20] = [0., 20.]
 
         if "Tgas" in observables:
             limits["Tgas"][1]  = [1., 4.]
             limits["Tgas"][2]  = [1., 4.]
             limits["Tgas"][5]  = [1., 4.]
             limits["Tgas"][10] = [1., 4.]
+            limits["Tgas"][20] = [1., 4.]
 
         if "tau" in observables:
             limits["tau"][1]  = [0, 1]
             limits["tau"][2]  = [0, 1]
             limits["tau"][5]  = [0, 1]
             limits["tau"][10] = [0, 1]
+            limits["tau"][20] = [0, 1]
 
         if "kappa" in observables:
             limits["kappa"][1]  = [0., 3.]
             limits["kappa"][2]  = [0., 3.]
             limits["kappa"][5]  = [0., 3.]
             limits["kappa"][10] = [0., 3.]
+            limits["kappa"][20] = [0., 3.]
 
         if "Gamma" in observables:
             limits["Gamma"][1]  = [0., 1.]
             limits["Gamma"][2]  = [0., 1.]
             limits["Gamma"][5]  = [0., 1.]
             limits["Gamma"][10] = [0., 1.]
+            limits["Gamma"][20] = [0., 1.]
 
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}
@@ -646,12 +656,39 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1,2,5,10], obse
             os.makedirs(os.path.join(loc, 'txt/SlicePlots2D'))
         except OSError:
             pass
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_z'.format(zoom)), smooth[zoom]['x_z']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_y_z'.format(zoom)), smooth[zoom]['y_z']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_z'.format(zoom)), smooth[zoom]['smooth_z']["rho"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_y'.format(zoom)), smooth[zoom]['x_y']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_z_y'.format(zoom)), smooth[zoom]['z_y']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_y'.format(zoom)), smooth[zoom]['smooth_y']["rho"])
+        if "rho" in observables:
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_z'.format(zoom)), smooth[zoom]['x_z']/cgs.au)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_y_z'.format(zoom)), smooth[zoom]['y_z']/cgs.au)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_z'.format(zoom)), smooth[zoom]['smooth_z']["rho"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_y'.format(zoom)), smooth[zoom]['x_y']/cgs.au)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_z_y'.format(zoom)), smooth[zoom]['z_y']/cgs.au)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_y'.format(zoom)), smooth[zoom]['smooth_y']["rho"])
+        if "speed" in observables:
+            vx = smooth_vec[zoom]['smooth_z']['vx']
+            vy = smooth_vec[zoom]['smooth_z']['vy']
+            normaliseVectorLength = np.hypot(vx, vy)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_z'.format(zoom)), smooth[zoom]['smooth_z']["speed"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_y'.format(zoom)), smooth[zoom]['smooth_y']["speed"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_x'.format(zoom)), smooth_vec[zoom]['x_z'] / cgs.au)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_y'.format(zoom)), smooth_vec[zoom]['y_z'] / cgs.au)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vx'.format(zoom)), vx / normaliseVectorLength)
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vy'.format(zoom)), vy / normaliseVectorLength)
+
+        if "Gamma" in observables:
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_z'.format(zoom)), smooth[zoom]['smooth_z']["Gamma"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_y'.format(zoom)), smooth[zoom]['smooth_y']["Gamma"])
+        if "Tdust" in observables:
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_z'.format(zoom)), smooth[zoom]['smooth_z']["Tdust"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_y'.format(zoom)), smooth[zoom]['smooth_y']["Tdust"])
+        if "tau" in observables:
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_z'.format(zoom)), smooth[zoom]['smooth_z']["tau"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_y'.format(zoom)), smooth[zoom]['smooth_y']["tau"])
+        if "tauL" in observables:
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_z'.format(zoom)), smooth[zoom]['smooth_z']["tauL"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_y'.format(zoom)), smooth[zoom]['smooth_y']["tauL"])
+        if "kappa" in observables:
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_z'.format(zoom)), smooth[zoom]['smooth_z']["kappa"])
+            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_y'.format(zoom)), smooth[zoom]['smooth_y']["kappa"])
 
         # Make plots
         densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number, orbital=True)

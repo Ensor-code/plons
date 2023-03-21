@@ -82,12 +82,15 @@ def getPixels(shape, n, r, data, bound):
     # for a planar slice: orbital plane (xy-plane)
     if shape == 'z':
         # get pixels
-        pix = np.linspace(-bound,bound, n)
+        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
 
         pixCoord = []
         for i in range(len(pix)):
             for j in range(len(pix)):
-                pixCoord.append([pix[i],pix[j],0])
+                if bound >  0:
+                    pixCoord.append([pix[i],pix[j],0])
+                else:
+                    pixCoord.append([pix[i]+6*1.496e13,pix[j]-2*1.496e13,0])
 
         pixCoord = np.array(pixCoord)
         #print(pixCoord)
@@ -95,7 +98,7 @@ def getPixels(shape, n, r, data, bound):
     # xz-plane
     if shape == 'y':
         # get pixels
-        pix = np.linspace(-bound,bound, n)
+        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
 
         pixCoord = []
         for i in range(len(pix)):
@@ -107,7 +110,7 @@ def getPixels(shape, n, r, data, bound):
     
     # x-line (y=0=z) yz-plane
     if shape == 'line_x':
-        pix = np.linspace(-bound,bound, n)
+        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
         # pix_y = np.linspace(-r,r,n)
 
         pixCoord = []
@@ -119,7 +122,7 @@ def getPixels(shape, n, r, data, bound):
         
     # y-line (x=0=z)
     if shape == 'line_y':
-        pix = np.linspace(-bound,bound, n)
+        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
         # pix_y = np.linspace(-r,r,n)
 
         pixCoord = []
@@ -131,7 +134,7 @@ def getPixels(shape, n, r, data, bound):
     
     # z-line (y=posAGB=x)
     if shape == 'line_z':
-        pix = np.linspace(-bound,bound, n)
+        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
         # pix_y = np.linspace(-r,r,n)
 
         pixCoord = []
