@@ -117,14 +117,14 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     else: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
     if bowenDust:
         Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
+    if setup['isink_radiation'] == 0: Gamma = 0.
+    if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
     if bowenDust:
         kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
         if containsTau:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB, tau)
         else:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB)
-        if setup['isink_radiation'] == 0: Gamma = 0.
-        if setup['isink_radiation'] == 1: Gamma = np.ones_like(Gamma)*setup['alpha_rad']
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
         
     # σ     = 5.670374419e-8 # W m^-2 K^-4
@@ -170,7 +170,8 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             'massAGB'       : massAGB,               # [g]
             'vx'            : vx,                    # [cm/s]
             'vy'            : vy,                    # [cm/s]
-            'vz'            : vz                     # [cm/s]
+            'vz'            : vz,                    # [cm/s]
+            'Gamma'         : Gamma
             }
 
     if not setup["single_star"]:
@@ -180,20 +181,20 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         data['rHill'      ] = rHill                  # [cm]
 
     if setup['triple_star']:
-        data["posComp_in"]  = posComp_in               # [cm]
-        data['rComp_in']    = rComp_in                 # [cm]
+        data["posComp_in" ] = posComp_in               # [cm]
+        data['rComp_in'   ] = rComp_in                 # [cm]
         data['massComp_in'] = massComp_in              # [g]
         
     if containsTau:
         data["tau"        ] = tau
         
     if containsTauL:
-        data["tauL"   ] = tauL
+        data["tauL"       ] = tauL
 
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
-        data["Gamma"      ] = Gamma
         data["Tdust"      ] = Tdust
+
     
     return data
 

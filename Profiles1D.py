@@ -395,14 +395,9 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
 
         if whichPlot == 'dust' or whichPlot == 'chem' or whichPlot == 'v&T' or whichPlot == 'dustcool':
             ax2 = ax1.twinx()
-            if setup['idust_opacity'] > 0:
-                lns3,lns4 = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
-                lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
-                lns = lns1+lns2+lns3+lns4#+[lns5]
-            else:
-                lns3      = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
-                lns1      = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
-                lns = lns1+lns3#+[lns5]
+            lns3,lns4 = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
+            lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
+            lns = lns1+lns2+lns3+lns4#+[lns5]
             labs = [l.get_label() for l in lns]
             ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=16)
             for item in (  [ax2.title, ax2.xaxis.label, ax2.yaxis.label]

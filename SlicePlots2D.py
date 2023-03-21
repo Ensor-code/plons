@@ -28,7 +28,7 @@ matplotlib.use("Agg")
 import warnings
 warnings.filterwarnings("ignore")
 
-n_grid          = 2000
+n_grid          = 200
 n_grid_vec      = 25
 mesh            = True
 roundToInteger  = True
@@ -42,7 +42,7 @@ maxInfLog       = 300
 maxInf          = 10.**maxInfLog
 sigma_bounds_u  = 3.
 sigma_bounds_l  = 2.
-nneighb = 100
+nneighb = 10
 
 
 '''
@@ -162,7 +162,12 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     cbar.ax.tick_params(labelsize=20)
 
     lim = (setup['bound'] * np.sqrt(2.)/2.) / zoom
-    if roundToInteger: lim = math.floor(lim / 2.) * 2.
+    if roundToInteger:
+        if lim >= 2.:
+            lim = math.floor(lim / 2.) * 2.
+        elif lim >= 1.:
+            lim = 1.
+
     ax.axis([-lim, lim, -lim + 0.001, lim])
     ax.xaxis.set_major_locator(MultipleLocator(lim / 2.))
     ax.xaxis.set_minor_locator(MultipleLocator(lim / 8.))
@@ -365,7 +370,11 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
     ax.set_facecolor('k')
 
     lim = (setup['bound'] * np.sqrt(2.) / 2.) / zoom
-    if roundToInteger: lim = math.floor(lim / 2.) * 2.
+    if roundToInteger:
+        if lim >= 2.:
+            lim = math.floor(lim / 2.) * 2.
+        elif lim >= 1.:
+            lim = 1.
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim + 0.001, lim)
 
@@ -483,7 +492,7 @@ main definition
 '''
 
 
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 2, 5, 10, 20], observables = ['rho', 'Tgas', 'speed']):
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], observables = ['rho', 'Tgas', 'speed']):
     rAccComp_in = 0
     theta=0
     rAccComp = 0
