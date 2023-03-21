@@ -568,8 +568,8 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
     #plt.legend()
     fig.tight_layout()
 
-    plt.savefig(os.path.join(loc, 'png/evolution_rComp_rAGB_orbSep.png'))
-    plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep.pdf'))
+    plt.savefig(os.path.join(loc, 'png/evolution_rComp_rAGB_orbSep_seperate.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep_seperate.pdf'))
 
 
 '''
