@@ -131,7 +131,7 @@ def radialStructPlots(run,loc, dumpData, setup):
             posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])) / cgs.au
             if setup['triple_star']==True:
                 posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])) / cgs.au]
-            print('radial position 2 companions: ', posComp)
+            print('radial position companion(s): ', posComp)
 
         bound = setup['bound']
 
