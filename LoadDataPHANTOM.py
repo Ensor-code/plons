@@ -51,6 +51,7 @@ def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
         dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
         dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
         dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
+        #dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.au )
 
     if setup['triple_star']:
         dumpData['velComp_in'  ] = sinkData['velComp_in'    ][-1]
