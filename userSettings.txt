@@ -1,0 +1,4 @@
+prefix = wind
+data_location = /lhome/jolienm/Documents/TierModels/
+pipeline_output_location = /lhome/jolienm/Documents/TierModels/outputPipeline/
+hard_path_to_phantom = /lhome/jolienm/Documents/phantomRadTr/
