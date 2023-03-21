@@ -58,8 +58,6 @@ def getEverything(mass, theta, rho):
     # Now we have bins corresponding to the theta values Pi2_Pi
     # Make array containing the corresponding rho and mass values for the bins:
     
-    #print(ThetaBins)
-    
     # Create dictionaries
     rhoBinned  = {}
     massBinned = {}
@@ -120,7 +118,6 @@ def getEverything(mass, theta, rho):
         if massFraction[index] < 0.75:
             index75 = index75 +1
             
-        
     # Theta where 25/50/75 procent of mass is accumulated is upper boundary of the bin corresponding to index25/50/75
     theta25 = ThetaBins[index25][1]/100
     theta50 = ThetaBins[index50][1]/100
@@ -140,7 +137,6 @@ def getEverything(mass, theta, rho):
     
     densRatio   = polarDens/orbitalDens
     
-        
        
     Results = {'theta25'       : theta25,
                'theta50'       : theta50,
@@ -244,7 +240,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     # Perc contains all the mass fractions for which we calculate what theta is
     infoForPlot  = getEverything(data['mass'], data['theta'], data['rho'])
     theta  = calcThetaValues(infoForPlot)
-    delta  = calculateDeltaValues(infoForPlot)
+    #delta  = calculateDeltaValues(infoForPlot)
 
     # Select apastron and periastron side data in case of binary
     if setup['single_star'] == False:
@@ -263,8 +259,8 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         thetaL = calcThetaValues(infoForPlotL)
         thetaR = calcThetaValues(infoForPlotR)
         
-        deltaR = calculateDeltaValues(infoForPlotR)
-        deltaL = calculateDeltaValues(infoForPlotL)
+        #deltaR = calculateDeltaValues(infoForPlotR)
+        #deltaL = calculateDeltaValues(infoForPlotL)
 
 
         # Mean density profile plots, left and right side
@@ -341,15 +337,15 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         f.write('\n')
         f.write('Description parameters:'+'\n')
         f.write('\n')
-        f.write('theta25/50/75:     Angle wrt orbital plane at which 25 / 50 / 75 percent of total mass is accumulated'+'\n')
-        f.write('rho25/5075   :     Mean density corresponding to angle theta25/50/75, in unit [g/cm^3]\n')
-        f.write('delta        :     = (theta25-theta50)/(theta50-theta75) ratio of difference between thetas. \n')
-        f.write('                       If normalised to the corresponding single model, delta gives an indication \n')
-        f.write('                       of the strength of the equatorial density enhancement (EDE)\n')
-        f.write('Mass fraction:     Array with cumulative mass fraction for increasing angle with the orbital plane.'+'\n')
-        f.write('                   Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
-        f.write('meanRhoSm:         Smoothened array of mean rho. Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
-        f.write('x:                 Array going from 0 to 1/2. Corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
+        #f.write('theta25/50/75:     Angle wrt orbital plane at which 25 / 50 / 75 percent of total mass is accumulated'+'\n')
+        #f.write('rho25/5075   :     Mean density corresponding to angle theta25/50/75, in unit [g/cm^3]\n')
+        #f.write('delta        :     = (theta25-theta50)/(theta50-theta75) ratio of difference between thetas. \n')
+        #f.write('                       If normalised to the corresponding single model, delta gives an indication \n')
+        #f.write('                       of the strength of the equatorial density enhancement (EDE)\n')
+        #f.write('Mass fraction:     Array with cumulative mass fraction for increasing angle with the orbital plane.'+'\n')
+        #f.write('                   Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
+        #f.write('meanRhoSm:         Smoothened array of mean rho. Array corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
+        #f.write('x:                 Array going from 0 to 1/2. Corresponds to theta: pi/2(orbital plane) to pi&0(polar axes))'+'\n')
         f.write('Apastron side / Periastron side / Full :  gives which part of the data is used: x<0 / x>0 / all.'+'\n')
         f.write('\n')
         f.write('\n')
@@ -357,7 +353,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         f.write('\n')
         f.write('The ratio of the mean density on the polar axis to the orbital plane  is: '+ str(round(1/ratioPolAx,5))+'\n')
         f.write('The ratio of the mean density over all angles   to the orbital plane  is: '+ str(round(1/ratioAll  ,5))+'\n')
-        f.write('These may be usefull ratios to measure the EDE!'+'\n')
+        f.write('These are usefull ratios to measure the EDE!'+'\n')
         f.write('\n')
         f.write('Polar to orbital mean density ratio:\n')
         f.write('   Full = '+str(infoForPlot['densRatio'])+'\n')
@@ -367,56 +363,60 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         f.write('\n')
         f.write('\n')
         # theta 25%
-        f.write('theta(25):\n')
+        f.write('Values at angle (wrt orbital plane) where 25%  of total mass is accumulated :\n')
+        f.write('Theta value is \n')
         f.write('   Full = '+ str(np.round(infoForPlot['theta25']/np.pi ,3))+' pi'+'\n')
         if setup['single_star'] == False:
             f.write('   Apa  = '+ str(np.round(infoForPlotL['theta25']/np.pi ,3))+' pi'+'\n')
             f.write('   Per  = '+ str(np.round(infoForPlotR['theta25']/np.pi ,3))+' pi'+'\n')
-        f.write('theta(25) to plot on x-axis:\n')
-        f.write('   Full:  '+str(np.round(theta['25x'],3))+'\n')
-        if setup['single_star'] == False:
-            f.write('    Apa:  '+str(np.round(thetaL['25x'],3))+'\n')
-            f.write('    Per:  '+str(np.round(thetaR['25x'],3))+'\n')
-        f.write('rho(25) to plot on y-axis:\n')
+        #f.write('theta(25) value on x-axis:\n')
+        #f.write('   Full:  '+str(np.round(theta['25x'],3))+'\n')
+        #if setup['single_star'] == False:
+            #f.write('    Apa:  '+str(np.round(thetaL['25x'],3))+'\n')
+            #f.write('    Per:  '+str(np.round(thetaR['25x'],3))+'\n')
+        f.write('The density at this angle is:\n')
         f.write('   Full:  '+str(infoForPlot['rho25'])+'\n')
         if setup['single_star'] == False:
             f.write('    Apa:  '+str(infoForPlotL['rho25'])+'\n')
             f.write('    Per:  '+str(infoForPlotR['rho25'])+'\n')    
         f.write('\n')
-        # theta 50%
-        f.write('theta(50):\n')
+        
+        f.write('Values at angle (wrt orbital plane) where 50%  of total mass is accumulated :\n')
+        f.write('Theta value is \n')
         f.write('   Full = '+ str(np.round(infoForPlot['theta50']/np.pi ,3))+' pi'+'\n')
         if setup['single_star'] == False:
             f.write('   Apa  = '+ str(np.round(infoForPlotL['theta50']/np.pi ,3))+' pi'+'\n')
             f.write('   Per  = '+ str(np.round(infoForPlotR['theta50']/np.pi ,3))+' pi'+'\n')
-        f.write('theta(50) to plot on x-axis:\n')
-        f.write('   Full:  '+str(np.round(theta['50x'],3))+'\n')
-        if setup['single_star'] == False:
-            f.write('    Apa:  '+str(np.round(thetaL['50x'],3))+'\n')
-            f.write('    Per:  '+str(np.round(thetaR['50x'],3))+'\n')
-        f.write('rho(50) to plot on y-axis:\n')
+        #f.write('theta(50) to plot on x-axis:\n')
+        #f.write('   Full:  '+str(np.round(theta['50x'],3))+'\n')
+        #if setup['single_star'] == False:
+            #f.write('    Apa:  '+str(np.round(thetaL['50x'],3))+'\n')
+            #f.write('    Per:  '+str(np.round(thetaR['50x'],3))+'\n')
+        f.write('The density at this angle is:\n')
         f.write('   Full:  '+str(infoForPlot['rho50'])+'\n')
         if setup['single_star'] == False:
             f.write('    Apa:  '+str(infoForPlotL['rho50'])+'\n')
             f.write('    Per:  '+str(infoForPlotR['rho50'])+'\n')    
         f.write('\n')
         # theta 75%
-        f.write('theta(75):\n')
+        f.write('Values at angle (wrt orbital plane) where 75%  of total mass is accumulated :\n')
+        f.write('Theta value is \n')
         f.write('   Full = '+str(np.round(infoForPlot['theta75']/np.pi,3))+' pi'+'\n')
         if setup['single_star'] == False:
             f.write('    Apa = '+ str(np.round(infoForPlotL['theta75']/np.pi ,3))+' pi'+'\n')
             f.write('    Per = '+ str(np.round(infoForPlotR['theta75']/np.pi ,3))+' pi'+'\n')
-        f.write('theta(75) to plot on x-axis:\n')
-        f.write('   Full:  '+str(np.round(theta['75x'],3))+'\n')
-        if setup['single_star'] == False:
-            f.write('    Apa:  '+str(np.round(thetaL['75x'],3))+'\n')
-            f.write('    Per:  '+str(np.round(thetaR['75x'],3))+'\n')
-        f.write('rho(75) to plot on y-axis:s\n')
+        #f.write('theta(75) to plot on x-axis:\n')
+        #f.write('   Full:  '+str(np.round(theta['75x'],3))+'\n')
+        #if setup['single_star'] == False:
+            #f.write('    Apa:  '+str(np.round(thetaL['75x'],3))+'\n')
+            #f.write('    Per:  '+str(np.round(thetaR['75x'],3))+'\n')
+        f.write('The density at this angle is:\n')
         f.write('   Full:  '+str(infoForPlot['rho75'])+'\n')
         if setup['single_star'] == False:
             f.write('    Apa:  '+str(infoForPlotL['rho75'])+'\n')
             f.write('    Per:  '+str(infoForPlotR['rho75'])+'\n')    
         f.write('\n')
+        '''
         # delta 25
         f.write('delta(25):\n')
         f.write('   Full = '+str(np.round(delta['delta25'],5))+'\n')
@@ -457,6 +457,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
             f.write('    Per = '+ str(np.round(deltaR['ratioOuter'] ,5))+'\n')
         f.write('\n')
         #f.write('\n')
+
         if setup['single_star'] == False:
             names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
             f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
@@ -472,7 +473,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
             f.write('\n')
             for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm']):
                 f.write(col_format.format(*i))
-        
+        '''
 
 
 

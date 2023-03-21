@@ -568,8 +568,8 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
     #plt.legend()
     fig.tight_layout()
 
-    plt.savefig(os.path.join(loc, 'png/evolution_rComp_rAGB_orbSep.png'))
-    plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep.pdf'))
+    plt.savefig(os.path.join(loc, 'png/evolution_rComp_rAGB_orbSep_seperate.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep_seperate.pdf'))
 
 
 '''
@@ -581,7 +581,7 @@ def orbEv_main(run,loc, sinkData, setup):
         return
         
     else:
-        print('(5)  Start calculations for orbital evolution...')
+        #print('(5)  Start calculations for orbital evolution...')  # already printed in main
         
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)

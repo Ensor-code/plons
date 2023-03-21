@@ -131,7 +131,8 @@ def radialStructPlots(run,loc, dumpData, setup):
             posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])) / cgs.au
             if setup['triple_star']==True:
                 posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])) / cgs.au]
-            print('radial position 2 companions: ', posComp)
+            print('radial position companion(s): ', posComp)
+
 
         bound = setup['bound']
 
@@ -152,6 +153,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         ax2.set_xlabel('$r$ [AU]', fontsize=22)
         ax1.set_xticklabels([])
 
+        '''
         # Make text file with info to make plots
         title = os.path.join(loc, 'txt/data_1D_radialStructure.txt')
         with open(title, 'w') as f:
@@ -165,7 +167,7 @@ def radialStructPlots(run,loc, dumpData, setup):
             f.write('\n')
             for i in zip(X, Z, parX[0], parZ[0], parX[1], parZ[1]):
                 f.write(col_format.format(*i))
-
+        '''
 
     else:
         fig = plt.figure(figsize=(15,10))
@@ -258,6 +260,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         ax1.set_xticklabels([])
         ax2.set_xticklabels([])
 
+        '''
         # Make text file with info to make plots
         title = os.path.join(loc, 'txt/data_1D_radialStructure.txt')
         with open (title,'w') as f:
@@ -270,7 +273,7 @@ def radialStructPlots(run,loc, dumpData, setup):
             f.write('\n')
             for i in zip(X,Z,parX[0],parZ[0],parX[1],parZ[1],parX[2],parZ[2]):
                 f.write(col_format.format(*i))
-
+        '''
     print('     Radial structure plot model '+str(run)+' ready and saved!')
 
     fig.subplots_adjust(wspace=0.1, hspace=0.1)
