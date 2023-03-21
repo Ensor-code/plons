@@ -366,7 +366,7 @@ def getEpsilon(v, setup):
     return epsilon
     
 '''
-The angle Bgtan(v_w/v_orb), ratio v_w/(v_orb+v_w) and EllipsEcc give an indication of the flattening towards the orbital plane 
+The angle Bgtan(v_w/v_orb), ratio v_w/(v_orb+v_w) and EllipsEcc give an indication of the expected theoretical flattening towards the orbital plane 
 Theta is maximum angle of spiral with respect to the orbital plane
 flRatio is the ratio of the maximal height / maximal distance in the orbital plane travelled by an orbital motion spiral structure wind particle.
 EllipsEcc gives the eccentricity of the elliptic morphology formed by the spirals caused by the orbital motion
@@ -453,13 +453,13 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
 
             f.write('\n')
             if setup['ecc'] == 0:
-                f.write('Theoretical flattening predicitions because of orbital motion: '+ ' \n')
+                f.write('Theoretical flattening predictions because of orbital motion: '+ ' \n')
                 f.write('Bgtan(v_ini/v_orbAGB):                 '+str(round(theta,2))+ ' deg' + ' \n')
                 f.write('Ratio of flattening, height / length:  '+str(round(flratio,2))+ ' \n')
                 f.write('Eccentricity of flattening ellips:     '+str(round(EllipsEcc,2))+ ' \n')
 
             else:
-                f.write('Theoretical flattening predicitions because of orbital motion: '+ ' \n')
+                f.write('Theoretical flattening predictions because of orbital motion: '+ ' \n')
                 f.write('Bgtan(v_ini/v_orbAGB):     ' + ' \n' )
                 f.write('Apastron:                  ' + str(round(theta[0],2))+ ' deg' + ' \n')
                 f.write('Mean:                      ' + str(round(theta[1],2))+ ' deg' + ' \n')
