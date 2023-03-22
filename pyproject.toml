@@ -1,0 +1,60 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plons"
+version = "0.0.1"
+description = "PLOtting tool for Nice Simulations"
+readme = "README.md"
+authors = [{ name = "Jolien Malfait",  email = "jolien.malfait@kuleuven.be" },
+           { name = "Mats Esseldeurs", email = "mats.esseldeurs@kuleuven.be"}]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+keywords = ["SPH", "Phantom", "Astrophysics", "Astronomy"]
+dependencies = [
+    "matplotlib",
+    "healpy",
+    "astropy",
+    "scipy",    
+    "numpy",
+    "numba",
+    "argparse",
+    "datetime",
+]
+requires-python = ">=3.7"
+
+[project.optional-dependencies]
+dev = ["black", "bumpver", "pip-tools", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/Ensor-code/plons"
+
+[tool.bumpver]
+current_version = "0.0.1"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = false
+push            = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/plons/__init__.py" = ["{version}"]
+# "conda/meta.yaml" = ['version: "{version}"']
+# "README.md" = ['(version {version})']
+# "docs/index.rst" = ['(version {version})']
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+pythonpath = [".", "src"]
+
+#[project.scripts]
+#realpython = "reader.__main__:main"

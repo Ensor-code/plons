@@ -4,10 +4,10 @@ import matplotlib.lines         as mlines
 import os
 
 # import own scripts
-import SmoothingKernelScript    as sk
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
-import SlicePlots2D             as sp
+import plons.SmoothingKernelScript    as sk
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
+import plons.SlicePlots2D             as sp
 
 # import certain things from packages
 from matplotlib                 import colors

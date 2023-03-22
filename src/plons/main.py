@@ -8,16 +8,16 @@ warnings.filterwarnings("ignore")
 import argparse                     as ap
 
 # own scripts
-import RadialStructurePlots1D       as rs
-import SlicePlots2D                 as sl
-import CMF_meanRho                  as cmf
-import OrbitalEvolution             as ov
-import LoadDataPHANTOM              as ld
-import TerminalVelocity             as tmv
-import Tubes                        as tb
-import Profiles1D                   as dp
-import userSettings                 as us
-import ArchimedianSpiral            as ars
+import plons.RadialStructurePlots1D       as rs
+import plons.SlicePlots2D                 as sl
+import plons.CMF_meanRho                  as cmf
+import plons.OrbitalEvolution             as ov
+import plons.LoadDataPHANTOM              as ld
+import plons.TerminalVelocity             as tmv
+import plons.Tubes                        as tb
+import plons.Profiles1D                   as dp
+import plons.userSettings                 as us
+import plons.ArchimedianSpiral            as ars
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
