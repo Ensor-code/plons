@@ -3,7 +3,7 @@ import numpy                    as np
 import matplotlib.pyplot        as plt
 import matplotlib.lines         as mlines
 import math                     as math
-from scipy.signal import argrelextrema,find_peaks
+from scipy.signal               import argrelextrema
 
 import os
 from matplotlib                 import rcParams, rc
@@ -14,9 +14,9 @@ rcParams.update({'figure.dpi': 200})
 #rc('text', usetex=True)
 
 # import own scripts
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
-import Tools                    as tl
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
+import plons.Tools                    as tl
 
 
 '''

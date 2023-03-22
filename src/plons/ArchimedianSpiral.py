@@ -2,7 +2,7 @@ import scipy.integrate       as integrate
 import matplotlib.pyplot     as plt
 import numpy as np
 import os
-from ConversionFactors_cgs   import au, Msun, G
+from plons.ConversionFactors_cgs   import au, Msun, G
 
 def velocities(run):
     if   run == 'Lucy/High/binary6':

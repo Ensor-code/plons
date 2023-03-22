@@ -5,17 +5,12 @@ import os
 import math
 
 # import own scripts
-import SmoothingKernelScript    as sk
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
-import ArchimedianSpiral        as ars
+import plons.SmoothingKernelScript    as sk
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
+import plons.ArchimedianSpiral        as ars
 
 # import certain things from packages
-from matplotlib                 import colors
-from astropy                    import constants
-from mpl_toolkits.axes_grid1    import AxesGrid
-
-from matplotlib                 import rcParams, rc
 from mpl_toolkits.axes_grid1    import make_axes_locatable
 from matplotlib.ticker          import MultipleLocator
 import matplotlib
