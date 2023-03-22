@@ -1,0 +1,29 @@
+package:
+  name: plons
+  version: "0.0.2"
+
+about:
+  home: "https://github.com/Ensor-code/plons"
+  license: GPLv3
+  license_file: LICENSE
+  summary: PLOtting tool for Nice Simulations
+
+source:
+  path: ../
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - wheel
+    - pip
+
+  run:
+    - python
+    - matplotlib
+    - healpy
+    - scipy
+    - astropy
+    - numpy>=1.17
+    - numba
+

@@ -24,7 +24,7 @@ dependencies = [
     "healpy",
     "astropy",
     "scipy",    
-    "numpy",
+    "numpy>=1.17",
     "numba",
     "argparse",
     "datetime",
@@ -48,7 +48,7 @@ push            = false
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
 "src/plons/__init__.py" = ["{version}"]
-# "conda/meta.yaml" = ['version: "{version}"']
+"conda/meta.yaml" = ['version: "{version}"']
 # "README.md" = ['(version {version})']
 # "docs/index.rst" = ['(version {version})']
 
