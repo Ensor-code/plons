@@ -37,10 +37,7 @@ def plot_orbit(data, setup,loc):
     
     M1   = data['massComp']
     M2   = data['massAGB' ]
-    
-    ax.axis('equal')
-    ax.set_ylim(-4,4)
-    
+        
     if setup['triple_star']==True:
         xc_in = data['posComp_in'].transpose()[0] 
         yc_in = data['posComp_in'].transpose()[1] 
@@ -52,12 +49,12 @@ def plot_orbit(data, setup,loc):
         MCOM_in = M_in + M2
         xCOM_out = ( MCOM_in*xCOM_in + M1 *xc)/(MCOM_in+M1)
         yCOM_out = ( MCOM_in*yCOM_in + M1 *yc)/(MCOM_in+M1)
-        ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'k', label = 'CoM_inner')
-        ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'k', label = 'CoM_outer', markersize = 5)
+        ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'navy', label = 'CoM_inner')
+        ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'navy', label = 'CoM_outer', markersize = 5)
         ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'lime', label = 'inner comp')
         ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'crimson', label = 'outer comp')
         #  #FOR SCIENTIST@SCHOOL
-        #ax.set_facecolor('k')
+        #ax.set_facecolor('navy')
         #ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'white')#, label = 'MM')
         #ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'white')#, label = 'MM', markersize = 5)
         #ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'yellow')#, label = 'S2')
@@ -67,7 +64,7 @@ def plot_orbit(data, setup,loc):
         xCOM = (M1*xc + M2 * xa)/(M1+M2)
         yCOM = (M1*yc + M2 * ya)/(M1+M2)
         #rCOM = np.sqrt(xCOM**2 + yCOM**2)
-        ax.plot(xCOM/cgs.au,yCOM/cgs.au,'*', color = 'k', label = 'CoM')
+        ax.plot(xCOM/cgs.au,yCOM/cgs.au,'*', color = 'navy', label = 'CoM')
         ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'crimson', label = 'companion')
     
     ax.plot(xa[1:]/cgs.au,ya[1:]/cgs.au, c = 'gold', label = 'AGB'      )
@@ -229,9 +226,9 @@ def plotMassAccr(setup, sinkData, run, loc):
     # Make plot of the mass accretion evolution, very interesting to plot!
     fig = plt.figure(figsize=(8, 5))
     # Legend
-    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
-    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
-    periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
+    apaLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    periodLine    = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
 
     # Plot the accreted mass in function of time
     plt.plot(sinkData['time'],  sinkData['maccrComp']/cgs.Msun, color = 'crimson', linestyle = 'solid')
@@ -286,9 +283,9 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     # Make plot of the mass accretion evolution, very interesting to plot!
     fig = plt.figure(figsize=(8, 5))
     # Legend
-    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
-    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
-    periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
+    apaLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    periodLine    = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
     
     # Make empty array for accrRates per year
     accrRates    = []
@@ -447,9 +444,9 @@ def plotOrbRad(setup,sinkData, run, loc):
     '''        
     # Plot vertical lines indicating where there should be apastron and periastron passages
     # Legend
-    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
-    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
-    periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
+    apaLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    periodLine    = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
     period = setup['period'] / cgs.year
     #print('period in years: ',period)
     i = 0         # Start at apastron
@@ -534,9 +531,9 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
     '''
     # Plot vertical lines indicating where there should be apastron and periastron passages
     # Legend
-    #apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
-    #perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
-    #periodLine    = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
+    #apaLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    #perLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    #periodLine    = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
     period = setup['period'] / cgs.year
     i = 0         # Start at apastron
     mini = 0
