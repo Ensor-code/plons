@@ -132,10 +132,10 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
 
 print('')
 print('-------------------------------------------------------')
-print('     Welcome to the very first PHANTOM pipeline!'        )
+print('     Welcome to PLONS!'        )
 print('-------------------------------------------------------')
 print('')
-print('This pipeline reduces PHANTOM output to usable plots and datasets.')
+print('The PLOtting tool for Nice Simulations.')
 print('')
 
 
