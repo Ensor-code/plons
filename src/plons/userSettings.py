@@ -53,9 +53,9 @@ def create(userSettingsFilePath):
             phantom = phantom[:-1]
 
         file.write("prefix = " + prefix + "\n")
-        file.write("data_location = " + loc + "\n")
-        file.write("pipeline_output_location = " + outputloc + "\n")
-        file.write("hard_path_to_phantom = " + phantom + "\n")
+        file.write("data_location = " + loc + "/ \n")
+        file.write("pipeline_output_location = " + outputloc + " \n")
+        file.write("hard_path_to_phantom = " + phantom + " \n")
         print("Settings saved at " + userSettingsFilePath)
         print("--------------------------------------------------------------")
         file.close()
