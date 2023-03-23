@@ -1,11 +1,12 @@
 import numpy                    as np
 import math                     as math
 import os
-# own scripts
-import PhysicalQuantities       as pq
-import GeometricalFunctions     as gf
-import ConversionFactors_cgs    as cgs
 import sys
+
+# Import plons scripts
+import plons.PhysicalQuantities       as pq
+import plons.GeometricalFunctions     as gf
+import plons.ConversionFactors_cgs    as cgs
 
 '''
 Loads the final full dump of a phantom model, given the number, in cgs-units 

@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings("ignore")
 import argparse                     as ap
 
-# own scripts
+# import plons scripts
 import plons.RadialStructurePlots1D       as rs
 import plons.SlicePlots2D                 as sl
 import plons.CMF_meanRho                  as cmf

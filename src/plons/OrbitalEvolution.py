@@ -13,11 +13,10 @@ rcParams.update({'figure.dpi': 200})
 #rc('font', family='serif')
 #rc('text', usetex=True)
 
-# import own scripts
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
-import Tools                    as tl
-
+# import plons scripts
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
+import plons.Tools                    as tl
 
 '''
 Visualises the orbit of the system

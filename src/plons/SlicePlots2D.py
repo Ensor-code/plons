@@ -4,11 +4,11 @@ import matplotlib.pyplot        as plt
 import os
 import math
 
-# import own scripts
-import SmoothingKernelScript    as sk
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
-import ArchimedianSpiral        as ars
+# import plons scripts
+import plons.SmoothingKernelScript    as sk
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
+import plons.ArchimedianSpiral        as ars
 
 # import certain things from packages
 from matplotlib                 import colors

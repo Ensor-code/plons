@@ -2,11 +2,12 @@ import os
 import math                     as math
 import numpy                    as np
 import matplotlib.pyplot        as plt
-# own scripts
-import ConversionFactors_cgs    as cgs
-import GeometricalFunctions     as gf
-import Tools                    as tl
-import PhysicalQuantities       as pq
+
+# import plons scripts
+import plons.ConversionFactors_cgs    as cgs
+import plons.GeometricalFunctions     as gf
+import plons.Tools                    as tl
+import plons.PhysicalQuantities       as pq
 # ignore warnings
 import warnings
 warnings.filterwarnings("ignore")

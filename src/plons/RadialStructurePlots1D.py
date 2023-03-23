@@ -3,7 +3,7 @@ import matplotlib.pyplot        as plt
 import matplotlib.lines         as mlines
 import os
 
-# import own scripts
+# import plons scripts
 import plons.SmoothingKernelScript    as sk
 import plons.ConversionFactors_cgs    as cgs
 import plons.PhysicalQuantities       as pq

@@ -1,12 +1,14 @@
 import numpy                    as np
 import math                     as math
 import os
-# own scripts
-import PhysicalQuantities       as pq
-import GeometricalFunctions     as gf
-import ConversionFactors_cgs    as cgs
-import LoadSetup                as stp
 import sys
+
+# Import plons scripts
+import plons.PhysicalQuantities       as pq
+import plons.GeometricalFunctions     as gf
+import plons.ConversionFactors_cgs    as cgs
+import plons.LoadSetup                as stp
+
 
 
 

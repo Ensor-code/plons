@@ -1,12 +1,13 @@
 import numpy                    as np
 import math                     as math
 import os
-# own scripts
-import PhysicalQuantities       as pq
-import ConversionFactors_cgs    as cgs
-import LoadDump                 as dmp
-import LoadSink                 as snk
-import LoadSetup                as stp
+
+#import plons scripts
+import plons.PhysicalQuantities       as pq
+import plons.ConversionFactors_cgs    as cgs
+import plons.LoadDump                 as dmp
+import plons.LoadSink                 as snk
+import plons.LoadSetup                as stp
 
 
 '''

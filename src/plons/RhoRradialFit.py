@@ -3,10 +3,10 @@ import matplotlib.pyplot        as plt
 import matplotlib.lines         as mlines
 import os
 
-# import own scripts
-import SmoothingKernelScript    as sk
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
+# import plons scripts
+import plons.SmoothingKernelScript    as sk
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
 
 # import certain things from packages
 from scipy.optimize             import curve_fit

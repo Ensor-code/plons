@@ -1,7 +1,9 @@
 import math                     as math
 import numpy                    as np
-import ConversionFactors_cgs    as cgs
-import GeometricalFunctions     as gf
+
+#import plons scripts
+import plons.ConversionFactors_cgs    as cgs
+import plons.GeometricalFunctions     as gf
 
 
 # --- Physical Quantities in cgs ---
