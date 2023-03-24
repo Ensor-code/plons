@@ -19,15 +19,15 @@ Load the .ev-files from a phantom model
         in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
       - Only suited for a binary model
       - Units in cgs
-      
+
 INPUT:
     - 'run'   is the number of the run specifically           [str]
     - 'loc'   is the directory where the model is located     [str]
     - 'setup' is the setup data                               [dict]
-    
+
 RETURN:
     a dictionary containing the data from the sink files (all units in cgs)
-    
+
 '''
 def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
@@ -40,7 +40,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     if setup['triple_star']==True:
         t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3 = 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-    numberOfevFiles = findLastWindSinkIndex(runName)
+    numberOfevFiles = findLastWindSinkIndex(runName,userPrefix)
 
     for n in range(1,numberOfevFiles+1):
         #print(n)
@@ -59,7 +59,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
                 (t3e, x3e,y3e,z3e, mass3e, vx3e,vy3e,vz3e, maccr3e) = np.loadtxt(fileName_sink3, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
         except OSError:
             print(' ERROR: No sink files found for this model in the current directory!')
-            
+
         t1     = np.append(t1,t1e)
         x1     = np.append(x1,x1e)
         y1     = np.append(y1,y1e)
@@ -79,7 +79,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
         vy2    = np.append(vy2, vy2e)
         vz2    = np.append(vz2, vz2e)
         maccr2 = np.append(maccr2, maccr2e)
-        
+
         if setup['triple_star']==True:
             t3     = np.append(t3,t3e)
             x3     = np.append(x3,x3e)
@@ -91,12 +91,12 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
             vz3    = np.append(vz3, vz3e)
             maccr3 = np.append(maccr3, maccr3e)
 
-        
+
 
 
     # AGB star
 
-    t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]                                
+    t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]
     x1     = x1     *  cgs.au                          # position coordinates       [cm]
     y1     = y1     *  cgs.au
     z1     = z1     *  cgs.au
@@ -110,10 +110,10 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
     position1 = np.array((x1, y1, z1 )).transpose()
     velocity1 = np.array((vx1,vy1,vz1)).transpose()
-    
+
     # companion star
 
-    t2     = t2     *  cgs.cu_time()                   # evolution time             [yrs]                                 
+    t2     = t2     *  cgs.cu_time()                   # evolution time             [yrs]
     x2     = x2     *  cgs.au                          # position coordinates       [cm]
     y2     = y2     *  cgs.au
     z2     = z2     *  cgs.au
@@ -130,7 +130,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
     if setup['triple_star']==True:
         #close companion star
-        t3     = t3     *  cgs.cu_time()                   # evolution time             [yrs]                                 
+        t3     = t3     *  cgs.cu_time()                   # evolution time             [yrs]
         x3     = x3     *  cgs.au                          # position coordinates       [cm]
         y3     = y3     *  cgs.au
         z3     = z3     *  cgs.au
@@ -144,17 +144,17 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
 
         position3 = np.array((x3, y3, z3 )).transpose()
         velocity3 = np.array((vx3,vy3,vz3)).transpose()
-        
+
         period_in       = pq.getPeriod(mass1, mass3, (r1 + r3) /cgs.au )
         rHill_in        = pq.getRHill( abs(r1 + r3), mass3, mass1      )              # [cm]
 
-    
-    
-    
-    # orbital information 
+
+
+
+    # orbital information
     # NOT CORRECT!!!
     #period          = pq.getPeriod(mass1, mass2, setup['sma_ini'] )
-    
+
     #print('period 1',period)
     #print('period 2',setup['period'])
     #periodFixed = setup['period']
@@ -162,21 +162,21 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     #orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.au_cm() )
     #orbitalVel_comp = pq.getOrbitalVelocity(period, r2     /cgs.au_cm() )
     #orbotalVel_comp_in = pq.getOrbitalVelocity(period_in, r3     /cgs.au_cm() )
-    
-    orbitalVel_AGB  = np.sqrt(np.transpose(velocity1)[0]**2+np.transpose(velocity1)[1]**2) 
+
+    orbitalVel_AGB  = np.sqrt(np.transpose(velocity1)[0]**2+np.transpose(velocity1)[1]**2)
     orbitalVel_comp = np.sqrt(np.transpose(velocity2)[0]**2+np.transpose(velocity2)[1]**2)
     if setup['triple_star']==True:
         orbitalVel_comp_in = np.sqrt(np.transpose(velocity3)[0]**2+np.transpose(velocity3)[1]**2)
-        
-        
-        
+
+
+
     rHill           = pq.getRHill( abs(r1 + r2), mass2, mass1           )         # [cm]
-    
+
     #print('test orbital velocity:')
     #print(np.shape(np.linalg.norm(np.transpose(velocity1))),np.shape(orbitalVel_AGB))
     #print(np.nanmean(np.linalg.norm(np.transpose(velocity1))),np.nanmean(orbitalVel_AGB))
     #print(np.array(np.linalg.norm(velocity1))[0:20],orbitalVel_AGB[0:20])
-    
+
     # output
     #    "_t" stands for the fact that these values are in function of the evolution time, not from the last dump in function of location
     if setup['triple_star']==True:
@@ -219,15 +219,15 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
                 #'period_t'    : period,                 # [s]
                 'v_orbAGB_t'  : orbitalVel_AGB,         # [cm/s]
                 'v_orbComp_t' : orbitalVel_comp,        # [cm/s]
-                'rHill_t'     : rHill                  # [cm] 
+                'rHill_t'     : rHill                  # [cm]
                 }
-        
+
     #print(np.shape(data['velAGB']))
     #print(np.shape(data['velAGB'][0]))
     #print(np.shape(np.transpose(data['velAGB'])[0]))
 
     return data
-        
+
 
 
 
@@ -250,7 +250,7 @@ def LoadSink_single_cgs(run, loc, setup, userSettingsDictionary):
     t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = 0, 0, 0, 0, 0, 0, 0, 0, 0
     try:
        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(fileName, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
-        
+
 
     except OSError:
 
@@ -260,7 +260,7 @@ def LoadSink_single_cgs(run, loc, setup, userSettingsDictionary):
 
     # AGB star
 
-    t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]                            
+    t1     = t1     *  cgs.cu_time()                   # evolution time             [yrs]
     x1     = x1     *  cgs.au                          # position coordinates       [cm]
     y1     = y1     *  cgs.au
     z1     = z1     *  cgs.au
@@ -274,9 +274,9 @@ def LoadSink_single_cgs(run, loc, setup, userSettingsDictionary):
 
     position1 = np.array((x1, y1, z1 )).transpose()
     velocity1 = np.array((vx1,vy1,vz1)).transpose()
-    
-    
-    
+
+
+
     data = {'posAGB'      : position1,       # [cm]
             'velAGB'      : velocity1,       # [cm/s]
             'massAGB'     : mass1,           # [gram]
@@ -284,16 +284,16 @@ def LoadSink_single_cgs(run, loc, setup, userSettingsDictionary):
             'rAGB'        : r1,              # [cm]
             'time'        : t1,              # [yrs]
             }
-    
+
     return data
 
 
 
 # Pick last wind evolution file
-def findLastWindSinkIndex(runName):
-    listevFiles = sortedWindSinkList('windSink0001N0', runName)
+def findLastWindSinkIndex(runName,userPrefix):
+    listevFiles = sortedWindSinkList(userPrefix+'Sink0001N0', runName)
     lastFile = listevFiles[-1]
-    t1 = lastFile.lstrip("windSink0001")
+    t1 = lastFile.lstrip(userPrefix+'Sink0001')
     t2 = t1.lstrip("N")
     t3 = t2.rstrip(".ev")
     lastIndex = int(t3)
@@ -301,4 +301,3 @@ def findLastWindSinkIndex(runName):
 
 def sortedWindSinkList(userPrefix, runName):
     return np.sort(list(filter(lambda x: ("%s"%userPrefix in x) and (".ev" in x), os.listdir(runName))))
-
