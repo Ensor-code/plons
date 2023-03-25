@@ -1,7 +1,8 @@
 import os
 import math                     as math
 import numpy                    as np
-# own scripts
+
+# import plons scripts
 import plons.ConversionFactors_cgs    as cgs
 import plons.GeometricalFunctions     as gf
 import plons.Tools                    as tl

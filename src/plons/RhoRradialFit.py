@@ -2,9 +2,9 @@ import numpy                    as np
 import matplotlib.pyplot        as plt
 import os
 
-# import own scripts
-import ConversionFactors_cgs    as cgs
-import PhysicalQuantities       as pq
+# import plons scripts
+import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
 
 # import certain things from packages
 from scipy.optimize             import curve_fit

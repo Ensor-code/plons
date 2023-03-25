@@ -11,7 +11,7 @@ rcParams.update({'figure.dpi': 200})
 #rc('font', family='serif')
 #rc('text', usetex=True)
 
-# own scripts
+# import plons scripts
 import plons.Tools                 as tl
 
 # ignore warnings
