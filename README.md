@@ -1,9 +1,8 @@
 
+<h1 align="center">
+<img src="plons.png" width="300">
+</h1>
 
-
--------------------------------
-    README PLONS
--------------------------------
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/build-and-test.yaml/badge.svg)
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/upload-to-pypi.yaml/badge.svg)
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/upload-to-anaconda.yaml/badge.svg)
@@ -35,10 +34,15 @@ This pipeline is suited for single, binary and triple AGB wind models.
 The following info can be attained:
 
 (1) 2D slice plots of the global structure of the last dump full of the model.
+
 (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.
+
 (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.
+
 (4) Cummulative mass fraction in function of the polar coordinate theta.
+
 (5) Information of the orbital evolution.
+
 (6) 1D spherical profiles for single star models
 
 
@@ -56,7 +60,7 @@ time. The last entry in the sink data, corresponds to the full dump loaded. Ther
 position/velocity/mass/... of this last entry are also saved in the full dump data for easy usage.
 
 
-(1)
+<b>(1) 2D slice plots of the global structure of the last dump full of the model.</b>
 
 The 2D slices in the plots are infinitely thin and calculated by using the smoothing kernel from
 PHANTOM. The density, speed and temperature are calculated by this method on a grid of n*n 
@@ -64,14 +68,14 @@ pixels, using the data of the m nearest neighbours (SPH particles) of those grid
 plots give a visual representation of the morphology present in the AGB wind of the simulation.
 
 
-(2)
+<b>(2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.</b>
 
 In 1D, the data along the x-, y- and z-axes is constructed in the same way as explained in (1), 
 but for a 1D grid. This results in plots of the radial structure, which is an important addition 
 to the 2D slice plots.
 
 
-(3)
+<b>(3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.</b>
 
 The terminal velocity in PHANTOM SPH code is not an input parameter, so it needs to be calculated. 
 Due to the morphology in the outflow of the AGB star, at a certain radius a wide range of speeds 
@@ -123,7 +127,7 @@ Better options for v_wind would be to use the velocity of the corresponding sing
 These can be calculated using the output of this pipeline.
 
 
-(4)
+<b>(4) Cummulative mass fraction in function of the polar coordinate theta.</b>
 
 The cummulative mass fraction (CMF) is calculated in function of the polar angle theta (theta = 0.5pi 
 is the orbital plane, theta = 0 the north pole), again by using the method of binning. Only the northern 
@@ -140,14 +144,14 @@ single model, it gives a measure for the degree of EDE.
 Also the mean density is calculated using a similar approach as the CMF, using the method of binning. 
 This mean density can easily be normalised to compare the morphology in different models.
 
-
-(5)
+<b>(5) Information of the orbital evolution.</b>
 
 In order to get information about the orbital evolution, the sink files are used (.ev), which gives
 relevant quantities of the sink particles in function of time. This file returns plots of the orbit, 
 evolution of orbital separation, orbital velocity and accreted mass of the companion.
 
 
+<b>(6) 1D spherical profiles for single star models</b>
 
-
+In order to check your simulations and compare the 3D simulations to a 1D solution, this routine reads wind_1D.dat to plot the 1D solution, as well as the 3D sph values.
 

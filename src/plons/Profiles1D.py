@@ -9,7 +9,7 @@ Make sure that the path in the sys.append points to the scripts directory of pha
 """
 import matplotlib.pyplot as plt
 from numpy import *
-from scipy import constants, interpolate
+from scipy import interpolate
 import os
 import sys
 from plons.ConversionFactors_cgs import Rg, steboltz, kB, au, G, mH, Msun
@@ -377,7 +377,7 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
     whichPlots = ['vel', 'temp', 'rho', 'v&T']
     if setup['idust_opacity'] > 0: whichPlots.append('dust')
     if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
-        if setup['iget_tdust'] == 3: whichPlots.append('tau_lucy')
+        if setup['iget_tdust'] == 4: whichPlots.append('tau_lucy')
         else: whichPlots.append('tau')
     if setup['isink_radiation'] > 0: whichPlots.append('alpha')
     
