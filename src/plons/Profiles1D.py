@@ -10,10 +10,9 @@ Make sure that the path in the sys.append points to the scripts directory of pha
 import matplotlib.pyplot as plt
 from numpy import *
 from scipy import constants, interpolate
-import userSettings as us
 import os
 import sys
-from ConversionFactors_cgs import Rg, steboltz, kB, au, G, mH, Msun
+from plons.ConversionFactors_cgs import Rg, steboltz, kB, au, G, mH, Msun
 
 # reads the 1D data and computes derived quantities
 def read1D(runName, setup):

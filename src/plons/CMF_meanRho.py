@@ -4,9 +4,7 @@ import os
 import matplotlib.pyplot    as plt
 import matplotlib.lines     as mlines
 # import certain things from packages
-from collections            import OrderedDict
-from astropy                import constants
-from matplotlib             import rcParams, rc
+from matplotlib             import rcParams
 # Change the matplotlib default parameters
 rcParams.update({'font.size':   11})
 rcParams.update({'figure.dpi': 200})

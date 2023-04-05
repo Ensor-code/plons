@@ -11,11 +11,6 @@ import plons.PhysicalQuantities       as pq
 import plons.ArchimedianSpiral        as ars
 
 # import certain things from packages
-from matplotlib                 import colors
-from astropy                    import constants
-from mpl_toolkits.axes_grid1    import AxesGrid
-
-from matplotlib                 import rcParams, rc
 from mpl_toolkits.axes_grid1    import make_axes_locatable
 from matplotlib.ticker          import MultipleLocator
 import matplotlib

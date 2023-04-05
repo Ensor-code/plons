@@ -1,19 +1,14 @@
 import numpy                    as np
 import matplotlib.pyplot        as plt
-import matplotlib.lines         as mlines
 import os
 
 # import plons scripts
-import plons.SmoothingKernelScript    as sk
 import plons.ConversionFactors_cgs    as cgs
 import plons.PhysicalQuantities       as pq
 
 # import certain things from packages
 from scipy.optimize             import curve_fit
-from matplotlib                 import colors
-from astropy                    import constants
-from mpl_toolkits.axes_grid1    import AxesGrid
-from matplotlib                 import rcParams, rc
+from matplotlib                 import rcParams
 # Change the matplotlib default parameters
 rcParams.update({'font.size':   11})
 rcParams.update({'figure.dpi': 200})

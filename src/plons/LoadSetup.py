@@ -1,10 +1,8 @@
-import numpy                    as np
 import math                     as math
 import os
 # own scripts
-import PhysicalQuantities       as pq
-import GeometricalFunctions     as gf
-import ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
+import plons.ConversionFactors_cgs    as cgs
 
 
 

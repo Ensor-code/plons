@@ -12,7 +12,7 @@ Make sure that the path in the sys.append points to the scripts directory of pha
 import matplotlib.pyplot as plt
 from numpy import *
 from scipy import constants, interpolate
-import userSettings as us
+import plons.userSettings as us
 import os
 import sys
 

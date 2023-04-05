@@ -1,10 +1,6 @@
-import numpy                    as np
 import math                     as math
-import os
 
 #import plons scripts
-import plons.PhysicalQuantities       as pq
-import plons.ConversionFactors_cgs    as cgs
 import plons.LoadDump                 as dmp
 import plons.LoadSink                 as snk
 import plons.LoadSetup                as stp
