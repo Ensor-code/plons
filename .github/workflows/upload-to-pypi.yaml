@@ -61,5 +61,4 @@ jobs:
           pip install plons
       - name: Test with pytest
         run: |
-          ls /Users/runner/work/plons/plons/
           pytest

@@ -30,6 +30,7 @@ jobs:
         shell: bash -l {0}
 
     steps:
+      - uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: "latest"
@@ -46,4 +47,4 @@ jobs:
           conda install -c ensor plons
       - name: Test with pytest
         run: |
-          ls /Users/runner/work/plons/plons/
+          pytest
