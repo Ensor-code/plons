@@ -46,4 +46,4 @@ jobs:
           conda install -c ensor plons
       - name: Test with pytest
         run: |
-          ls -la /Users/runner/work/plons/plons/tests
+          ls /Users/runner/work/plons/plons/
