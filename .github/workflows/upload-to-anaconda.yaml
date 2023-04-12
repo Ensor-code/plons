@@ -46,4 +46,5 @@ jobs:
           conda install -c ensor plons
       - name: Test with pytest
         run: |
+          ls -la
           pytest
