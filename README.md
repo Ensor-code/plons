@@ -1,6 +1,6 @@
 
 <h1 align="center">
-<img src="plons.png" width="300">
+<img src="https://raw.githubusercontent.com/Ensor-code/plons/main/plons.png" width="300">
 </h1>
 
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/build-and-test.yaml/badge.svg)
