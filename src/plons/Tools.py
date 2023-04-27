@@ -1,7 +1,6 @@
 import numpy                    as np
 import scipy.ndimage.filters
-
-
+import bisect
 
 
 '''
@@ -15,19 +14,17 @@ def find_nearest(array, value):
 
 
 '''
-Create_bins returns an equal-width (distance) partitioning. 
+Create_bins returns an equal-width (distance) partitioning.
     It returns an ascending list of tuples, representing the intervals.
-    A tuple bins[i], i.e. (bins[i][0], bins[i][1])  with i > 0 
+    A tuple bins[i], i.e. (bins[i][0], bins[i][1])  with i > 0
     and i < quantity, satisfies the following conditions:
         (1) bins[i][0] + width == bins[i][1]
         (2) bins[i-1][0] + width == bins[i][0] and
             bins[i-1][1] + width == bins[i][1]
 '''
 def create_bins(lower_bound, width, quantity):
-    bins = []
-    for low in range(lower_bound, lower_bound + quantity*width + 1, width):
-        bins.append((low, low+width))
-    return bins
+    upper_bound = lower_bound + quantity * width
+    return [(low, low + width) for low in range(lower_bound, upper_bound + 1, width)]
 
 
 '''
@@ -38,46 +35,36 @@ bin[i][0] <= value < bin[i][1]
 searches the bin containing the value
 '''
 def find_bin(value, bins):
-
-    try:
-        if value < bins[0][0]:
-            return 0
-    except IndexError:
-        print('!! IndexError')
-        print('value: ',value)
-        print('bins:  ',bins)
+    if value < bins[0][0]:
+        return 0
     if value > bins[-1][1]:
         return len(bins) - 1
-    
+    i = bisect.bisect_left([x[0] for x in bins], value)
+    if i == 0:
+        return 0
+    elif i == len(bins):
+        return len(bins) - 1
     else:
-        for i in range(0, len(bins)):
-            if bins[i][0] <= value < bins[i][1]:
-                return i
-    
-        return -1    
-
+        return i - 1
 
 '''
 Put the data of a chosen parameter 'data' in bins, according to the parameter 'sortData'.
 '''
 def bin_data(data,sortData):
     # The parameter 'sortData' sets the number of bins by its maximum
-    nb = max(sortData)
+    nb = np.max(sortData)
     # create bins
-    number_of_bins = int( round( nb + 1 ) )
+    number_of_bins = int(np.round( nb + 1 ) )
     bins = create_bins( lower_bound=0, width=1, quantity=number_of_bins )
 
     # create dictionary with keys: the bin [au] and value: the speed in that bin
-    binned_data = {}               
-    for i in range(number_of_bins):             # make keys
-        binned_data[i] = []
-        
-    for i in range(len(data)):                  # make values
+    binned_data = {i: [] for i in range(number_of_bins)}  # use dictionary comprehension for creating keys
+
+    for i in range(len(data)):  # make values
         bin_index = find_bin(sortData[i], bins)
         binned_data[bin_index].append(data[i])
-        
-    return binned_data, number_of_bins
 
+    return binned_data, number_of_bins
 
 '''
 smoothens values to plot
@@ -93,7 +80,6 @@ Given any number of dictionaries, shallow copy and merge into a new dict,
 precedence goes to key value pairs in latter dictionaries.
 '''
 def merge_dicts(*dict_args):
-
     result = {}
     for dictionary in dict_args:
         result.update(dictionary)
@@ -117,7 +103,7 @@ def format_func1(value, tick_number):
         return r"${0}\pi/2$".format(N)
     else:
         return r"${0}\pi$".format(N // 2)
-    
+
 
 '''
 Function to transform the axis labels to multiples of pi/4,
@@ -140,8 +126,3 @@ def format_func2(value, tick_number):
         return r"${0}\pi/4$".format(N)
     else:
         return r"${0}\pi$".format(N // 4)
-
-
-
-
-

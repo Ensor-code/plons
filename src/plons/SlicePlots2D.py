@@ -23,8 +23,8 @@ matplotlib.use("Agg")
 import warnings
 warnings.filterwarnings("ignore")
 
-n_grid          = 200
-n_grid_vec      = 25
+n_grid          = 500
+n_grid_vec      = 50
 mesh            = True
 roundToInteger  = True
 round_bounds    = False
@@ -89,7 +89,7 @@ def smoothData(dumpData, setup, theta, observables, zoom=1):
 
 
 '''
-Make figure with the xy(orbital plane) slice plot of log density [g/cm^3]. 
+Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - smooth            is smoothing kernel data
     - zoom              zoom factor of the plot
     - rhoMin/rhoMax     determine the min and max of the colorbar
@@ -133,22 +133,43 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     if setup['single_star']== False:
         xAGB  = dumpData['posAGB' ][0] / cgs.au
         yAGB  = dumpData['posAGB' ][1] / cgs.au
+        zAGB  = dumpData['posAGB' ][2] / cgs.au
         xcomp = dumpData['posComp'][0] / cgs.au
         ycomp = dumpData['posComp'][1] / cgs.au
+        zcomp = dumpData['posComp'][2] / cgs.au
 
-        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
+        circleAGB =  plt.Circle((xAGB, yAGB), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
         circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleComp)
-        
+
         if setup['triple_star']==True:
             xcomp_in = dumpData['posComp_in' ][0] / cgs.au
             ycomp_in = dumpData['posComp_in' ][1] / cgs.au
             zcomp_in = dumpData['posComp_in' ][2] / cgs.au
-            if orbital: circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
-            else:       circleComp_in = plt.Circle((xcomp_in, zcomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
+            if orbital: circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp, transform=ax.transData._b, color="black", zorder=10)
+            else:       circleComp_in = plt.Circle((xcomp_in, zcomp_in),rAccComp, transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleComp_in)
-            
+        if setup['quadruple_star']==True:#nog verderdoen
+            print('2d quad density')
+            xcomp_in = dumpData['posComp_in' ][0] / cgs.au
+            ycomp_in = dumpData['posComp_in' ][1] / cgs.au
+            zcomp_in = dumpData['posComp_in' ][2] / cgs.au
+            xcomp_in2 = dumpData['posComp_in2' ][0] / cgs.au
+            ycomp_in2 = dumpData['posComp_in2' ][1] / cgs.au
+            zcomp_in2 = dumpData['posComp_in2' ][2] / cgs.au
+            print(xcomp_in,ycomp_in,zcomp_in)
+            print(xcomp_in2,ycomp_in2,zcomp_in2)
+            if orbital:
+                circleComp_in = plt.Circle(np.hypot((xcomp_in, ycomp_in),0),  rAccComp, transform=ax.transData._b, color="black", zorder=10)
+                print('orbital')
+                circleComp_in2 = plt.Circle(np.hypot((xcomp_in2, ycomp_in2),0),  rAccComp, transform=ax.transData._b, color="blue", zorder=10)
+            else:
+                circleComp_in = plt.Circle((xcomp_in, zcomp_in),  rAccComp, transform=ax.transData._b, color="black", zorder=10)
+                circleComp_in2 = plt.Circle((xcomp_in2, zcomp_in2),  rAccComp, transform=ax.transData._b, color="blue", zorder=10)
+            ax.add_artist(circleComp_in)
+            ax.add_artist(circleComp_in2)
+
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -193,7 +214,7 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
 
 
 '''
-Makes one slice plot 
+Makes one slice plot
 
 INPUT
     - ax        is given subplot
@@ -206,9 +227,9 @@ INPUT
 def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, rAccComp, rAccComp_in, velocity_vec = False):
     # colormap per parameter
     cm = {'rho': plt.cm.get_cmap('inferno'),
-          'speed': plt.cm.get_cmap('CMRmap'),
+          'speed': plt.cm.get_cmap('YlGnBu_r'),
           #'Tgas': plt.cm.get_cmap('RdYlGn'),
-          'Tgas': plt.cm.get_cmap('hot'), #nipy_spectral
+          'Tgas': plt.cm.get_cmap('plasma_r'), #nipy_spectral
           'tau': plt.cm.get_cmap('viridis_r'),
           'kappa': plt.cm.get_cmap('Spectral_r'),
           'Tdust': plt.cm.get_cmap('Spectral_r'),
@@ -239,7 +260,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             xcomp_in = dumpData['posComp_in'][0] / cgs.au
             ycomp_in = dumpData['posComp_in'][1] / cgs.au
             zcomp_in = dumpData['posComp_in'][2] / cgs.au
-            
+
 
     gamma = setup["gamma"]
     axPlot = None
@@ -248,7 +269,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             data = smooth[zoom]['smooth_z'][par]
         else:
             data = np.log10(smooth[zoom]['smooth_z'][par])
-            
+
         if mesh == False:
             axPlot = ax.scatter(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au, s=5,
                                 c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
@@ -300,7 +321,7 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
                 if setup['triple_star']==True:
                     circleComp_in = plt.Circle((xcomp_in, zcomp_in), rAccComp_in, transform=ax.transData._b,
                                         color="black", zorder=10)
-                    ax.add_artist(circleComp_in)                    
+                    ax.add_artist(circleComp_in)
 
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="7%", pad=0.15)
@@ -322,9 +343,9 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
                     pos = np.array([xcomp_in,ycomp_in,zcomp_in])
                     circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b,
                                         color="black", zorder=10)
-                    ax.add_artist(circleComp_in) 
-                
-                
+                    ax.add_artist(circleComp_in)
+
+
 
     else:
         if ax == axs[2] or ax == axs[4] or ax == axs[6]:
@@ -493,18 +514,25 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], obse
     rAccComp = 0
     if not setup["single_star"]:
         theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
-        rAccComp = setup['rAccrComp']
+        print(setup)
+        if 'rAccrComp' in setup:
+            rAccComp = setup['rAccrComp']
+        else:
+            rAccComp = setup['rAccrComp_in']
         if rAccComp <= 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"]):
             rAccComp = 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"])
         if setup['triple_star']:
             rAccComp_in = setup['rAccrComp_in']
+        if setup['quadruple_star']:
+            rAccComp_out1 = setup['rAccrComp_out1']
+            rAccComp_out2 = setup['rAccrComp_out2']
 
     limits = {}
     for observable in observables:
         limits[observable] = {}
         for zoom in zoomin:
             limits[observable][zoom] = [0.,0.]
-            
+
     # Ranges are the same as for '/gamma/non_isowind/gamma1.4/global'
     if "global" in run:
         if "rho" in observables:
@@ -580,7 +608,7 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], obse
             limits["Gamma"][2]  = [0., 1.]
             limits["Gamma"][5]  = [0., 1.]
             limits["Gamma"][10] = [0., 1.]
-    
+
     elif customRanges:
         if "rho" in observables:
             limits["rho"][1]  = [-19, -14]
@@ -699,7 +727,7 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], obse
         densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number, orbital=False)
         allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccComp_in, observables, number = number)
 
-    
+
 def findBounds(data, log = False, round = False):
     filtered_data = data
     result = np.zeros(2)
@@ -733,7 +761,8 @@ def findBounds(data, log = False, round = False):
 def planeCoordinates(n, x, y, x_comp, y_comp):
     r = np.zeros(shape=(n, n))
     dot_product = x * x_comp + y * y_comp
-    r[dot_product < 0] = -np.hypot(x[dot_product < 0], y[dot_product < 0])
-    r[dot_product >= 0] = np.hypot(x[dot_product >= 0], y[dot_product >= 0])
+    neg_indices = dot_product < 0#r[dot_product < 0] = -np.hypot(x[dot_product < 0], y[dot_product < 0]), old code
+    r[neg_indices] = -np.hypot(x[neg_indices], y[neg_indices])
+    r[~neg_indices] = np.hypot(x[~neg_indices], y[~neg_indices])#r[dot_product >= 0] = np.hypot(x[dot_product >= 0], y[dot_product >= 0])
 
     return r

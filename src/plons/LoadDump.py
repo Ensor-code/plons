@@ -2,6 +2,7 @@ import numpy                    as np
 import math                     as math
 import os
 import sys
+import time
 
 # Import plons scripts
 import plons.PhysicalQuantities       as pq
@@ -9,13 +10,13 @@ import plons.GeometricalFunctions     as gf
 import plons.ConversionFactors_cgs    as cgs
 
 '''
-Loads the final full dump of a phantom model, given the number, in cgs-units 
-    
+Loads the final full dump of a phantom model, given the number, in cgs-units
+
 INPUT:
     - 'run'   is the number of the run specifically           [str]
     - 'loc'   is the directory where the model is located     [str]
     - 'setup' is the setup data                               [dict]
-    
+
 RETURNS
     a dictionary containing the data from the dump (all units in cgs)
 '''
@@ -34,54 +35,73 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
 
     # make filename of this filenumber
     fileName       = runName+'/{0:s}_{1:05d}'.format(userPrefix, index)
-
     # reading the dumpfile
     dump = read_dump(fileName)
 
+    print('Dump file read')
     unit_dist = dump['units']['udist']
     unit_mass = dump['units']['umass']
     unit_time = dump['units']['utime']
-    
+
     unit_velocity = unit_dist/unit_time
     unit_density  = unit_mass/unit_dist**3
     unit_pressure = unit_mass/(unit_dist*unit_time**2)
     unit_ergg     = unit_velocity**2
     unit_energ    = unit_mass*unit_ergg
     unit_opacity  = unit_dist**2/unit_mass
-
+    xarray=dump["blocks"][1]["data"]["x"] * unit_dist
+    yarray=dump["blocks"][1]["data"]["y"] * unit_dist
+    zarray=dump["blocks"][1]["data"]["z"] * unit_dist
+    marray=dump["blocks"][1]["data"]["m"] * unit_mass
     # Data of the two stars
     # AGB star
-    xAGB     = dump["blocks"][1]["data"]["x"][0] * unit_dist
-    yAGB     = dump["blocks"][1]["data"]["y"][0] * unit_dist
-    zAGB     = dump["blocks"][1]["data"]["z"][0] * unit_dist
+    xAGB     = xarray[0]
+    yAGB     = yarray[0]
+    zAGB     = zarray[0]
     posAGB   = [xAGB, yAGB, zAGB]
-    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
-    massAGB  = dump["blocks"][1]["data"]["m"][0] * unit_mass
+    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)
+    massAGB  = marray[0]
     lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
-
     # companion
     if not setup["single_star"]:
-        xComp    = dump["blocks"][1]["data"]["x"][1] * unit_dist
-        yComp    = dump["blocks"][1]["data"]["y"][1] * unit_dist
-        zComp    = dump["blocks"][1]["data"]["z"][1] * unit_dist
+        xComp    = xarray[1]
+        yComp    = yarray[1]
+        zComp    = zarray[1]
         posComp  = [xComp, yComp, zComp]
         rComp    = gf.calc_r(xComp, yComp, zComp)
-        massComp = dump["blocks"][1]["data"]["m"][1] * unit_mass
+        massComp = marray[1]
         rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
 
         if setup['triple_star']:
             # inner companion
-            xComp_in    = dump["blocks"][1]["data"]["x"][2] * unit_dist
-            yComp_in    = dump["blocks"][1]["data"]["y"][2] * unit_dist
-            zComp_in    = dump["blocks"][1]["data"]["z"][2] * unit_dist
+            xComp_in    = xarray[2]
+            yComp_in    = yarray[2]
+            zComp_in    = zarray[2]
             posComp_in  = [xComp_in, yComp_in, zComp_in]
             rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
-            massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
+            massComp_in = marray[2]
+        if setup['quadruple_star']:
+            #0 is agb, 1 is outer, 2 is close companion, 3 is outer
+
+            xComp_in    = xarray[2]
+            yComp_in    = yarray[2]
+            zComp_in    = zarray[2]
+            posComp_in  = [xComp_in, yComp_in, zComp_in]
+            rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
+            massComp_in = marray[2]
+
+            xComp_out    = xarray[3]
+            yComp_out    = yarray[3]
+            zComp_out    = zarray[3]
+            posComp_in2  = [xComp_out, yComp_out, zComp_out]
+            rComp_out    = gf.calc_r(xComp_out, yComp_out, zComp_out)
+            massComp_out = marray[3]
+
 
     containsTau  = "tau" in dump["blocks"][0]["data"]
     containsTauL = "tau_lucy" in dump["blocks"][0]["data"]
     bowenDust    = "bowen_kmax" in setup
-    
+
     x = dump["blocks"][0]["data"]["x"]
     y = dump["blocks"][0]["data"]["y"]
     z = dump["blocks"][0]["data"]["z"]
@@ -98,7 +118,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     # filter[-1] = False
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [filter] * unit_dist          # position coordinates          [cm]
-    y     = y                     [filter] * unit_dist     
+    y     = y                     [filter] * unit_dist
     z     = z                     [filter] * unit_dist
     mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
     vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]
@@ -108,15 +128,17 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
+
+
     if containsTau:
-        tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth  
+        tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth
     if containsTauL:
-        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth  
+        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth
     if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
     else: temp = pq.getTemp(dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
     if bowenDust:
-        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
+        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]
     if setup['isink_radiation'] == 0: Gamma = 0.
     if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
     if bowenDust:
@@ -126,29 +148,15 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         else:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB)
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
-        
-    # σ     = 5.670374419e-8 # W m^-2 K^-4
-    # Tdust = (np.load(dir+'Jfull.npy')*np.pi/σ)**(1/4)
-    # kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
-    # rho   = np.load(dir+'Errfull.npy')
-    # Gamma = np.load(dir+'Gamma.npy')
-    # x     = np.load(dir+'xtemp.npy')*unit_dist
-    # y     = np.load(dir+'ytemp.npy')*unit_dist
-    # z     = np.load(dir+'ztemp.npy')*unit_dist
-    # h     = np.load(dir+'htemp.npy')*unit_dist
 
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
-
-        
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
-        
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
-    
     # output
     data = {'position'      : position,              # [cm]
             'velocity'      : velocity,              # [cm/s]
@@ -156,14 +164,14 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             'mass'          : mass,                  # [g]
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
-            'Tgas'          : temp,                  # [K] 
+            'Tgas'          : temp,                  # [K]
             'speed'         : speed,                 # [cm/s]
-            'mach'          : mach,                  
-            'vtvv'          : vtvv,     
+            'mach'          : mach,
+            'vtvv'          : vtvv,
             'fileNumber'    : index,
             'r'             : r,                     # [cm]
-            'phi'           : phi,     
-            'theta'         : theta,     
+            'phi'           : phi,
+            'theta'         : theta,
             'cs'            : cs,                    # [cm]
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
@@ -184,10 +192,15 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         data["posComp_in" ] = posComp_in               # [cm]
         data['rComp_in'   ] = rComp_in                 # [cm]
         data['massComp_in'] = massComp_in              # [g]
-        
+    if setup['quadruple_star']:#hier nog verderdoen
+        data["posComp_in" ] = posComp_in               # [cm]
+        data["posComp_in2" ]= posComp_in2
+        data['rComp_in'   ] = rComp_in                 # [cm]
+        data['massComp_in'] = massComp_in              # [g]
+
     if containsTau:
         data["tau"        ] = tau
-        
+
     if containsTauL:
         data["tauL"       ] = tauL
 
@@ -195,13 +208,13 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         data["kappa"      ] = kappa                  # [cm^2/g]
         data["Tdust"      ] = Tdust
 
-    
+
     return data
 
 '''
 Cut out the inner part of the wind, since here the wind is not yet self-similar.
       Suited only for binary model
-    
+
 INPUT:
     - 'factor' is the factor of the semi-major axis you want to cut out [float]
     - 'bound'  is a chosen boundary of the model                        [float]
@@ -215,7 +228,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
 
     position = dump['position'].transpose()
     velocity = dump['velocity'].transpose()
-    
+
     x     = position[0]
     y     = position[1]
     z     = position[2]
@@ -252,22 +265,22 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     if "Tdust" in dump: Tdust = Tdust [filter]
     h     = h                         [filter]             # cm
     r     = r                         [filter]
-    
+
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
 
-    
+
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
-    
+
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
-  
- 
-    
+
+
+
     # output
     data = {'position'      : position,      # [cm]
             'velocity'      : velocity,      # [cm/s]
@@ -275,13 +288,13 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
             'u'             : u,             # [erg/g]
-            'Tgas'          : temp,          # [K]  
+            'Tgas'          : temp,          # [K]
             'speed'         : speed,         # [cm/s]
-            'mach'          : mach,          
+            'mach'          : mach,
             'vtvv'          : vtvv,
             'r'             : r,             # [cm]
-            'phi'           : phi,           
-            'theta'         : theta,         
+            'phi'           : phi,
+            'theta'         : theta,
             'cs'            : cs             # [cm]
             }
     if "tau"   in dump: data["tau"]   = tau
@@ -289,7 +302,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     if "kappa" in dump: data["kappa"] = kappa
     if "Gamma" in dump: data["Gamma"] = Gamma
     if "Tdust" in dump: data["Tdust"] = Tdust
-    
+
     return data
 
 # Pick last full dump file from model
@@ -297,9 +310,9 @@ def findLastFullDumpIndex(userPrefix, setup, runName):
     listDumps = sortedDumpList(userPrefix, runName)
     lastFile = listDumps[-1]
     lastDumpIndex = int(lastFile.lstrip("%s_0" % userPrefix))
-   
+
     # Nearest full dump to max
-    lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump']) 
+    lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump'])
     return lastFullDumpIndex
 
 def findAllFullDumpIndices(userSettingsDictionary, setup, runName):
@@ -308,6 +321,7 @@ def findAllFullDumpIndices(userSettingsDictionary, setup, runName):
     lastFullDumpIndex = findLastFullDumpIndex(userPrefix, setup, runName)
     fullDumpLists = np.arange(0, lastFullDumpIndex + 1, setup['nfulldump'], dtype=int)
     return fullDumpLists
-
 def sortedDumpList(userPrefix, runName):
-    return np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not (".asc" in x or ".dat" in x)), os.listdir(runName))))
+    with os.scandir(runName) as entries:
+        file_list = [entry.name for entry in entries if entry.is_file() and ("%s_" % userPrefix in entry.name) and (not (".asc" in entry.name or ".dat" in entry.name))]
+    return np.sort(file_list)

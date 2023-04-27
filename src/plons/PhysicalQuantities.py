@@ -1,6 +1,6 @@
 import math                     as math
 import numpy                    as np
-
+import numexpr as ne
 #import plons scripts
 import plons.ConversionFactors_cgs    as cgs
 import plons.GeometricalFunctions     as gf
@@ -46,7 +46,7 @@ def getGamma(kappa, lumAGB, massAGB, tau = 0):
 Returns the speed of sound [km/s] of the local medium: c_s = sqrt(gamma*P/rho), with gamma = cst, P in [Ba] and rho in [g/cm^3]
 '''
 def getSoundSpeed(pressure, density, gamma):
-    soundSpeed = np.sqrt((gamma*pressure)/(density))      
+    soundSpeed = np.sqrt((gamma*pressure)/(density))
     return soundSpeed                                   # cm/s
 
 '''
@@ -62,24 +62,17 @@ Returns the orbital velocity [cm/s] of the binary system.
       period in seconds, orbSep in AU
 '''
 def getOrbitalVelocity(period, orbSep):
-    v_orb = (2*np.pi*orbSep*cgs.au)/(period)      
+    v_orb = (2*np.pi*orbSep*cgs.au)/(period)
     return v_orb                                    # cm/s
 
 '''
-Get the radial and tangential velocity 
+Get the radial and tangential velocity
     x, y, and phi are lists
 '''
-def getRadTanVelocity(x,y,v_x,v_y):
-    phi = []
-    for i in range(len(y)):
-        phi.append(math.atan2(y[i],x[i]))
-    #v_rad = []
-    v_tan = []
-    for i in range(len(x)):
-        #v_rad.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[0]))
-        v_tan.append(np.abs(gf.coordTransf(v_x[i],v_y[i],phi[i])[1]))
-    return np.array(v_tan)
-
+def getRadTanVelocity(x, y, v_x, v_y):
+    phi = np.arctan2(y, x)
+    v_rad, v_tan = gf.coordTransf(v_x, v_y, phi)
+    return np.abs(v_tan)
 '''
 Calculate hill sphere for a certain object.
 '''
@@ -99,8 +92,8 @@ The epsilon parameter gives an indication of morphological classification:
     >> 1 : spherically symmetric
     ~  1 : regular spiral
     << 1 : complex
-It is defined as the ratio of enery densities: 
-    epsilon = kin_energy / grav_energy 
+It is defined as the ratio of enery densities:
+    epsilon = kin_energy / grav_energy
             = (v_wind**2 * sma) / ((24 * G**3 * M_comp**2 * M_AGB)^(1/3))
 '''
 def getEpsilon(vwind, sma, mComp, mAGB):
@@ -127,7 +120,3 @@ def getPolarAngleCompanion(x, y):
         theta = 2.*np.pi - theta
 
     return theta
-    
-    
-
-

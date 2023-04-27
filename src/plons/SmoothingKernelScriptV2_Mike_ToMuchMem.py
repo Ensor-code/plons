@@ -1,19 +1,19 @@
 import healpy               as hp
 import numpy                as np
 import numba                as nb
-
+import itertools
 from scipy.spatial import cKDTree
-
+import math
 
 '''
 Gives the function f which is used by the function 'smoothingKernelPhantom'
 From: Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031; Eq. 17
 '''
-@nb.njit(parallel=True)
+@nb.njit()
 def get_f(d):
     f = np.zeros_like(d)
 
-    for i in nb.prange(len(d)):
+    for i in range(len(d)):
         ind1 = (d[i] >= 0) & (d[i] < 1)
         f[i][ind1] = 1-(3/2)*np.square(d[i][ind1])+(3/4)*np.power(d[i][ind1],3)
 
@@ -60,9 +60,10 @@ Get a 2D array containing the [x,y,z]-components of all pixels
           shape == 'y' --> xz-plane
 '''
 def getPixels(shape, n, r, data, bound):
-
     pixCoord = np.zeros(n)
     # for a spherical slice --> use healpy
+    # define the pixels for planar slices
+    pix = np.linspace(-np.abs(bound), np.abs(bound), n)
     if shape == 'r':
         # define the amount of pixels for the spherical plot: always of the form 12*n**2
         npix = 12*n**2
@@ -79,70 +80,38 @@ def getPixels(shape, n, r, data, bound):
         #    AGB star, with radius the orbital separation
         pixCoord = radius*pix + np.array(data['AGBcoord'])
 
-    # for a planar slice: orbital plane (xy-plane)
+    x, y = np.meshgrid(pix, pix)
+    temp=x.ravel()
     if shape == 'z':
-        # get pixels
-        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
-
-        pixCoord = []
-        for i in range(len(pix)):
-            for j in range(len(pix)):
-                if bound >  0:
-                    pixCoord.append([pix[i],pix[j],0])
-                else:
-                    pixCoord.append([pix[i]+6*1.496e13,pix[j]-2*1.496e13,0])
-
-        pixCoord = np.array(pixCoord)
-        #print(pixCoord)
+        if bound > 0:
+            pixCoord = np.stack((x.ravel(), y.ravel(), np.zeros_like(temp)), axis=1)
+        else:
+            x, y = np.meshgrid(pix + 6*1.496e13, pix - 2*1.496e13)
+            pixCoord = np.stack((x.ravel(), y.ravel(), np.zeros_like(x.ravel())), axis=1)
 
     # xz-plane
     if shape == 'y':
         # get pixels
-        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
-
-        pixCoord = []
-        for i in range(len(pix)):
-            for j in range(len(pix)):
-                pixCoord.append([pix[i], 0, pix[j]])
-
-        pixCoord = np.array(pixCoord)
+        z=y
+        pixCoord = np.stack((x.ravel(), np.zeros_like(temp), z.ravel()), axis=1)
         #print(pixCoord)
 
     # x-line (y=0=z) yz-plane
     if shape == 'line_x':
-        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
-        # pix_y = np.linspace(-r,r,n)
-
-        pixCoord = []
-        for i in range(len(pix)):
-            # for j in range(len(pix_y)):
-            pixCoord.append([pix[i],0,0])
-
-        pixCoord = np.array(pixCoord)
+        pixCoord = np.stack((x.ravel(),np.zeros_like(temp),np.zeros_like(temp)), axis=1)
 
     # y-line (x=0=z)
     if shape == 'line_y':
-        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
-        # pix_y = np.linspace(-r,r,n)
-
-        pixCoord = []
-        for i in range(len(pix)):
-            # for j in range(len(pix_y)):
-            pixCoord.append([0,pix[i],0])
-
-        pixCoord = np.array(pixCoord)
+        pixCoord = np.stack((np.zeros_like(temp),y.ravel(),np.zeros_like(temp)), axis=1)
 
     # z-line (y=posAGB=x)
     if shape == 'line_z':
-        pix = np.linspace(-np.abs(bound),np.abs(bound), n)
-        # pix_y = np.linspace(-r,r,n)
+        x = data['posAGB'][0]*np.ones(n)
+        y = data['posAGB'][1]*np.ones(n)
+        z = pix
+        # combine the x, y, and z coordinates into a 3D array of pixel coordinates
+        pixCoord = np.column_stack((x.ravel(), y.ravel(), z.ravel()))
 
-        pixCoord = []
-        for i in range(len(pix)):
-            # for j in range(len(pix_y)):
-            pixCoord.append([data['posAGB'][0], data['posAGB'][1], pix[i]])
-
-        pixCoord = np.array(pixCoord)
 
     return pixCoord
 
@@ -158,19 +127,15 @@ Get the values on a healpy sphere for n pixels, 'neighbours' neighbours for a li
       'theta' is the angle between the x-axis and companion
 '''
 def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta, mesh=False, vec=False):
-
     pixCoord    = getPixels(shape, n, r, data, bound)
-
     # Rotate the plane/line to align with companion
     if shape != 'line_z':
         pixCoord = rotatePixCoordAroundZ(theta, pixCoord)
-
     # define all nearest neighbours
     tree = cKDTree(data['position'])
 
     # for every pixel in the spherical slice (sphere), get its "neighbor" nearest neighbours
     (distances, closest_points) = tree.query(pixCoord, neighbours)
-
     '''
     get values of certain parameters in the grid for the nearest neighbours
         gives the position (x,y,z) for all the indices of the closest neighbours (closest_closest_points_60)
@@ -189,7 +154,6 @@ def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta
     for param in params:
         # Get the corresponding values for the parameter 'param' for every pixel, by param = sum(param_i*W_i), for i ~ [0,neighbours]
         results[param] = getParamSmoothingKernel(closest_points, W_ab, data[param])
-
     if shape == 'r':
         return results
 
@@ -257,31 +221,31 @@ def convertToMesh(n, x, y, z, data_params, params, theta):
 
     return [X, Y, Z, data_params]
 
+
 @nb.njit()
 def rotatePixCoordAroundZ(theta, pixCoord):
     n = len(pixCoord)
+    costheta= math.cos(theta)
+    sintheta= math.sin(theta)
     x = pixCoord[:, 0]
     y = pixCoord[:, 1]
     z = pixCoord[:, 2]
 
-    x_rot = x * np.cos(theta) - y * np.sin(theta)
-    y_rot = x * np.sin(theta) + y * np.cos(theta)
+    x_rot = x * costheta - y * sintheta
+    y_rot = x * sintheta + y * costheta
     z_rot = z
 
-    rotatedArray = np.zeros(shape=(n, 3))
-    rotatedArray[:, 0] = x_rot
-    rotatedArray[:, 1] = y_rot
-    rotatedArray[:, 2] = z_rot
-
-    return rotatedArray
+    return np.column_stack((x_rot, y_rot, z_rot))
 
 @nb.njit()
 def rotateOrbitalPlaneAroundZ(theta, X, Y, Z):
     # Subtract the angle of the companion from the orbital plane
     theta = -theta
+    costheta=math.cos(theta)
+    sintheta=math.sin(theta)
 
-    X_rot = X * np.cos(theta) - Y * np.sin(theta)
-    Y_rot = X * np.sin(theta) + Y * np.cos(theta)
+    X_rot = X * costheta - Y * sintheta
+    Y_rot = X * sintheta + Y * costheta
     Z_rot = Z
 
     return [X_rot, Y_rot, Z_rot]

@@ -9,23 +9,22 @@ import plons.ConversionFactors_cgs    as cgs
 '''
 Only load the prefix.in and prefix.setup files to get general information about the phantom model
       Suited for binary and single model
-      
+
 INPUT:
     - 'run' is the number of the run specifically           [str]
     - 'loc' is the directory where the model is located     [str]
-    
+
 RETURNS
-    a dictionary containing the info from the setup files 
+    a dictionary containing the info from the setup files
         (!! check units, they are not all in SI or cgs)
 
 '''
 def LoadSetup(run, loc, userSettingsDictionary):
     runName = os.path.join(loc, run)
     userPrefix = userSettingsDictionary["prefix"]
-
     # load the prefix.in & prefix.setup file
     setup = {}
-    try:  
+    try:
         with open(os.path.join(runName,'%s.setup'%userPrefix), 'r') as f:
             lines = f.readlines()
             for string in lines:
@@ -42,6 +41,9 @@ def LoadSetup(run, loc, userSettingsDictionary):
                             stringName = 'triple_star'
                             if int(line[2]) == 2: setup[stringName] = True
                             else: setup[stringName] = False
+                            stringName = 'quadruple_star'
+                            if int(line[2]) == 3: setup[stringName] = True
+                            else: setup[stringName] = False
 
                         # Floats
                         else:
@@ -51,15 +53,20 @@ def LoadSetup(run, loc, userSettingsDictionary):
                             elif stringName == 'binary2_a' : stringName = 'sma_in_ini'
                             elif stringName == 'wind_gamma' or stringName == "temp_exponent": stringName = 'gamma'
                             elif stringName == 'eccentricity': stringName = 'ecc'
-                            elif stringName == 'binary2_e' : stringName = 'ecc_in'                            
+                            elif stringName == 'binary2_e' : stringName = 'ecc_in'
                             elif stringName == 'secondary_racc': stringName = 'rAccrComp'
                             elif stringName == 'accr2b' : stringName = 'rAccrComp_in'
                             elif stringName == 'racc2b' : stringName = 'rAccrComp_in'
+                            #quad
+                            elif stringName == 'q3' : stringName = 'q3'
+                            elif stringName == 'binary3_a' : stringName = 'sma_out_binary'
+                            elif stringName == 'racc3a' : stringName = 'rAccrComp_out1'
+                            elif stringName == 'racc3b' : stringName = 'rAccrComp_out2'
 
                             setup[stringName] = float(line[2])
-                            
-                            if stringName == 'q2': 
-                                stringName = 'massComp_in_ini'    
+
+                            if stringName == 'q2':
+                                stringName = 'massComp_in_ini'
                                 setup[stringName] = float(line[2])*setup['massAGB_ini']
 
 
@@ -97,29 +104,39 @@ def LoadSetup(run, loc, userSettingsDictionary):
         print(" ERROR: No %s.setup file found!"%userPrefix)
         print('')
         exit()
-    
-    
+
+
     # Additional Parameters
     massAGB_ini = setup["massAGB_ini"]
     v_ini = setup["v_ini"]
     if setup["single_star"] == False:
-        massComp_ini = setup["massComp_ini"]
+        massComp_ini = setup["massComp_ini"] #Initial mass companion before split
         sma = setup["sma_ini"]
         period = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_ini * cgs.Msun, sma)           # [s]
         #v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                           # [km/s]
         Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au         # [au]
         if setup['triple_star']==True:
-            massComp_in_ini = setup["massComp_in_ini"]        
+            massComp_in_ini = setup["massComp_in_ini"]
             sma_in = setup["sma_in_ini"]
             period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun, massComp_ini * cgs.Msun, sma)  # [s]
             period_in = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_in_ini * cgs.Msun, sma_in)           # [s]
             Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au            # [au]
             setup["period_in"] = period_in
             setup["Rcap_in"] = Rcap_in
+        elif setup['quadruple_star']==True:
+            massComp_in_ini = setup["massComp_in_ini"]
+            sma_in = setup["sma_in_ini"]
+            period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun, massComp_ini * cgs.Msun, sma)  # [s], wide outer period
+            period_in = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_in_ini * cgs.Msun, sma_in)           # [s], period inner binary
+            period_in2 = pq.getPeriod(massComp_ini*setup['q3'] * cgs.Msun, massComp_ini*(1-setup['q3']) * cgs.Msun, setup['sma_out_binary'])           # [s], period outer binary
+            Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au            # [au]
+            setup["period_in"] = period_in
+            setup["period_in2"] = period_in
+            setup["Rcap_in"] = Rcap_in
 
         setup["period"] = period
         setup["Rcap"] = Rcap
         #setup["v_orb"] = v_orb
 
-    
+
     return setup

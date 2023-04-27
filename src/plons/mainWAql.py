@@ -22,7 +22,7 @@ import plons.ArchimedianSpiral            as ars
 #print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
 
-options = { '1': '(1) 2D slice plots', 
+options = { '1': '(1) 2D slice plots',
             '2': '(2) 1D line plots & tube plots',
             '3': '(3) velocity related quantities and Morphological parameters',
             '4': '(4) Cummulative mass fraction',
@@ -60,7 +60,7 @@ def run_main(outputloc,runParts,numbers, models):
             os.makedirs(os.path.join(saveloc, 'animation'))
         except OSError:
             pass
-            
+
         print('')
         print('Data is loading...')
         [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound, userSettingsDictionary)
@@ -68,9 +68,9 @@ def run_main(outputloc,runParts,numbers, models):
         print('')
         for part in runParts:
             if part == '0':
-                for i in options: 
+                for i in options:
                     runPart(i, run, saveloc, dumpData, setup, sinkData, outerData)
-            else: 
+            else:
                 runPart(part, run, saveloc, dumpData, setup, sinkData, outerData)
         print('')
 
@@ -92,17 +92,17 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
             sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
         else:
             sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
-        
+
     if part == '2':
         print('')
         print('(2)  Start calculations for the radial structure plots.')
         rs.radialStructPlots(run, saveloc, dumpData, setup)
 
-    if part == '3':  
+    if part == '3':
         print('')
         print('(3) Start calculations for terminal velocity...')
         tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
-        
+
     if part == '4':
         print('')
         print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
@@ -110,7 +110,7 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
             cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
         else:
             cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-            
+
     if part == '5':
         print('')
         if setup['single_star']:
@@ -119,7 +119,7 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         else:
             print('(5)  Start calculations for orbital evolution...')
             ov.orbEv_main(run, saveloc, sinkData, setup)
-        
+
     if part == '6':
         print('')
         print('(6)  Start calculating for the 1D spherical plots')

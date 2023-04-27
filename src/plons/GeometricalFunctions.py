@@ -1,13 +1,14 @@
 import numpy    as np
 import math     as math
-
+import numexpr as ne
+import numba as nb
 
 '''
 README:
 
-This script contains geometrical function for defining planes, shells, 
-distances to planes, normals of planes,... needed for the first script 
-ever to plot PHANTOM data. Many of these functions might not be 
+This script contains geometrical function for defining planes, shells,
+distances to planes, normals of planes,... needed for the first script
+ever to plot PHANTOM data. Many of these functions might not be
 relevant anymore, but might ever come in handy.
 
 If you ever need to define planes analytically with python, this is where to look :)
@@ -27,55 +28,41 @@ Useful functions:
 Perform a coordinate transformation (just a rotation) of two dimensions (x,y) with a given angle alpha. ---> input is array OR floats
   Can also input (x,z) or (y,z) if this is needed.
 '''
-def coordTransf(x,y,alpha):
-    if x is list:
-        x_transf = []
-        y_transf = []
-        for i in range(len(x)):
-            x_transf.append(x[i]*np.cos(alpha)+y[i]*np.sin(alpha))
-            y_transf.append(-x[i]*np.sin(alpha) +y[i]*np.cos(alpha))
-    else:
-        x_transf = x*math.cos(alpha)+y*math.sin(alpha)
-        y_transf = -x*math.sin(alpha) +y*math.cos(alpha)
+def coordTransf(x, y, alpha):
+    x, y, alpha = np.asarray(x), np.asarray(y), np.asarray(alpha)
+    x_transf = x * np.cos(alpha) + y * np.sin(alpha)
+    y_transf = -x * np.sin(alpha) + y * np.cos(alpha)
     return x_transf, y_transf
 
 
 '''
-Get the radial and tangential velocity 
+Get the radial and tangential velocity
   x, y, and phi are lists
 '''
-def getRadTanVelocity(x,y,v_x,v_y):
-    phi = []
-    for i in range(len(y)):
-        phi.append(math.atan2(y[i],x[i]))
-    #phi = TransformToSpherical(x,z,y)[1]
-    v_rad = []
-    v_tan = []
-    for i in range(len(x)):
-        v_rad.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[0]))
-        v_tan.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[1]))
-    return v_rad,v_tan 
+def getRadTanVelocity(x, y, v_x, v_y):
+    phi = np.arctan2(y, x)
+    v_rad, v_tan = gf.coordTransf(v_x, v_y, phi)
+    return np.abs(v_rad),np.abs(v_tan)
 
 '''
 Get ratio between the radial and tangential velocity
 '''
 def getRatioRadTan(v_r,v_t):
-    ratio = []
-    for i in range(len(v_r)):
-        ratio.append(v_r[i]/v_t[i])
-    return np.abs(ratio)
+    ratio = np.abs(np.array(v_r) / np.array(v_t))
+    return ratio
 
 '''
 Return the position of all particles in function of radius with the AGB star as centre
 '''
-def getRadiusCoordinate(position,AGBcoord):
+def getRadiusCoordinateOld(position,AGBcoord):
     position = position.transpose()
     x = position[0]
     y = position[1]
     z = position[2]
     r = np.sqrt((x-AGBcoord[0])**2+(y-AGBcoord[1])**2+(z-AGBcoord[2])**2)
     return r
-
+def getRadiusCoordinate(position, AGBcoord):
+    return np.sqrt(np.sum(np.subtract(position,AGBcoord)**2,axis=1))
 
 '''
 Transform from cartesian to spherical coordinates
@@ -83,38 +70,23 @@ Transform from cartesian to spherical coordinates
 NOTE: returns np.array
 '''
 def TransformToSpherical(x,y,z):
-    rlist = []
-    phi = []
-    theta = []
-    for i in range(len(x)):
-    # r component
-        r = np.sqrt(x[i]**2+y[i]**2+z[i]**2)
-        rlist.append(r)
-    # phi component
-        if x[i] >= 0 and y[i] >= 0:
-            phi.append(math.atan(y[i]/x[i]))
-        if x[i] < 0 and y[i] < 0:
-            phi.append(math.atan(y[i]/x[i])+np.pi)
-        if x[i] < 0 and y[i] > 0:
-            phi.append(math.atan(y[i]/x[i])+np.pi)
-        if x[i] > 0 and y[i] < 0:
-            phi.append(math.atan(y[i]/x[i])+2*np.pi)
-    # theta component
-        theta.append(math.acos(z[i]/r))
-    return np.array(rlist), np.array(phi), np.array(theta)
+    r = np.sqrt(x**2 + y**2 + z**2)
+    phi = np.arctan2(y, x)
+    theta = np.arccos(z / r)
+    return r, phi, theta
 
 '''
 Calculate radius from the centre of mass
 '''
 def calc_r(x,y,z):
-    r = np.sqrt(x**2+y**2+z**2)
+    r = np.sqrt(x**2 + y**2 + z**2)
     return r
 
 '''
 Calculate radius from the centre of mass
 '''
 def calc_r_2D(x,y):
-    r = np.sqrt(x**2+y**2)
+    r = np.hypnot(x,y)
     return r
 
 '''
@@ -122,18 +94,15 @@ Calculate azimuthal angle theta
       Returns np.array
 '''
 def calcTheta(x,y,z):
-    theta = []
-    r = calc_r(x,y,z)
-    for i in range(len(r)):
-        theta.append(math.acos(z[i]/r[i]))
-    return np.array(theta)
+    r = np.sqrt(x**2 + y**2 + z**2)
+    return np.arccos(z/r)
 
 
 
 ######-----    SHELL   -----######
 
 '''
-Get a the shell you want to model: 
+Get a the shell you want to model:
   Returns a list of indices which belong to the chosen shell
       r = [int] a certain radius where you want to take the shell
       dr = [int] thickness of the shell
@@ -165,7 +134,7 @@ def getDataInSlice(index, data, boolean, sphericalCoords):
             for i in range(len(index)-2):
                 rInSlice.append(sphericalCoords[:,index[i]])
             return np.matrix.transpose(np.array(dataInSlice)), np.matrix.transpose(np.array(rInSlice))
-        else: 
+        else:
             return np.matrix.transpose(np.array(dataInSlice))
     else:
         print('No data in this shell!')
@@ -398,7 +367,7 @@ def getAlpha(p1,p2,p3):
     c = getDistanceTwoPoints(p2,p3)
     alpha = np.arccos((b**2+c**2-a**2)/(2*b*c))
     return alpha
-    
+
 
 
 '''
@@ -418,16 +387,16 @@ def getProjectionElement(x,y,z,plane):
     a = plane[0]
     b = plane[1]
     c = plane[2]
-    d = plane[3]    
-    
+    d = plane[3]
+
     distToPlane = getDistancePlane(plane, [x,y,z])
     r = np.sqrt(x**2+y**2)
     newy = np.sqrt(r**2-distToPlane**2)
-    
+
     normal = (1/(np.sqrt(a**2+b**2+c**2)))*np.array([a,b,c])
     newOrigin = distToPlane*normal
-    
-    
+
+
     if x >= newOrigin[0] and y >= newOrigin[1]:
         newy = -newy
     if x < newOrigin[0] and y >= newOrigin[1]:
@@ -437,5 +406,3 @@ def getProjectionElement(x,y,z,plane):
     #if newOrigin[1] >= 0 and newOrigin[0] < 0:
         #r = -np.sqrt(x**2+y**2)
     return newy
-
-
