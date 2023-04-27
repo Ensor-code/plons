@@ -31,7 +31,6 @@ def create_bins(lower_bound, width, quantity):
 bins is a list of tuples, like [(0,20), (20, 40), (40, 60)],
 binning returns the smallest index i of bins so that
 bin[i][0] <= value < bin[i][1]
-
 searches the bin containing the value
 '''
 def find_bin(value, bins):

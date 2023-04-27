@@ -1,18 +1,16 @@
 import numpy    as np
 import math     as math
 import numexpr as ne
+from numpy import arctan2, sqrt
 import numba as nb
-
+import time
 '''
 README:
-
 This script contains geometrical function for defining planes, shells,
 distances to planes, normals of planes,... needed for the first script
 ever to plot PHANTOM data. Many of these functions might not be
 relevant anymore, but might ever come in handy.
-
 If you ever need to define planes analytically with python, this is where to look :)
-
 Useful functions:
     - coordinate transformation from Cartesian to spherical
     - get radius from a certain point, not the origin
@@ -30,10 +28,9 @@ Perform a coordinate transformation (just a rotation) of two dimensions (x,y) wi
 '''
 def coordTransf(x, y, alpha):
     x, y, alpha = np.asarray(x), np.asarray(y), np.asarray(alpha)
-    x_transf = x * np.cos(alpha) + y * np.sin(alpha)
-    y_transf = -x * np.sin(alpha) + y * np.cos(alpha)
+    x_transf = ne.evaluate('x * cos(alpha) + y * sin(alpha)')
+    y_transf = ne.evaluate('-x * sin(alpha) + y * cos(alpha)')
     return x_transf, y_transf
-
 
 '''
 Get the radial and tangential velocity
@@ -54,25 +51,19 @@ def getRatioRadTan(v_r,v_t):
 '''
 Return the position of all particles in function of radius with the AGB star as centre
 '''
-def getRadiusCoordinateOld(position,AGBcoord):
-    position = position.transpose()
-    x = position[0]
-    y = position[1]
-    z = position[2]
-    r = np.sqrt((x-AGBcoord[0])**2+(y-AGBcoord[1])**2+(z-AGBcoord[2])**2)
-    return r
 def getRadiusCoordinate(position, AGBcoord):
     return np.sqrt(np.sum(np.subtract(position,AGBcoord)**2,axis=1))
+
 
 '''
 Transform from cartesian to spherical coordinates
       math.atan() requiers some special attention, as you can see in the code
 NOTE: returns np.array
 '''
-def TransformToSpherical(x,y,z):
-    r = np.sqrt(x**2 + y**2 + z**2)
-    phi = np.arctan2(y, x)
-    theta = np.arccos(z / r)
+def TransformToSpherical(x,y,z, ceval=ne.evaluate):
+    r = ceval('sqrt(x**2 + y**2 + z**2)')
+    phi = ceval('arctan2(y, x)')
+    theta = ceval('arccos(z / r)')
     return r, phi, theta
 
 '''

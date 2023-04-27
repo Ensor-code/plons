@@ -58,52 +58,20 @@ def getEverything(mass, theta, rho):
     # Now we have bins corresponding to the theta values Pi2_Pi
     # Make array containing the corresponding rho and mass values for the bins:
 
-    # Create dictionaries
-    rhoBinned  = {}
-    massBinned = {}
-    start_time6 = time.time()
-    # Add zeros such that we can use .append function later
-    for i in range(len(ThetaBins)):
-        rhoBinned[i]  = [0]
-        massBinned[i] = [0]
-
-    if True:
-        ThetaBins2 = np.array(ThetaBins)
-        # Calculate the bin indices for all values in thetaPi2_Pi
-        bin_indices = np.digitize(thetaPi2_Pi * 100, ThetaBins2[:, 0])
-
-        # Add rho and mass values to corresponding bins
-        for i, (rho, mass) in enumerate(zip(rhoPi2_Pi, massPi2_Pi)):
-            rhoBinned[bin_indices[i]-1].append(rho)
-            massBinned[bin_indices[i]-1].append(mass)
-
-    # The same for pi2_0, here theta = pi2-x corresponds to thetaBin = pi2+x bin
-    if False:
-        for index in range(len(thetaPi2_0)):
-            theta = thetaPi2_0[index]
-            # This theta = pi2 - x , x = pi2-theta,
-            x = np.pi/2 - theta
-            # So theta corresponds to the theta in the bins
-            thetaBin = np.pi/2 + x
-            bin_index = tl.find_bin(thetaBin *100, ThetaBins)
-            # Add mass and rho value for that theta to that bin
-            rhoBinned[bin_index].append(rhoPi2_0[index])
-            massBinned[bin_index].append(massPi2_0[index])
-    if True:
-        # Calculate the bin indices for all values in thetaPi2_0
-        bin_indices = np.digitize((np.pi - thetaPi2_0) * 100, ThetaBins2[:, 0])
-
-        # Add rho and mass values to corresponding bins
-        for i, (rho, mass) in enumerate(zip(rhoPi2_0, massPi2_0)):
-            rhoBinned[bin_indices[i]-1].append(rho)
-            massBinned[bin_indices[i]-1].append(mass)
-
+    # Create dictionaries # Add zeros such that we can use .append function later
+    rhoBinned = {i: [0] for i in range(len(ThetaBins))}
+    massBinned = {i: [0] for i in range(len(ThetaBins))}
+    ThetaBins2 = np.array(ThetaBins)
+    # Calculate the bin indices for all values in thetaPi2_Pi
+    bin_indices = np.digitize(np.concatenate([thetaPi2_Pi, np.pi - thetaPi2_0]) * 100, ThetaBins2[:, 0])
+    for i, (rho, mass) in enumerate(zip(np.concatenate([rhoPi2_Pi, rhoPi2_0]), np.concatenate([massPi2_Pi, massPi2_0]))):
+        rhoBinned[bin_indices[i]-1].append(rho)
+        massBinned[bin_indices[i]-1].append(mass)
     # Calculate the mean rho for each thetaBin, but remove the first 0 that we had to add to make initial array
-    rhoMean = []
-    for index in range(len(rhoBinned)-1):
-        rhoMean.append(np.mean(rhoBinned[index][1:]))
-    rhoMeanSmoothened = tl.smoothen(rhoMean,4)
+    rhoMean = [np.mean(rhoBinned[index][1:]) for index in range(len(rhoBinned)-1)]
 
+
+    rhoMeanSmoothened = tl.smoothen(rhoMean,4)
     # Calculate the mass fraction for theta from pi/2 till pi/2+-pi/2
     massAccumulated   = []
     totalMassPerTheta = []
@@ -118,6 +86,7 @@ def getEverything(mass, theta, rho):
     massAccumulated.append(totalMassPerTheta[0])
     massFraction.append(massAccumulated[0]/TotalMass)
     # For each thetaBin calculate total mass for that thetaBin, and add it to the mass fraction
+    start_time6 = time.time()
     for index in range(1,len(massBinned)):
         totalMassPerTheta.append(np.sum(massBinned[index]))
         massAccumulated.append(massAccumulated[index-1]+totalMassPerTheta[index])
@@ -129,6 +98,7 @@ def getEverything(mass, theta, rho):
             index50 = index50 +1
         if massFraction[index] < 0.75:
             index75 = index75 +1
+    print('tooks %s' % [time.time()-start_time6])
     # Theta where 25/50/75 procent of mass is accumulated is upper boundary of the bin corresponding to index25/50/75
     theta25 = ThetaBins[index25][1]/100
     theta50 = ThetaBins[index50][1]/100
@@ -138,10 +108,7 @@ def getEverything(mass, theta, rho):
     rho25   = rhoMeanSmoothened[index25]
     rho50   = rhoMeanSmoothened[index50]
     rho75   = rhoMeanSmoothened[index75]
-
-    x = []
-    for i in range(len(rhoMean)):
-        x.append(i/(np.pi*100))
+    x = np.arange( len(rhoMean)) / (np.pi * 100)
 
     orbitalDens = np.mean(rhoMean[0 :25])
     polarDens   = np.mean(rhoMean[75:-1])
@@ -468,11 +435,9 @@ def CMF_meanRho(run,outloc, data, setup, factor):
             f.write('    Per = '+ str(np.round(deltaR['ratioOuter'] ,5))+'\n')
         f.write('\n')
         #f.write('\n')
-
         if setup['single_star'] == False:
             names = ['x array, to plot', 'Full - mass fract', 'Full - meanRhoSm', 'Apastron - mass fract', 'Apastron - meanRhoSm', 'Periastron - mass fract', 'Periastron - meanRhoSm']
             f.write("{: <34} {: <34} {: <34} {: <34} {: <34} {: <34} {: <34}".format(*names))
-
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 15 character width
             f.write('\n')
             for i in zip(infoForPlot['x'], infoForPlot['massFraction'][:-1], infoForPlot['meanRhoSm'],infoForPlotL['massFraction'][:-1],infoForPlotL['meanRhoSm'], infoForPlotR['massFraction'][:-1], infoForPlotR['meanRhoSm']):
