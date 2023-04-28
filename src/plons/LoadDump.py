@@ -3,12 +3,13 @@ import math                     as math
 import os
 import sys
 import time
+import pickle
 
 # Import plons scripts
 import plons.PhysicalQuantities       as pq
 import plons.GeometricalFunctions     as gf
 import plons.ConversionFactors_cgs    as cgs
-
+from readPhantomDump import read_dump
 '''
 Loads the final full dump of a phantom model, given the number, in cgs-units
 
@@ -27,7 +28,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     userPrefix = userSettingsDictionary["prefix"]
     phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
     sys.path.append(phantom_dir+"/scripts")
-    from readPhantomDump import read_dump
 
     # Pick either last dump file or user chosen file
     if number == -1: index = findLastFullDumpIndex(userPrefix, setup, runName)
@@ -36,9 +36,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     # make filename of this filenumber
     fileName       = runName+'/{0:s}_{1:05d}'.format(userPrefix, index)
     # reading the dumpfile
+    s=time.time()
     dump = read_dump(fileName)
-
-    print('Dump file read')
+    print('Dump file read, loading took %s'  % [time.time() -s])
     unit_dist = dump['units']['udist']
     unit_mass = dump['units']['umass']
     unit_time = dump['units']['utime']
