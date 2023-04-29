@@ -98,7 +98,7 @@ def getEverything(mass, theta, rho):
             index50 = index50 +1
         if massFraction[index] < 0.75:
             index75 = index75 +1
-    print('tooks %s' % [time.time()-start_time6])
+    #print('tooks %s' % [time.time()-start_time6])
     # Theta where 25/50/75 procent of mass is accumulated is upper boundary of the bin corresponding to index25/50/75
     theta25 = ThetaBins[index25][1]/100
     theta50 = ThetaBins[index50][1]/100

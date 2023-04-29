@@ -164,7 +164,7 @@ def read_dump(filename, memorymap=True):
   f.close()
   time_taken = time.time() - start_time
   time_dict['Dump_blocks'] = time_taken
-  print(time_dict)
+  #print(time_dict) #print the different loading times
   return dump
 
 
