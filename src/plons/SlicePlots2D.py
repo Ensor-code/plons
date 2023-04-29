@@ -20,8 +20,6 @@ matplotlib.use("Agg")
 import warnings
 warnings.filterwarnings("ignore")
 
-n_grid          = 500
-n_grid_vec      = 50
 mesh            = True
 roundToInteger  = True
 round_bounds    = False
@@ -127,12 +125,10 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
     if setup['single_star']== False:
         xAGB  = dumpData['posAGB' ][0] / cgs.au
         yAGB  = dumpData['posAGB' ][1] / cgs.au
-        zAGB  = dumpData['posAGB' ][2] / cgs.au
         xcomp = dumpData['posComp'][0] / cgs.au
         ycomp = dumpData['posComp'][1] / cgs.au
-        zcomp = dumpData['posComp'][2] / cgs.au
 
-        circleAGB =  plt.Circle((xAGB, yAGB), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
+        circleAGB = plt.Circle((-np.hypot(xAGB, yAGB), 0.), max(setup["wind_inject_radius"],setup["primary_Reff"]), transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleAGB)
         circleComp = plt.Circle((np.hypot(xcomp, ycomp), 0.), rAccComp, transform=ax.transData._b, color="black", zorder=10)
         ax.add_artist(circleComp)
@@ -141,28 +137,9 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
             xcomp_in = dumpData['posComp_in' ][0] / cgs.au
             ycomp_in = dumpData['posComp_in' ][1] / cgs.au
             zcomp_in = dumpData['posComp_in' ][2] / cgs.au
-            if orbital: circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp, transform=ax.transData._b, color="black", zorder=10)
-            else:       circleComp_in = plt.Circle((xcomp_in, zcomp_in),rAccComp, transform=ax.transData._b, color="black", zorder=10)
+            if orbital: circleComp_in = plt.Circle((xcomp_in, ycomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
+            else:       circleComp_in = plt.Circle((xcomp_in, zcomp_in), rAccComp_in, transform=ax.transData._b, color="black", zorder=10)
             ax.add_artist(circleComp_in)
-        if setup['quadruple_star']==True:#nog verderdoen
-            print('2d quad density')
-            xcomp_in = dumpData['posComp_in' ][0] / cgs.au
-            ycomp_in = dumpData['posComp_in' ][1] / cgs.au
-            zcomp_in = dumpData['posComp_in' ][2] / cgs.au
-            xcomp_in2 = dumpData['posComp_in2' ][0] / cgs.au
-            ycomp_in2 = dumpData['posComp_in2' ][1] / cgs.au
-            zcomp_in2 = dumpData['posComp_in2' ][2] / cgs.au
-            print(xcomp_in,ycomp_in,zcomp_in)
-            print(xcomp_in2,ycomp_in2,zcomp_in2)
-            if orbital:
-                circleComp_in = plt.Circle(np.hypot((xcomp_in, ycomp_in),0),  rAccComp, transform=ax.transData._b, color="black", zorder=10)
-                print('orbital')
-                circleComp_in2 = plt.Circle(np.hypot((xcomp_in2, ycomp_in2),0),  rAccComp, transform=ax.transData._b, color="blue", zorder=10)
-            else:
-                circleComp_in = plt.Circle((xcomp_in, zcomp_in),  rAccComp, transform=ax.transData._b, color="black", zorder=10)
-                circleComp_in2 = plt.Circle((xcomp_in2, zcomp_in2),  rAccComp, transform=ax.transData._b, color="blue", zorder=10)
-            ax.add_artist(circleComp_in)
-            ax.add_artist(circleComp_in2)
 
 
     divider = make_axes_locatable(ax)
@@ -209,7 +186,6 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
 
 '''
 Makes one slice plot
-
 INPUT
     - ax        is given subplot
     - par       is the name of the parameter
@@ -221,9 +197,9 @@ INPUT
 def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, rAccComp, rAccComp_in, velocity_vec = False):
     # colormap per parameter
     cm = {'rho': plt.cm.get_cmap('inferno'),
-          'speed': plt.cm.get_cmap('YlGnBu_r'),
+          'speed': plt.cm.get_cmap('CMRmap'),
           #'Tgas': plt.cm.get_cmap('RdYlGn'),
-          'Tgas': plt.cm.get_cmap('plasma_r'), #nipy_spectral
+          'Tgas': plt.cm.get_cmap('hot'), #nipy_spectral
           'tau': plt.cm.get_cmap('viridis_r'),
           'kappa': plt.cm.get_cmap('Spectral_r'),
           'Tdust': plt.cm.get_cmap('Spectral_r'),
@@ -401,7 +377,6 @@ Make plot with 6 pannels:
     upper:   log density [g/cm^3]
     middle:  speed [km/s]
     lower:   log temperature [K].
-
 INPUT:
     - smooth        smoothed data
     - zoom          zoom factor for the plot
@@ -573,7 +548,7 @@ def saveData(observables, loc, smooth, smooth_vec, zoom):
 '''
 main definition
 '''
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], 
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10],
                observables = ['rho', 'Tgas', 'speed'], limits = False, save = False,
                nneighb = 10, n_grid = 200, n_grid_vec = 25):
     if limits: customRanges = True
@@ -583,7 +558,6 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10],
     rAccComp = 0
     if not setup["single_star"]:
         theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
-        print(setup)
         if 'rAccrComp' in setup:
             rAccComp = setup['rAccrComp']
         else:
@@ -592,135 +566,6 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10],
             rAccComp = 0.05 * max(setup["wind_inject_radius"],setup["primary_Reff"])
         if setup['triple_star']:
             rAccComp_in = setup['rAccrComp_in']
-        if setup['quadruple_star']:
-            rAccComp_out1 = setup['rAccrComp_out1']
-            rAccComp_out2 = setup['rAccrComp_out2']
-
-    limits = {}
-    for observable in observables:
-        limits[observable] = {}
-        for zoom in zoomin:
-            limits[observable][zoom] = [0.,0.]
-
-    # Ranges are the same as for '/gamma/non_isowind/gamma1.4/global'
-    if "global" in run:
-        if "rho" in observables:
-            limits["rho"][1]  = [-24.39280, -16.86249]
-            limits["rho"][2]  = [-20.80625, -17.63237]
-            limits["rho"][5]  = [-19.71264, -16.90193]
-            limits["rho"][10] = [-19.71264, -16.90193]
-
-        if "speed" in observables:
-            limits["speed"][1]  = [5.96568, 38.44218]
-            limits["speed"][2]  = [5.99680, 33.89827]
-            limits["speed"][5]  = [3.17029, 25.16178]
-            limits["speed"][10] = [3.17029, 25.16178]
-
-        if "Tgas" in observables:
-            limits["Tgas"][1]  = [1.26680, 4.65751]
-            limits["Tgas"][2]  = [2.58142, 4.07818]
-            limits["Tgas"][5]  = [2.52443, 4.53982]
-            limits["Tgas"][10] = [2.52443, 4.53982]
-
-        if "tau" in observables:
-            limits["tau"][1]  = [0, 0.17]
-            limits["tau"][2]  = [0, 0.17]
-            limits["tau"][5]  = [0, 0.17]
-            limits["tau"][10] = [0, 0.17]
-
-        if "kappa" in observables:
-            limits["kappa"][1]  = [0., 3.]
-            limits["kappa"][2]  = [0., 3.]
-            limits["kappa"][5]  = [0., 3.]
-            limits["kappa"][10] = [0., 3.]
-
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-
-    # Ranges are the same as for '/gamma/non_isowind/gamma1.4/local'
-    elif "local" in run:
-        if "rho" in observables:
-            limits["rho"][1]  = [-19.96524, -16.86532]
-            limits["rho"][2]  = [-19.57196, -15.85257]
-            limits["rho"][5]  = [-18.47570, -14.90456]
-            limits["rho"][10] = [-18.47570, -14.90456]
-
-        if "speed" in observables:
-            limits["speed"][1]  = [2.54833, 21.86302]
-            limits["speed"][2]  = [0.03749, 18.39068]
-            limits["speed"][5]  = [0.00000, 22.53676]
-            limits["speed"][10] = [0.00000, 22.53676]
-
-        if "Tgas" in observables:
-            limits["Tgas"][1]  = [2.26195, 4.49702]
-            limits["Tgas"][2]  = [2.14475, 4.92498]
-            limits["Tgas"][5]  = [1.97842, 5.32584]
-            limits["Tgas"][10] = [1.97842, 5.32584]
-
-        if "tau" in observables:
-            limits["tau"][1]  = [0, 0.17]
-            limits["tau"][2]  = [0, 0.17]
-            limits["tau"][5]  = [0, 0.17]
-            limits["tau"][10] = [0, 0.17]
-
-        if "kappa" in observables:
-            limits["kappa"][1]  = [0., 3.]
-            limits["kappa"][2]  = [0., 3.]
-            limits["kappa"][5]  = [0., 3.]
-            limits["kappa"][10] = [0., 3.]
-
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-
-    elif customRanges:
-        if "rho" in observables:
-            limits["rho"][1]  = [-19, -14]
-            limits["rho"][2]  = [-19, -14]
-            limits["rho"][4]  = [-17, -14]
-            limits["rho"][5]  = [-17, -14]
-            limits["rho"][10] = [-19, -14]
-            limits["rho"][20] = [-18, -13]
-
-        if "speed" in observables:
-            limits["speed"][1]  = [0., 20.]
-            limits["speed"][2]  = [0., 20.]
-            limits["speed"][5]  = [0., 20.]
-            limits["speed"][10] = [0., 20.]
-            limits["speed"][20] = [0., 20.]
-
-        if "Tgas" in observables:
-            limits["Tgas"][1]  = [1., 4.]
-            limits["Tgas"][2]  = [1., 4.]
-            limits["Tgas"][5]  = [1., 4.]
-            limits["Tgas"][10] = [1., 4.]
-            limits["Tgas"][20] = [1., 4.]
-
-        if "tau" in observables:
-            limits["tau"][1]  = [0, 1]
-            limits["tau"][2]  = [0, 1]
-            limits["tau"][5]  = [0, 1]
-            limits["tau"][10] = [0, 1]
-            limits["tau"][20] = [0, 1]
-
-        if "kappa" in observables:
-            limits["kappa"][1]  = [0., 3.]
-            limits["kappa"][2]  = [0., 3.]
-            limits["kappa"][5]  = [0., 3.]
-            limits["kappa"][10] = [0., 3.]
-            limits["kappa"][20] = [0., 3.]
-
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-            limits["Gamma"][20] = [0., 1.]
 
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}
