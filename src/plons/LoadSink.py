@@ -33,48 +33,21 @@ def findLastWindSinkIndex(runName,userPrefix):
     return lastIndex
 def sortedWindSinkList(userPrefix, runName):
     return np.sort([x for x in os.listdir(runName) if userPrefix in x and ".ev" in x])
-def read_data_from_sink_file(filename, n_file):
+def read_data_from_sink_file(filename):
     # Load in the Dask DataFrame
     data = dd.read_table(filename, skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 11), delim_whitespace=True, header=None, names=['t', 'x', 'y', 'z', 'mass', 'vx', 'vy', 'vz', 'maccr'])
-
     #Apply the unit factors to the relevant columns using `map_partitions()`
     data = data.map_partitions(lambda df: df.assign(**{name: df[name] * factor for name, factor in unit_factors.items()}))
+    return data
+def append_data(file_lists):
+    data_frames = []
+    for file_list in file_lists:
+        data_frames.append(read_data_from_sink_file(file_list))
+    concatenated_data = dd.concat(data_frames)
+    numpy_array = concatenated_data.values.compute()
+    t, x, y, z, mass, vx, vy, vz, maccr = numpy_array.T
+    return t, x, y, z, mass, vx, vy, vz, maccr
 
-    # Return the tuple of column values
-    return tuple(data[name].values for name in ['t', 'x', 'y', 'z', 'mass', 'vx', 'vy', 'vz', 'maccr'])
-def append_data(t_arr, x_arr, y_arr, z_arr, mass_arr, vx_arr, vy_arr, vz_arr, maccr_arr, t, x, y, z, mass, vx, vy, vz, maccr):
-    n = len(np.asarray(t))
-    if isinstance(t_arr, int):
-        t_arr = np.array([t_arr])
-        x_arr = np.array([x_arr])
-        y_arr = np.array([y_arr])
-        z_arr = np.array([z_arr])
-        mass_arr = np.array([mass_arr])
-        vx_arr = np.array([vx_arr])
-        vy_arr = np.array([vy_arr])
-        vz_arr = np.array([vz_arr])
-        maccr_arr = np.array([maccr_arr])
-    data = np.empty((9, n), dtype=np.float64)
-    data[0] = t
-    data[1] = x
-    data[2] = y
-    data[3] = z
-    data[4] = mass
-    data[5] = vx
-    data[6] = vy
-    data[7] = vz
-    data[8] = maccr
-    return (
-        np.concatenate([t_arr, data[0]]),
-        np.concatenate([x_arr, data[1]]),
-        np.concatenate([y_arr, data[2]]),
-        np.concatenate([z_arr, data[3]]),
-        np.concatenate([mass_arr, data[4]]),
-        np.concatenate([vx_arr, data[5]]),
-        np.concatenate([vy_arr, data[6]]),
-        np.concatenate([vz_arr, data[7]]),
-        np.concatenate([maccr_arr, data[8]])
-    )
 
 '''
 Load the .ev-files from a phantom model
@@ -111,21 +84,34 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     else:
         setup['quadruple_star']=False
     numberOfevFiles = findLastWindSinkIndex(runName,userPrefix)
+    list1, list2, list3, list4 = [], [], [], []
+
     for n in range(1, numberOfevFiles+1):
-        if setup['triple_star']: stars=3
-        elif setup['quadruple_star']: stars=4
-        else: stars=2
+        if setup['triple_star']:
+            stars = 3
+        elif setup['quadruple_star']:
+            stars = 4
+        else:
+            stars = 2
+
         for i in range(1, stars+1):
             fileName_sink = os.path.join(runName, f'{userPrefix}Sink00{i:02d}N0{n}.ev')
-            t, x, y, z, mass, vx, vy, vz, maccr = read_data_from_sink_file(fileName_sink, -1 if i == 1 else len(np.asarray(t)))
+
             if i == 1:
-                t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = append_data(t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1, t, x, y, z, mass, vx, vy, vz, maccr)
+                list1.append(fileName_sink)
             elif i == 2:
-                t2, x2, y2, z2, mass2, vx2, vy2, vz2, maccr2 = append_data(t2, x2, y2, z2, mass2, vx2, vy2, vz2, maccr2, t, x, y, z, mass, vx, vy, vz, maccr)
+                list2.append(fileName_sink)
             elif i == 3:
-                t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3 = append_data(t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3, t, x, y, z, mass, vx, vy, vz, maccr)
-            else:
-                t4, x4, y4, z4, mass4, vx4, vy4, vz4, maccr4 = append_data(t4, x4, y4, z4, mass4, vx4, vy4, vz4, maccr4, t, x, y, z, mass, vx, vy, vz, maccr)
+                list3.append(fileName_sink)
+            elif i == 4:
+                list4.append(fileName_sink)
+    t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = append_data(list1)
+    if stars >=2:
+        t2, x2, y2, z2, mass2, vx2, vy2, vz2, maccr2 = append_data(list2)
+        if stars >=3:
+            t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3= append_data(list3)
+            if stars ==4:
+                t4, x4, y4, z4, mass4, vx4, vy4, vz4, maccr4= append_data(list4)
     # AGB star
     r1 = gf.calc_r(x1, y1, z1)                         # [cm]
     position1 = np.column_stack((x1, y1, z1))

@@ -4,12 +4,40 @@ import os
 import sys
 import time
 import pickle
+from numba import jit, prange
+import cython
 
 # Import plons scripts
 import plons.PhysicalQuantities       as pq
 import plons.GeometricalFunctions     as gf
 import plons.ConversionFactors_cgs    as cgs
 from readPhantomDump import read_dump
+@jit(nopython=True, parallel=True)
+def filter_arrays(h, x, y, z, mass, vx, vy, vz, u, unit_dist, unit_mass, unit_velocity, unit_ergg):
+    # Scale input arrays to desired units
+    x = x * unit_dist
+    y = y * unit_dist
+    z = z * unit_dist
+    mass = mass * unit_mass
+    vx = vx * unit_velocity / cgs.kms
+    vy = vy * unit_velocity / cgs.kms
+    vz = vz * unit_velocity / cgs.kms
+    u = u * unit_ergg
+    h = h * unit_dist
+
+    # Filter out particles with h <= 0.0
+    mask = h > 0.0
+    x_out = x[mask]
+    y_out = y[mask]
+    z_out = z[mask]
+    mass_out = mass[mask]
+    vx_out = vx[mask]
+    vy_out = vy[mask]
+    vz_out = vz[mask]
+    u_out = u[mask]
+    h_out = h[mask]
+
+    return x_out, y_out, z_out, mass_out, vx_out, vy_out, vz_out, u_out, h_out
 '''
 Loads the final full dump of a phantom model, given the number, in cgs-units
 
@@ -65,7 +93,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
     #print('calc1 %s'  % [time.time() -s2])
     s3=time.time()
-
     # companion
     if not setup["single_star"]:
         xComp    = xarray[1]
@@ -119,16 +146,18 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     s4=time.time()
 
     # Find indices where h > 0.0
-    mask = h > 0.0
-    x     = np.compress(mask, x) * unit_dist          # position coordinates          [cm]
-    y     = np.compress(mask, y) * unit_dist
-    z     = np.compress(mask, z) * unit_dist
-    mass  = np.compress(mask, mass) * unit_mass          # mass of sph particles         [g]
-    vx    = np.compress(mask, vx) * unit_velocity / cgs.kms                   # velocity components           [cm/s]
-    vy    = np.compress(mask, vy) * unit_velocity / cgs.kms
-    vz    = np.compress(mask, vz) * unit_velocity / cgs.kms
-    u     = np.compress(mask, u) * unit_ergg          # specific internal density     [erg/g]
-    h     = np.compress(mask, h) * unit_dist
+    x, y, z, mass, vx, vy, vz, u, h =filter_arrays(h, x, y, z, mass, vx, vy, vz, u, unit_dist, unit_mass, unit_velocity, unit_ergg)
+    if False:
+        mask = h > 0.0
+        x     = np.compress(mask, x) * unit_dist          # position coordinates          [cm]
+        y     = np.compress(mask, y) * unit_dist
+        z     = np.compress(mask, z) * unit_dist
+        mass  = np.compress(mask, mass) * unit_mass          # mass of sph particles         [g]
+        vx    = np.compress(mask, vx) * unit_velocity / cgs.kms                   # velocity components           [cm/s]
+        vy    = np.compress(mask, vy) * unit_velocity / cgs.kms
+        vz    = np.compress(mask, vz) * unit_velocity / cgs.kms
+        u     = np.compress(mask, u) * unit_ergg          # specific internal density     [erg/g]
+        h     = np.compress(mask, h) * unit_dist
     #print('calc3 %s'  % [time.time() -s3])
     s4=time.time()
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
