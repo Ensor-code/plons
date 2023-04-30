@@ -38,7 +38,8 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     # reading the dumpfile
     s=time.time()
     dump = read_dump(fileName)
-    print('Dump file read, loading took %s'  % [time.time() -s])
+    print('Dump file read, loading took %s seconds'  % np.round(time.time() -s,2))
+    #s2=time.time()
     unit_dist = dump['units']['udist']
     unit_mass = dump['units']['umass']
     unit_time = dump['units']['utime']
@@ -62,6 +63,9 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)
     massAGB  = marray[0]
     lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
+    #print('calc1 %s'  % [time.time() -s2])
+    s3=time.time()
+
     # companion
     if not setup["single_star"]:
         xComp    = xarray[1]
@@ -111,21 +115,22 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     vy = dump["blocks"][0]["data"]["vy"]
     vz = dump["blocks"][0]["data"]["vz"]
     u = dump["blocks"][0]["data"]["u"]
+    #print('calc2 %s'  % [time.time() -s3])
+    s4=time.time()
 
-    filter = h > 0.0
-    # dir   = '/STER/matse/Magritte/Lucy/'
-    # filter[len(np.load(dir+'xtemp.npy')):] = False
-    # filter[-1] = False
-    # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
-    x     = x                     [filter] * unit_dist          # position coordinates          [cm]
-    y     = y                     [filter] * unit_dist
-    z     = z                     [filter] * unit_dist
-    mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
-    vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]
-    vy    = vy                    [filter] * unit_velocity / cgs.kms
-    vz    = vz                    [filter] * unit_velocity / cgs.kms
-    u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
-    h     = h                     [filter] * unit_dist          # smoothing length              [cm]
+    # Find indices where h > 0.0
+    mask = h > 0.0
+    x     = np.compress(mask, x) * unit_dist          # position coordinates          [cm]
+    y     = np.compress(mask, y) * unit_dist
+    z     = np.compress(mask, z) * unit_dist
+    mass  = np.compress(mask, mass) * unit_mass          # mass of sph particles         [g]
+    vx    = np.compress(mask, vx) * unit_velocity / cgs.kms                   # velocity components           [cm/s]
+    vy    = np.compress(mask, vy) * unit_velocity / cgs.kms
+    vz    = np.compress(mask, vz) * unit_velocity / cgs.kms
+    u     = np.compress(mask, u) * unit_ergg          # specific internal density     [erg/g]
+    h     = np.compress(mask, h) * unit_dist
+    #print('calc3 %s'  % [time.time() -s3])
+    s4=time.time()
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
 
@@ -157,6 +162,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
+
     # output
     data = {'position'      : position,              # [cm]
             'velocity'      : velocity,              # [cm/s]
@@ -208,7 +214,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         data["kappa"      ] = kappa                  # [cm^2/g]
         data["Tdust"      ] = Tdust
 
-
+    #print('calc4 %s'  % [time.time() -s4])
     return data
 
 '''

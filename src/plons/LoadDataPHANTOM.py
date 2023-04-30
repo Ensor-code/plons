@@ -23,25 +23,25 @@ Load the data for a general model
 def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
     start_time = time.time()
     setup       = stp.LoadSetup(run, loc, userSettingsDictionary)
-    print("Loading setup took %s seconds" % np.round(time.time() - start_time))
+    print("Loading setup took %s seconds" % np.round(time.time() - start_time,2))
     start_time = time.time()
     dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary, number)
-    print("Loading dumpData took %s seconds" % np.round(time.time() - start_time))
+    print("Loading dumpData took %s seconds" % np.round(time.time() - start_time,2))
     if setup['single_star']:
         start_timea = time.time()
         sinkData  = snk.LoadSink_single_cgs(run, loc, setup, userSettingsDictionary)
         outerData = None
-        print("Loading sinkData took %s seconds" % np.round(time.time() - start_timea))
+        print("Loading sinkData took %s seconds" % np.round(time.time() - start_timea,2))
     else:
         start_timeb = time.time()
         sinkData  = snk.LoadSink_cgs(run, loc, setup, userSettingsDictionary)
-        print("Loading sinkData took %s seconds" % np.round(time.time() - start_timeb))
+        print("Loading sinkData took %s seconds" % np.round(time.time() - start_timeb,2))
 
         if bound == None:
             bound = setup['bound']
         start_time = time.time()
         outerData = dmp.LoadDump_outer_cgs(factor, bound, setup, dumpData)
-        print("Loading outerData took %s seconds" % np.round(time.time() - start_time))
+        print("Loading outerData took %s seconds" % np.round(time.time() - start_time,1))
 
     # save the final specifics of the AGB star to dumpData
     dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]

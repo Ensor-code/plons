@@ -67,7 +67,7 @@ def run_main(outputloc,runParts,numbers, models):
         print('Data is loading...')
         [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound, userSettingsDictionary)
         print('All data is loaded and ready to use.')
-        print("Loading took %s seconds" % np.round(time.time() - start_time))
+        print("Loading took %s seconds" % np.round(time.time() - start_time,2))
 
         print('')
         for part in runParts:
@@ -94,35 +94,35 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
             for i in range(len(zoomin)): zoomin[i] = int(zoomin[i])
             start_time2 = time.time()
             sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
-            print("Sliceplot took %s seconds" % np.round(time.time() - start_time2))
+            print("Sliceplot took %s seconds" % np.round(time.time() - start_time2,2))
         else:
             start_time3 = time.time()
             sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
-            print("Sliceplot took %s seconds" % np.round(time.time() - start_time3))
+            print("Sliceplot took %s seconds" % np.round(time.time() - start_time3,2))
 
     if part == '2':
         print('')
         print('(2)  Start calculations for the radial structure plots.')
         start_time4 = time.time()
         rs.radialStructPlots(run, saveloc, dumpData, setup)
-        print("Radialstructure took %s seconds" % np.round(time.time() - start_time4))
+        print("Radialstructure took %s seconds" % np.round(time.time() - start_time4,2))
     if part == '3':
         print('')
         print('(3) Start calculations for terminal velocity...')
         start_time5 = time.time()
         tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
-        print("Terminal velocity took %s seconds" % np.round(time.time() - start_time5))
+        print("Terminal velocity took %s seconds" % np.round(time.time() - start_time5,2))
     if part == '4':
         print('')
         print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
         if setup['single_star'] == True:
             start_timecmf = time.time()
             cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
-            print("CMF took %s seconds" % np.round(time.time() - start_timecmf))
+            print("CMF took %s seconds" % np.round(time.time() - start_timecmf,2))
         else:
             start_time6 = time.time()
             cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-            print("CMF took %s seconds" % np.round(time.time() - start_time6))
+            print("CMF took %s seconds" % np.round(time.time() - start_time6,2))
     if part == '5':
         print('')
         if setup['single_star']:
@@ -132,21 +132,21 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
             print('(5)  Start calculations for orbital evolution...')
             start_time7 = time.time()
             ov.orbEv_main(run, saveloc, sinkData, setup)
-            print("Orbits took %s seconds" % np.round(time.time() - start_time7))
+            print("Orbits took %s seconds" % np.round(time.time() - start_time7,2))
 
     if part == '6':
         print('')
         print('(6)  Start calculating for the 1D spherical plots')
         start_time8 = time.time()
         dp.profiles_main(run, loc, saveloc, dumpData, setup)
-        print("1D profiles took %s seconds" % np.round(time.time() - start_time8))
+        print("1D profiles took %s seconds" % np.round(time.time() - start_time8,2))
 
     if part == '7':
         print('')
         print('(7)  Archimedian spiral')
         start_time9 = time.time()
         ars.ArchimedianSpiral(run, saveloc, setup)
-        print("Archimedes spiral took %s seconds" % np.round(time.time() - start_time9))
+        print("Archimedes spiral took %s seconds" % np.round(time.time() - start_time9,2))
 
 print('')
 print('-------------------------------------------------------')

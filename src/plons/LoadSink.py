@@ -10,6 +10,7 @@ import time
 import plons.PhysicalQuantities       as pq
 import plons.GeometricalFunctions     as gf
 import plons.ConversionFactors_cgs    as cgs
+import dask.dataframe as dd
 
 unit_factors = {'t': cgs.cu_time(), # evolution time             [yrs]
                 'x': cgs.au,  # position coordinates       [cm]
@@ -33,12 +34,16 @@ def findLastWindSinkIndex(runName,userPrefix):
 def sortedWindSinkList(userPrefix, runName):
     return np.sort([x for x in os.listdir(runName) if userPrefix in x and ".ev" in x])
 def read_data_from_sink_file(filename, n_file):
-    data = pd.read_table(filename, skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 11), delim_whitespace=True, header=None, names=['t', 'x', 'y', 'z', 'mass', 'vx', 'vy', 'vz', 'maccr'])
-    for name, factor in unit_factors.items():
-        data[name][:n_file] *= factor
-    return tuple(data[name][:n_file].values for name in ['t', 'x', 'y', 'z', 'mass', 'vx', 'vy', 'vz', 'maccr'])
+    # Load in the Dask DataFrame
+    data = dd.read_table(filename, skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7, 11), delim_whitespace=True, header=None, names=['t', 'x', 'y', 'z', 'mass', 'vx', 'vy', 'vz', 'maccr'])
+
+    #Apply the unit factors to the relevant columns using `map_partitions()`
+    data = data.map_partitions(lambda df: df.assign(**{name: df[name] * factor for name, factor in unit_factors.items()}))
+
+    # Return the tuple of column values
+    return tuple(data[name].values for name in ['t', 'x', 'y', 'z', 'mass', 'vx', 'vy', 'vz', 'maccr'])
 def append_data(t_arr, x_arr, y_arr, z_arr, mass_arr, vx_arr, vy_arr, vz_arr, maccr_arr, t, x, y, z, mass, vx, vy, vz, maccr):
-    n = len(t)
+    n = len(np.asarray(t))
     if isinstance(t_arr, int):
         t_arr = np.array([t_arr])
         x_arr = np.array([x_arr])
@@ -112,7 +117,7 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
         else: stars=2
         for i in range(1, stars+1):
             fileName_sink = os.path.join(runName, f'{userPrefix}Sink00{i:02d}N0{n}.ev')
-            t, x, y, z, mass, vx, vy, vz, maccr = read_data_from_sink_file(fileName_sink, -1 if i == 1 else len(t))
+            t, x, y, z, mass, vx, vy, vz, maccr = read_data_from_sink_file(fileName_sink, -1 if i == 1 else len(np.asarray(t)))
             if i == 1:
                 t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = append_data(t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1, t, x, y, z, mass, vx, vy, vz, maccr)
             elif i == 2:
