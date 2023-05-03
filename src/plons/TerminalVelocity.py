@@ -1,7 +1,7 @@
 import os
 import math                     as math
 import numpy                    as np
-
+import time
 # import plons scripts
 import plons.ConversionFactors_cgs    as cgs
 import plons.GeometricalFunctions     as gf
@@ -28,36 +28,32 @@ RETURNS:
         (read in function)
 '''
 def getTerminalVelocity(setup, dump):
-
+    a=time.time()
     single_star = setup['single_star']
     if single_star == False:
         sma     = setup['sma_ini']
     outerBound  = int(round( setup['bound']  ))
     r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.au  # radius [AU] from AGB, not barycentre!
+    print('helpfunc part 1 %s seconds' % np.round(time.time()-a,3))
+    a2=time.time()
     # Prepare for binning.
     rmin = np.min( r )     # minimum radius in the data set [AU]
     rmax = np.max( r )     # maximum radius in the data set [AU]
 
     binned_speed, number_of_bins = tl.bin_data(dump['speed'],r)     # speed in [cm/s]
-
     #print(len(binned_speed[4]))
     #print(binned_speed[4][100]*cgs.cms_kms())
 
-    binned_speed_means = {}
-    for i in range(number_of_bins):
-        if len(binned_speed[i]) != 0:
-            binned_speed_means[i] = [np.min(binned_speed[i]),np.mean(binned_speed[i]),np.max(binned_speed[i])]
-
-
+    binned_speed_means = {i: [np.min(binned_speed[i]),np.mean(binned_speed[i]),np.max(binned_speed[i])] for i in range(number_of_bins) if len(binned_speed[i]) != 0}
+    print('helpfunc part 2 %s seconds' % np.round(time.time()-a2,3))
+    a3=time.time()
     # collect per radius bin the minimum, mean and max
     binned_term_speed = {}
-    binned_term_speed['min' ] = []
-    binned_term_speed['mean'] = []
-    binned_term_speed['max' ] = []
-    for key in binned_speed_means:
-        binned_term_speed['min' ].append(binned_speed_means[key][0])
-        binned_term_speed['mean'].append(binned_speed_means[key][1])
-        binned_term_speed['max' ].append(binned_speed_means[key][2])
+    binned_term_speed['min'] = np.array([v[0] for v in binned_speed_means.values()])
+    binned_term_speed['mean'] = np.array([v[1] for v in binned_speed_means.values()])
+    binned_term_speed['max'] = np.array([v[2] for v in binned_speed_means.values()])
+    print('helpfunc part 3 %s seconds' % np.round(time.time()-a3,3))
+    a4=time.time()
 
 
 
@@ -72,16 +68,18 @@ def getTerminalVelocity(setup, dump):
     position r at which this twist is present, and only
     take into account the data for r < r_twist.
     '''
-    binned_term_speed['diff'] = []
-    for i in range(len(binned_term_speed['mean'])-1):
-        binned_term_speed['diff'].append(np.abs(binned_term_speed['mean'][i]-binned_term_speed['mean'][i+1]))
+    means = np.array(binned_term_speed['mean'])
+    diff = np.abs(np.diff(means))
+    binned_term_speed['diff'] = diff.tolist()
     differences = binned_term_speed['diff']
-
+    print('helpfunc part 4 %s seconds' % np.round(time.time()-a4,3))
+    a5=time.time()
     twist = []
     for i in range(5,len(differences)-5):
         if (differences[i]+differences[i-1] <= differences[i+1]) and (differences[i]+differences[i-1] <= differences[i+2]) and (differences[i]+differences[i-1] <= differences[i+3]) and (differences[i]+differences[i-1] <= differences[i+4]) and (differences[i]+differences[i-1] >= differences[i-2]) and (differences[i]+differences[i-1] >= differences[i-3]) and (differences[i]+differences[i-1] >= differences[i-4]) and (differences[i]+differences[i-1] >= differences[i-5]):
             twist.append(i)
-
+    print('helpfunc part 5 %s seconds' % np.round(time.time()-a5,3))
+    a6=time.time()
     if single_star == True:
         sma = 100
 
@@ -120,7 +118,7 @@ def getTerminalVelocity(setup, dump):
 
         wind_comp = {'min': wind_comp_min, 'mean': wind_comp_mean, 'max': wind_comp_max}
 
-
+        print('helpfunc part 6 %s seconds' % np.round(time.time()-a6,3))
         return terminal_speed, binned_term_speed, wind_comp, index
 
 
@@ -342,10 +340,10 @@ def getQp(setup, wind_comp, massHill):
 
 
 '''
-The epsilon parameter gives an indication of morphological classification:
-    >> 1 : spherically symmetric
+The epsilon parameter gives an indication of morphological classification (Maes 2021):
+    << 1 : spherically symmetric
     ~  1 : regular spiral
-    << 1 : complex
+    >> 1 : complex
 It is defined as the ratio of enery densities:
     epsilon = kin_energy / grav_energy
             = (v_wind**2 * sma) / ((24 * G**3 * M_comp**2 * M_AGB)^(1/3))
@@ -360,8 +358,8 @@ def getEpsilon(v, setup):
     sma   = setup['sma_ini'     ] * cgs.au         # [cm]
     mComp = setup['massComp_ini'] * cgs.Msun       # [Msun]
     mAGB  = setup['massAGB_ini' ] * cgs.Msun       # [Msun]
-
-    epsilon = (v**2 * sma)/(cgs.G * (24 * (mComp)**2 * mAGB)**(1/3))
+    #add excentricity -mike
+    epsilon = (cgs.G * (24 * (mComp)**2 * mAGB)**(1/3))/(v**2 * sma)
 
     return epsilon
 
@@ -395,22 +393,35 @@ def flattening(setup, sinkData):
 
 
 def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
-
+    s=time.time()
     single_star = setup['single_star']
 
     if single_star == False:
 
         terminal_speed, binned_term_speed, wind_comp, index = getTerminalVelocity(setup, dump)
+        print(terminal_speed)
+        print('terminal 1 %s seconds' % np.round(time.time()-s,3))
+        s2=time.time()
         #print('')
         #print('(3) Start calculations for morphological parameters eta, Qp and epsilon...')   #already printed in main.py
         #print('')
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
+        print('terminal 2 %s seconds' % np.round(time.time()-s2,3))
+        s3=time.time()
         massHill                     = getMassHillTorus(setup, dump)
+        print('terminal 3 %s seconds' % np.round(time.time()-s3,3))
+        s4=time.time()
         Qp_1, Qp_2, wind_comp_mean   = getQp(setup, wind_comp, massHill)
+        print('terminal 4 %s seconds' % np.round(time.time()-s4,3))
+        s5=time.time()
         epsilon_1                    = getEpsilon(wind_comp_mean, setup)
+        print('terminal 5 %s seconds' % np.round(time.time()-s5,3))
+        s6=time.time()
         epsilon_2                    = getEpsilon(wind_comp['mean'], setup)
+        print('terminal 6 %s seconds' % np.round(time.time()-s6,3))
+        s7=time.time()
         theta, flratio, EllipsEcc    = flattening(setup, sinkData)
-
+        print('terminal 7 %s seconds' % np.round(time.time()-s7,3))
 
 
     if single_star == True:
@@ -492,61 +503,62 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('       of the companion is used.\n')
         f.write('\n')
         f.write('Terminal velocities [km/s]:'+'\n'      )
-        f.write(str(round(terminal_speed['max' ]/cgs.kms, 3))+'\n' )
-        f.write(str(round(terminal_speed['mean']/cgs.kms, 3))+'\n' )
-        f.write(str(round(terminal_speed['min' ]/cgs.kms, 3))+'\n' )
+        print(eta1,eta2)
+        f.write(str(round(terminal_speed['max' ], 3))+'\n' )
+        f.write(str(round(terminal_speed['mean'], 3))+'\n' )
+        f.write(str(round(terminal_speed['min' ], 3))+'\n' )
         f.write('\n')
         if single_star == False:
             if setup['ecc'] == 0:
                 f.write('Wind speed at companion [km/s]:\n')
-                f.write(str(round(wind_comp['min' ]/cgs.kms , 2))+'\n')
-                f.write(str(round(wind_comp['mean']/cgs.kms , 2))+'\n')
-                f.write(str(round(wind_comp['max' ]/cgs.kms , 2))+'\n')
+                f.write(str(round(wind_comp['min' ] , 2))+'\n')
+                f.write(str(round(wind_comp['mean'] , 2))+'\n')
+                f.write(str(round(wind_comp['max' ] , 2))+'\n')
                 f.write('   average:\n')
-                f.write(str(round(wind_comp_mean   /cgs.kms , 2))+'\n')
+                f.write(str(round(wind_comp_mean    , 2))+'\n')
                 f.write('\n')
                 f.write('eta1 = v_term/v_orb'+'\n')
-                f.write(str(round(eta1['min' ], 2))+'\n')
-                f.write(str(round(eta1['mean'], 2))+'\n')
-                f.write(str(round(eta1['max' ], 2))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['min']))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['mean']))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['max']))+'\n')
                 f.write('\n')
                 f.write('eta2 = v_w(rcomp)/v_orb\n')
-                f.write(str(round(eta2['min' ], 2))+'\n')
-                f.write(str(round(eta2['mean'], 2))+'\n')
-                f.write(str(round(eta2['max' ], 2))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['min']))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['mean']))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['max']))+'\n')
             else:
                 f.write('eta1 = v_term/v_orb'+'\n')
                 f.write('Apastron:' +'\n')
-                f.write(str(round(eta1['min' ][0], 2))+'\n')
-                f.write(str(round(eta1['mean'][0], 2))+'\n')
-                f.write(str(round(eta1['max' ][0], 2))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['min'][0]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['mean'][0]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['max'][0]))+'\n')
                 f.write('mean:' +'\n')
-                f.write(str(round(eta1['min' ][1], 2))+'\n')
-                f.write(str(round(eta1['mean'][1], 2))+'\n')
-                f.write(str(round(eta1['max' ][1], 2))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['min'][1]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['mean'][1]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['max'][1]))+'\n')
                 f.write('periastron:' +'\n')
-                f.write(str(round(eta1['min' ][2], 2))+'\n')
-                f.write(str(round(eta1['mean'][2], 2))+'\n')
-                f.write(str(round(eta1['max' ][2], 2))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['min'][2]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['mean'][2]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta1['max'][2]))+'\n')
                 f.write('\n')
                 f.write('Wind speed at companion [km/s]:\n')
-                f.write(str(round(wind_comp['min' ]/cgs.kms, 2))+'\n')
-                f.write(str(round(wind_comp['mean']/cgs.kms, 2))+'\n')
-                f.write(str(round(wind_comp['max' ]/cgs.kms, 2))+'\n')
+                f.write(str(round(wind_comp['min' ], 2))+'\n')
+                f.write(str(round(wind_comp['mean'], 2))+'\n')
+                f.write(str(round(wind_comp['max' ], 2))+'\n')
                 f.write('\n')
                 f.write('eta2 = v_w(rcomp)/v_orb\n')
                 f.write('Apastron:'+'\n')
-                f.write(str(round(eta2['min' ][0], 2))+'\n')
-                f.write(str(round(eta2['mean'][0], 2))+'\n')
-                f.write(str(round(eta2['max' ][0], 2))+'\n')
-                f.write('mean:'+'\n')
-                f.write(str(round(eta2['min' ][1], 2))+'\n')
-                f.write(str(round(eta2['mean'][1], 2))+'\n')
-                f.write(str(round(eta2['max' ][1], 2))+'\n')
-                f.write('Periastron:'+'\n')
-                f.write(str(round(eta2['min' ][2], 2))+'\n')
-                f.write(str(round(eta2['mean'][2], 2))+'\n')
-                f.write(str(round(eta2['max' ][2], 2))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['min'][0]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['mean'][0]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['max'][0]))+'\n')
+                f.write('mean:' +'\n')
+                f.write(str('{:.3e}\n'.format(eta2['min'][1]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['mean'][1]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['max'][1]))+'\n')
+                f.write('periastron:' +'\n')
+                f.write(str('{:.3e}\n'.format(eta2['min'][2]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['mean'][2]))+'\n')
+                f.write(str('{:.3e}\n'.format(eta2['max'][2]))+'\n')
             f.write('\n')
             f.write('Total mass the companion encounters at r = rcomp, within the Hill radius = Mwind [Msun]:\n')
             f.write(str(massHill/cgs.Msun)+'\n')
@@ -562,9 +574,9 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('Velocities [km/s] at the different orbital separations:\n')
             for key in wind_speed_single['min' ]:
                 f.write('At '+str(key)+' au:\n')
-                f.write(str(round(wind_speed_single['min' ][key]/cgs.kms, 2))+'\n')
-                f.write(str(round(wind_speed_single['mean'][key]/cgs.kms, 2))+'\n')
-                f.write(str(round(wind_speed_single['max' ][key]/cgs.kms, 2))+'\n')
+                f.write(str(round(wind_speed_single['min' ][key], 2))+'\n')
+                f.write(str(round(wind_speed_single['mean'][key], 2))+'\n')
+                f.write(str(round(wind_speed_single['max' ][key], 2))+'\n')
                 f.write('\n')
             f.write('\n')
             f.write('Mass in the Hill torus [Msun] at the different orbital separations:\n')

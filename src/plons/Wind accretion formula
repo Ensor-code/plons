@@ -1,0 +1,11 @@
+massloss=-10e-6
+accretionrate=6.42e-9
+semimajoraxis=5
+massagb=1.5
+masscompanion=0.6
+gamma=0.5
+beta=accretionrate/massloss
+e=0
+edot=0
+changesemi=-2*massloss/massagb*(1-beta*massagb/masscompanion-(1-beta)*(0.5+gamma)*massagb/(massagb+masscompanion)-e*edot*massagb/((1-e**2)*massloss))*semimajoraxis
+print(changesemi)

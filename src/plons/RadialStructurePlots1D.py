@@ -232,7 +232,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
         vMin         = min(vMinX,vMinZ)
         vMin         = 0.9 * vMin
-        vMax         = 1.5*max(vMaxX, vMaxZ)
+        vMax         = 1.3*max(vMaxX, vMaxZ)
         #print(vMin,vMax)
 
         TMinX, TMaxX = np.min(parX[2]), np.max(parX[2])

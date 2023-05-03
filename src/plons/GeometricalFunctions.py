@@ -52,7 +52,7 @@ def getRatioRadTan(v_r,v_t):
 Return the position of all particles in function of radius with the AGB star as centre
 '''
 def getRadiusCoordinate(position, AGBcoord):
-    return np.sqrt(np.sum(np.subtract(position,AGBcoord)**2,axis=1))
+    return np.sqrt(np.sum((position - AGBcoord)**2, axis=1))
 
 
 '''

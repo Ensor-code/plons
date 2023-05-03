@@ -361,7 +361,7 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     plt.xlabel('Time[yrs]', fontsize = 14)
     plt.ylabel('Mass accretion rate [Msun/yr]', fontsize = 14)
 
-    plt.title('Mass accretion rate by the companion(s)', fontsize = 18)
+    plt.title('Mass accretion rate by the companion(s), average %.2E M_\\odot/yr'%np.mean(accrRates[int(0.2*len(accrRates)):]), fontsize = 18)
     plt.legend(fancybox=True,loc='lower right')
     fig.tight_layout()
 
@@ -534,7 +534,8 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
         ax2.plot(t, sinkData['rComp'][1:]/cgs.au, label= 'r comp',c='black')
         ax3.set_ylabel('Orb Sep [au]', fontsize = 12)
         ax3.plot(t, ra +sinkData['rComp'][1:]/cgs.au, label = 'Orb sep',c='navy')
-
+        temp=ra +sinkData['rComp'][1:]/cgs.au
+        ax3.set_title('Average change %.2E AU/yr'% float((temp[-1]-temp[0])/t[-1]))
     '''
     # Plot vertical lines indicating where there should be apastron and periastron passages
     # Legend
