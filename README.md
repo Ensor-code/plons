@@ -1,20 +1,18 @@
 
+<h1 align="center">
+<img src="https://raw.githubusercontent.com/Ensor-code/plons/main/plons.png" width="300">
+</h1>
 
-
--------------------------------
-    README PLONS
--------------------------------
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/build-and-test.yaml/badge.svg)
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/upload-to-pypi.yaml/badge.svg)
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/upload-to-anaconda.yaml/badge.svg)
 
 
 This is the README for the PLONS PLOtting tool for Nice Simulations. It can be used to
-read in and analyse data of hydrodynamical simulations with the SPH code PHANTOM 
-(Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031). PHANTOM returns 
+read in and analyse data of hydrodynamical simulations with the SPH code [PHANTOM](https://phantomsph.bitbucket.io/) 
+([Price et al. 2018](https://ui.adsabs.harvard.edu/abs/2018PASA...35...31P/abstract)). PHANTOM returns 
 (different types of useful data files: 'wind_xxxxx'-files and '.ev'-files. The former can
-also be visualised by the SPH visualisation tool SPLASH (Price, D. J. 2007, PASA, 24, 159; 
-https://users.monash.edu.au/~dprice/splash/), and can be analysed more toroughly with PLONS.
+also be visualised by the SPH visualisation tool [SPLASH](https://users.monash.edu.au/~dprice/splash/) ([Price 2007](https://adsabs.harvard.edu/abs/2007PASA...24..159P)), and can be analysed more toroughly with PLONS.
 
 
 PHANTOM
@@ -34,12 +32,17 @@ This pipeline is suited for single, binary and triple AGB wind models.
 
 The following info can be attained:
 
-(1) 2D slice plots of the global structure of the last dump full of the model.
-(2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.
-(3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.
-(4) Cummulative mass fraction in function of the polar coordinate theta.
-(5) Information of the orbital evolution.
-(6) 1D spherical profiles for single star models
+1. 2D slice plots of the global structure of the last dump full of the model.
+
+2. 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.
+
+3. Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.
+
+4. Cummulative mass fraction in function of the polar coordinate theta.
+
+5. Information of the orbital evolution.
+
+6. 1D spherical profiles for single star models
 
 
 
@@ -56,7 +59,7 @@ time. The last entry in the sink data, corresponds to the full dump loaded. Ther
 position/velocity/mass/... of this last entry are also saved in the full dump data for easy usage.
 
 
-(1)
+<b>(1) 2D slice plots of the global structure of the last dump full of the model.</b>
 
 The 2D slices in the plots are infinitely thin and calculated by using the smoothing kernel from
 PHANTOM. The density, speed and temperature are calculated by this method on a grid of n*n 
@@ -64,14 +67,14 @@ pixels, using the data of the m nearest neighbours (SPH particles) of those grid
 plots give a visual representation of the morphology present in the AGB wind of the simulation.
 
 
-(2)
+<b>(2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.</b>
 
 In 1D, the data along the x-, y- and z-axes is constructed in the same way as explained in (1), 
 but for a 1D grid. This results in plots of the radial structure, which is an important addition 
 to the 2D slice plots.
 
 
-(3)
+<b>(3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.</b>
 
 The terminal velocity in PHANTOM SPH code is not an input parameter, so it needs to be calculated. 
 Due to the morphology in the outflow of the AGB star, at a certain radius a wide range of speeds 
@@ -90,40 +93,42 @@ increase, starting with a clear twist.
 
 In order to get some quantitative indication about the morphology of the models, several morphology 
 parameters are currently in use: 
-    - eta = v/v_orb (see Saladino, M. I., Pols, O. R., van der Helm, E., Pelupessy, I., & 
-      Portegies Zwart, S. 2018, A&A, 618, A50; El Mellah, I., Bolte, J., Decin, L., Homan, 
-      W., & Keppens, R. 2020, arXiv e-prints, arXiv:2001.04482)
-    - Qp = p_comp/p_wind 
-         = (M_comp v_orb) / (M_wind v_wind)
-        (see Decin, L., Montarges, M., Richards, A. M. S., et al. 2020, Science, 369, 1497)
-    - epsilon = e_kin/e_grav
-              = (v_wind^2 a)/(24 G^3 M_comp^2 M_AGB)^(1/3)
-    - Rcapt/a = (2 G M_comp)/(v_wind^2) * 1/a
+
+- $\eta = v/v_{orb}$ (see [Saladino et al. 2018](https://ui.adsabs.harvard.edu/abs/2018A%26A...618A..50S/abstract); [El Mellah et al. 2020](https://ui.adsabs.harvard.edu/abs/2020A%26A...637A..91E/abstract))
+
+- $Q_p = p_{comp}/p_{wind} = (M_{comp} v_{orb}) / (M_{wind} v_{wind})$
+    (see [Decin, L. et al. 2020](https://ui.adsabs.harvard.edu/abs/2020Sci...369.1497D/abstract))
+- $\epsilon = e_{kin}/e_{grav} = (v_{wind}^2 a)/(24 G^3 M_{comp}^2 M_{AGB})^{1/3}$ (see [Maes et al. 2021](https://ui.adsabs.harvard.edu/abs/2021A%26A...652A..51M/abstract); [Malfait et al. 2021](https://ui.adsabs.harvard.edu/abs/2021A%26A...653A..25M/abstract))
+- $R_{capt}/a = (2 G M_{comp})/(v_{wind}^2)/a$
+    
 Depending on the value of these parameters, the model is expected to show radial/EDE/complex morphology.
 
-Rhill = a(1-e)(M_comp/ 3M_AGB)^(1/3)
+$$R_{hill} = a(1-e)(M_{comp}/ 3M_{AGB})^{1/3}$$
 Therefore, Rhill/Rcapt = epsilon, if for both radii the same v_wind is used.
 
 VERY IMPORTANT NOTE: 
-The parameter 'v_wind' is not unambiguously defined. Even more, if only a binary models is used, 
+The parameter '$v_{wind}$' is not unambiguously defined. Even more, if only a binary models is used, 
 this parameter is most likely not to be constrained properly. For the different morphological parameters, 
-multiple values for v_wind are used.
-For eta, different velocities/speed v are used:
-    - terminal velocity
-    - speed of the wind at the location of the companion 
-For Qp and epsilon, two different values are used as v_wind:
-    - the mean velocity of the wind at the location is used as calculated from the binning
-    - the average of the min and max velocity at the location of the companion is used
-For Rcapt/a the initial wind velocity is used to get a rough indication.
+multiple values for $v_{wind}$ are used.
+For eta, different velocities/speed $v$ are used:
+- terminal velocity
+- speed of the wind at the location of the companion 
 
-Better options for v_wind would be to use the velocity of the corresponding single model as follows:
-    - speed of the wind at the location of the companion
-    - speed resulting from the vector sum of the speed of the wind at the location of the companion 
-      and the orbital velocity of the AGB star.
+For Qp and epsilon, two different values are used as v_wind:
+- the mean velocity of the wind at the location is used as calculated from the binning
+- the average of the min and max velocity at the location of the companion is used
+
+For $R_{capt}/a$ the initial wind velocity is used to get a rough indication.
+
+Better options for $v_{wind}$ would be to use the velocity of the corresponding single model as follows:
+- speed of the wind at the location of the companion
+- speed resulting from the vector sum of the speed of the wind at the location of the companion 
+    and the orbital velocity of the AGB star.
+
 These can be calculated using the output of this pipeline.
 
 
-(4)
+<b>(4) Cummulative mass fraction in function of the polar coordinate theta.</b>
 
 The cummulative mass fraction (CMF) is calculated in function of the polar angle theta (theta = 0.5pi 
 is the orbital plane, theta = 0 the north pole), again by using the method of binning. Only the northern 
@@ -140,14 +145,14 @@ single model, it gives a measure for the degree of EDE.
 Also the mean density is calculated using a similar approach as the CMF, using the method of binning. 
 This mean density can easily be normalised to compare the morphology in different models.
 
-
-(5)
+<b>(5) Information of the orbital evolution.</b>
 
 In order to get information about the orbital evolution, the sink files are used (.ev), which gives
 relevant quantities of the sink particles in function of time. This file returns plots of the orbit, 
 evolution of orbital separation, orbital velocity and accreted mass of the companion.
 
 
+<b>(6) 1D spherical profiles for single star models</b>
 
-
+In order to check your simulations and compare the 3D simulations to a 1D solution, this routine reads wind_1D.dat to plot the 1D solution, as well as the 3D sph values.
 

@@ -42,7 +42,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     unit_mass = dump['units']['umass']
     unit_time = dump['units']['utime']
     
-    
     unit_velocity = unit_dist/unit_time
     unit_density  = unit_mass/unit_dist**3
     unit_pressure = unit_mass/(unit_dist*unit_time**2)
@@ -105,7 +104,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]
     vy    = vy                    [filter] * unit_velocity / cgs.kms
     vz    = vz                    [filter] * unit_velocity / cgs.kms
-    u     = u                     [filter] * unit_energ         # specific internal density     [erg/g]
+    u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
@@ -115,7 +114,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth  
     if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
-    else: temp = pq.getTemp(p, rho, dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
+    else: temp = pq.getTemp(dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
     if bowenDust:
         Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
     if setup['isink_radiation'] == 0: Gamma = 0.

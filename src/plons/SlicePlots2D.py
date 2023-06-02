@@ -16,34 +16,26 @@ from matplotlib.ticker          import MultipleLocator
 import matplotlib
 matplotlib.use("Agg")
 
-#rc('font', family='serif')
-#rc('text', usetex=True)
-
 # ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
 
-n_grid          = 200
-n_grid_vec      = 25
 mesh            = True
 roundToInteger  = True
 round_bounds    = False
-customRanges    = True
 velocity_vec    = True
-printRanges     = True
 minInfLog       = -300
 minInf          = 10.**(-minInfLog)
 maxInfLog       = 300
 maxInf          = 10.**maxInfLog
 sigma_bounds_u  = 3.
 sigma_bounds_l  = 2.
-nneighb = 10
 
 
 '''
 Load the smoothing kernel data
 '''
-def smoothData(dumpData, setup, theta, observables, zoom=1):
+def smoothData(dumpData, setup, theta, observables, zoom, nneighb = 10, n_grid = 200, n_grid_vec = 25):
     print('          Calculating zoom = '+str(zoom), end='\r')
     results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh)
     results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
@@ -482,12 +474,87 @@ def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, rAccCo
                     bbox_inches="tight")
     plt.close()
 
+
+
+def makeLimits(observables, smooth, zoom):
+    limits = {}
+    for observable in observables:
+        limits[observable] = {}
+        limits[observable][zoom] = [0.,0.]
+
+    if "rho" in observables:
+        limits["rho"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["rho"]), log=True, round=round_bounds)
+    if "speed" in observables:
+        limits["speed"][zoom] = findBounds(smooth[zoom]['smooth_y']["speed"], log=False, round=round_bounds)
+        limits["speed"][zoom][0] = max(limits["speed"][zoom][0], 0.)
+    if "Tgas" in observables:
+        limits["Tgas"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["Tgas"]), log=True, round=round_bounds)
+    if "kappa" in observables:
+        limits["kappa"][zoom] = findBounds(smooth[zoom]['smooth_y']["kappa"], log=False, round=round_bounds)
+    if "Gamma" in observables:
+        limits["Gamma"][zoom] = findBounds(smooth[zoom]['smooth_y']["Gamma"], log=False, round=round_bounds)
+    if "tau" in observables:
+        limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
+        limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
+
+    print("          Ranges of Parameters: zoom = "+str(zoom))
+    if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
+    if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
+    if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
+    if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
+    if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
+    if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
+
+    return limits
+
+def saveData(observables, loc, smooth, smooth_vec, zoom):
+    try:
+        os.makedirs(os.path.join(loc, 'txt/SlicePlots2D'))
+    except OSError:
+        pass
+
+    if "rho" in observables:
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_z'.format(zoom)), smooth[zoom]['x_z']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_y_z'.format(zoom)), smooth[zoom]['y_z']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_z'.format(zoom)), smooth[zoom]['smooth_z']["rho"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_y'.format(zoom)), smooth[zoom]['x_y']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_z_y'.format(zoom)), smooth[zoom]['z_y']/cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_y'.format(zoom)), smooth[zoom]['smooth_y']["rho"])
+    if "speed" in observables:
+        vx = smooth_vec[zoom]['smooth_z']['vx']
+        vy = smooth_vec[zoom]['smooth_z']['vy']
+        normaliseVectorLength = np.hypot(vx, vy)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_z'.format(zoom)), smooth[zoom]['smooth_z']["speed"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_y'.format(zoom)), smooth[zoom]['smooth_y']["speed"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_x'.format(zoom)), smooth_vec[zoom]['x_z'] / cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_y'.format(zoom)), smooth_vec[zoom]['y_z'] / cgs.au)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vx'.format(zoom)), vx / normaliseVectorLength)
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vy'.format(zoom)), vy / normaliseVectorLength)
+
+    if "Gamma" in observables:
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_z'.format(zoom)), smooth[zoom]['smooth_z']["Gamma"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_y'.format(zoom)), smooth[zoom]['smooth_y']["Gamma"])
+    if "Tdust" in observables:
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_z'.format(zoom)), smooth[zoom]['smooth_z']["Tdust"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_y'.format(zoom)), smooth[zoom]['smooth_y']["Tdust"])
+    if "tau" in observables:
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_z'.format(zoom)), smooth[zoom]['smooth_z']["tau"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_y'.format(zoom)), smooth[zoom]['smooth_y']["tau"])
+    if "tauL" in observables:
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_z'.format(zoom)), smooth[zoom]['smooth_z']["tauL"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_y'.format(zoom)), smooth[zoom]['smooth_y']["tauL"])
+    if "kappa" in observables:
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_z'.format(zoom)), smooth[zoom]['smooth_z']["kappa"])
+        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_y'.format(zoom)), smooth[zoom]['smooth_y']["kappa"])
+
 '''
 main definition
 '''
-
-
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], observables = ['rho', 'Tgas', 'speed']):
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], 
+               observables = ['rho', 'Tgas', 'speed'], limits = False, save = False,
+               nneighb = 10, n_grid = 200, n_grid_vec = 25):
+    if limits: customRanges = True
+    else:      customRanges = False
     rAccComp_in = 0
     theta=0
     rAccComp = 0
@@ -499,200 +566,15 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], obse
         if setup['triple_star']:
             rAccComp_in = setup['rAccrComp_in']
 
-    limits = {}
-    for observable in observables:
-        limits[observable] = {}
-        for zoom in zoomin:
-            limits[observable][zoom] = [0.,0.]
-            
-    # Ranges are the same as for '/gamma/non_isowind/gamma1.4/global'
-    if "global" in run:
-        if "rho" in observables:
-            limits["rho"][1]  = [-24.39280, -16.86249]
-            limits["rho"][2]  = [-20.80625, -17.63237]
-            limits["rho"][5]  = [-19.71264, -16.90193]
-            limits["rho"][10] = [-19.71264, -16.90193]
-
-        if "speed" in observables:
-            limits["speed"][1]  = [5.96568, 38.44218]
-            limits["speed"][2]  = [5.99680, 33.89827]
-            limits["speed"][5]  = [3.17029, 25.16178]
-            limits["speed"][10] = [3.17029, 25.16178]
-
-        if "Tgas" in observables:
-            limits["Tgas"][1]  = [1.26680, 4.65751]
-            limits["Tgas"][2]  = [2.58142, 4.07818]
-            limits["Tgas"][5]  = [2.52443, 4.53982]
-            limits["Tgas"][10] = [2.52443, 4.53982]
-
-        if "tau" in observables:
-            limits["tau"][1]  = [0, 0.17]
-            limits["tau"][2]  = [0, 0.17]
-            limits["tau"][5]  = [0, 0.17]
-            limits["tau"][10] = [0, 0.17]
-
-        if "kappa" in observables:
-            limits["kappa"][1]  = [0., 3.]
-            limits["kappa"][2]  = [0., 3.]
-            limits["kappa"][5]  = [0., 3.]
-            limits["kappa"][10] = [0., 3.]
-
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-
-    # Ranges are the same as for '/gamma/non_isowind/gamma1.4/local'
-    elif "local" in run:
-        if "rho" in observables:
-            limits["rho"][1]  = [-19.96524, -16.86532]
-            limits["rho"][2]  = [-19.57196, -15.85257]
-            limits["rho"][5]  = [-18.47570, -14.90456]
-            limits["rho"][10] = [-18.47570, -14.90456]
-
-        if "speed" in observables:
-            limits["speed"][1]  = [2.54833, 21.86302]
-            limits["speed"][2]  = [0.03749, 18.39068]
-            limits["speed"][5]  = [0.00000, 22.53676]
-            limits["speed"][10] = [0.00000, 22.53676]
-
-        if "Tgas" in observables:
-            limits["Tgas"][1]  = [2.26195, 4.49702]
-            limits["Tgas"][2]  = [2.14475, 4.92498]
-            limits["Tgas"][5]  = [1.97842, 5.32584]
-            limits["Tgas"][10] = [1.97842, 5.32584]
-
-        if "tau" in observables:
-            limits["tau"][1]  = [0, 0.17]
-            limits["tau"][2]  = [0, 0.17]
-            limits["tau"][5]  = [0, 0.17]
-            limits["tau"][10] = [0, 0.17]
-
-        if "kappa" in observables:
-            limits["kappa"][1]  = [0., 3.]
-            limits["kappa"][2]  = [0., 3.]
-            limits["kappa"][5]  = [0., 3.]
-            limits["kappa"][10] = [0., 3.]
-
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-    
-    elif customRanges:
-        if "rho" in observables:
-            limits["rho"][1]  = [-19, -14]
-            limits["rho"][2]  = [-19, -14]
-            limits["rho"][4]  = [-17, -14]
-            limits["rho"][5]  = [-17, -14]
-            limits["rho"][10] = [-19, -14]
-            limits["rho"][20] = [-18, -13]
-
-        if "speed" in observables:
-            limits["speed"][1]  = [0., 20.]
-            limits["speed"][2]  = [0., 20.]
-            limits["speed"][5]  = [0., 20.]
-            limits["speed"][10] = [0., 20.]
-            limits["speed"][20] = [0., 20.]
-
-        if "Tgas" in observables:
-            limits["Tgas"][1]  = [1., 4.]
-            limits["Tgas"][2]  = [1., 4.]
-            limits["Tgas"][5]  = [1., 4.]
-            limits["Tgas"][10] = [1., 4.]
-            limits["Tgas"][20] = [1., 4.]
-
-        if "tau" in observables:
-            limits["tau"][1]  = [0, 1]
-            limits["tau"][2]  = [0, 1]
-            limits["tau"][5]  = [0, 1]
-            limits["tau"][10] = [0, 1]
-            limits["tau"][20] = [0, 1]
-
-        if "kappa" in observables:
-            limits["kappa"][1]  = [0., 3.]
-            limits["kappa"][2]  = [0., 3.]
-            limits["kappa"][5]  = [0., 3.]
-            limits["kappa"][10] = [0., 3.]
-            limits["kappa"][20] = [0., 3.]
-
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-            limits["Gamma"][20] = [0., 1.]
-
     print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}
     smooth_vec = {}
     for zoom in zoomin:
-        smooth[zoom], smooth_vec[zoom] = smoothData(dumpData, setup, theta, observables, zoom)
+        smooth[zoom], smooth_vec[zoom] = smoothData(dumpData, setup, theta, observables, zoom, nneighb, n_grid, n_grid_vec)
 
-        if not "global" in run and not "local" in run and not customRanges:
-            if "rho" in observables:
-                limits["rho"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["rho"]), log=True, round=round_bounds)
-            if "speed" in observables:
-                limits["speed"][zoom] = findBounds(smooth[zoom]['smooth_y']["speed"], log=False, round=round_bounds)
-                limits["speed"][zoom][0] = max(limits["speed"][zoom][0], 0.)
-            if "Tgas" in observables:
-                limits["Tgas"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["Tgas"]), log=True, round=round_bounds)
-            if "tau" in observables:
-                limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
-                limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
-            if "tau" in observables:
-                limits["kappa"][zoom] = findBounds(smooth[zoom]['smooth_y']["kappa"], log=False, round=round_bounds)
-            if "tau" in observables:
-                limits["Gamma"][zoom] = findBounds(smooth[zoom]['smooth_y']["Gamma"], log=False, round=round_bounds)
+        if save: saveData(observables, loc, smooth, smooth_vec, zoom)
 
-        if printRanges:
-            print("          Ranges of Parameters: zoom = "+str(zoom))
-            if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
-            if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
-            if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
-            if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
-            if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
-            if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
-
-        try:
-            os.makedirs(os.path.join(loc, 'txt/SlicePlots2D'))
-        except OSError:
-            pass
-        if "rho" in observables:
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_z'.format(zoom)), smooth[zoom]['x_z']/cgs.au)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_y_z'.format(zoom)), smooth[zoom]['y_z']/cgs.au)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_z'.format(zoom)), smooth[zoom]['smooth_z']["rho"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_y'.format(zoom)), smooth[zoom]['x_y']/cgs.au)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_z_y'.format(zoom)), smooth[zoom]['z_y']/cgs.au)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_y'.format(zoom)), smooth[zoom]['smooth_y']["rho"])
-        if "speed" in observables:
-            vx = smooth_vec[zoom]['smooth_z']['vx']
-            vy = smooth_vec[zoom]['smooth_z']['vy']
-            normaliseVectorLength = np.hypot(vx, vy)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_z'.format(zoom)), smooth[zoom]['smooth_z']["speed"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_y'.format(zoom)), smooth[zoom]['smooth_y']["speed"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_x'.format(zoom)), smooth_vec[zoom]['x_z'] / cgs.au)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_y'.format(zoom)), smooth_vec[zoom]['y_z'] / cgs.au)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vx'.format(zoom)), vx / normaliseVectorLength)
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vy'.format(zoom)), vy / normaliseVectorLength)
-
-        if "Gamma" in observables:
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_z'.format(zoom)), smooth[zoom]['smooth_z']["Gamma"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_y'.format(zoom)), smooth[zoom]['smooth_y']["Gamma"])
-        if "Tdust" in observables:
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_z'.format(zoom)), smooth[zoom]['smooth_z']["Tdust"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_y'.format(zoom)), smooth[zoom]['smooth_y']["Tdust"])
-        if "tau" in observables:
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_z'.format(zoom)), smooth[zoom]['smooth_z']["tau"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_y'.format(zoom)), smooth[zoom]['smooth_y']["tau"])
-        if "tauL" in observables:
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_z'.format(zoom)), smooth[zoom]['smooth_z']["tauL"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_y'.format(zoom)), smooth[zoom]['smooth_y']["tauL"])
-        if "kappa" in observables:
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_z'.format(zoom)), smooth[zoom]['smooth_z']["kappa"])
-            np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_y'.format(zoom)), smooth[zoom]['smooth_y']["kappa"])
+        if not customRanges: limits = makeLimits(observables, smooth, zoom)
 
         # Make plots
         densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, run, loc, rAccComp, rAccComp_in, number = number, orbital=True)

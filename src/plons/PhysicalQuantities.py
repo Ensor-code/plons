@@ -15,9 +15,9 @@ def getPressure(density, u, gamma):
     return (gamma-1)*density*u
 
 '''
-Returns the temperature, given the pressure [Ba] and density [g/cm^3] in K (via Ideal Gas Law)
+Returns the temperature, given gamma, mu and the internal energy u
 '''
-def getTemp(pressure, density, gamma, mu, u):
+def getTemp(gamma, mu, u):
     temp = (gamma-1.) * mu * u * cgs.mH / cgs.kB
     return temp
 
