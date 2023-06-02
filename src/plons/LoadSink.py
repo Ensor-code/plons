@@ -33,15 +33,32 @@ def LoadSink_cgs(run, loc, setup, userSettingsDictionary):
     runName = os.path.join(loc, run)
     userPrefix = userSettingsDictionary["prefix"]
 
-    # load the dump file wind_00xxx
-    t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = 0, 0, 0, 0, 0, 0, 0, 0, 0
-    t2, x2, y2, z2, mass2, vx2, vy2, vz2, maccr2 = 0, 0, 0, 0, 0, 0, 0, 0, 0
-    if setup['triple_star']==True:
-        t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3 = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    # #load the dump file wind_00xxx
+    #t1, x1, y1, z1, mass1, vx1, vy1, vz1, maccr1 = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    #t2, x2, y2, z2, mass2, vx2, vy2, vz2, maccr2 = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    #if setup['triple_star']==True:
+        #t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3 = 0, 0, 0, 0, 0, 0, 0, 0, 0
 
     numberOfevFiles = findLastWindSinkIndex(runName,userPrefix)
+    n=1
+    fileName_sink1 = os.path.join(runName, str('%sSink0001N0'%userPrefix+str(n)+'.ev'))
+    fileName_sink2 = os.path.join(runName, str('%sSink0002N0'%userPrefix+str(n)+'.ev'))
 
-    for n in range(1,numberOfevFiles+1):
+    if setup['triple_star']==True:
+        fileName_sink3 = os.path.join(runName, str('%sSink0003N0'%userPrefix+str(n)+'.ev'))
+
+    try:
+    # to calculate period, we need masses and sma, so coordinates
+        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(fileName_sink1, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        n_file = len(t1)
+        (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(fileName_sink2, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
+        if setup['triple_star']==True:
+            (t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3) = np.loadtxt(fileName_sink3, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
+    except OSError:
+        print(' ERROR: No sink files found for this model in the current directory!')
+
+
+    for n in range(2,numberOfevFiles+1):
         #print(n)
         fileName_sink1 = os.path.join(runName, str('%sSink0001N0'%userPrefix+str(n)+'.ev'))
         fileName_sink2 = os.path.join(runName, str('%sSink0002N0'%userPrefix+str(n)+'.ev'))
