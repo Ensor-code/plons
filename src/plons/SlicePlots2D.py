@@ -36,11 +36,16 @@ sigma_bounds_l  = 2.
 Load the smoothing kernel data
 '''
 def smoothData(dumpData, setup, theta, observables, zoom, nneighb = 10, n_grid = 200, n_grid_vec = 25):
+    from plons.SmoothingKernelScript import getPixels
     print('          Calculating zoom = '+str(zoom), end='\r')
-    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'z', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh)
-    results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'z', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
-    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, 'comp', 'y', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh)
-    results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], 'comp', 'y', (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom, theta, mesh, vec=True)
+    pixCoord    = getPixels('z', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
+    results_sph_sl_z, x1, y1, z1  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, pixCoord, 'z', theta, mesh)
+    pixCoord    = getPixels('z', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
+    results_sph_sl_z_vec, x1_vec, y1_vec, z1_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], pixCoord, 'z', theta, mesh, vec=True)
+    pixCoord    = getPixels('y', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
+    results_sph_sl_y, x2, y2, z2  = sk.getSmoothingKernelledPix(n_grid, nneighb, dumpData, observables, pixCoord, 'y', theta, mesh)
+    pixCoord    = getPixels('y', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
+    results_sph_sl_y_vec, x2_vec, y2_vec, z2_vec  = sk.getSmoothingKernelledPix(n_grid_vec, nneighb, dumpData, ['vx', 'vy', 'vz'], pixCoord, 'y', theta, mesh, vec=True)
 
     if (setup['single_star']):
         xcomp, ycomp = 0,0

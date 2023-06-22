@@ -157,9 +157,7 @@ Get the values on a healpy sphere for n pixels, 'neighbours' neighbours for a li
       'shape' to specify which kind of slice
       'theta' is the angle between the x-axis and companion
 '''
-def getSmoothingKernelledPix(n, neighbours, data, params, r, shape, bound, theta, mesh=False, vec=False):
-
-    pixCoord    = getPixels(shape, n, r, data, bound)
+def getSmoothingKernelledPix(n, neighbours, data, params, pixCoord, shape, theta, mesh=False, vec=False):
 
     # Rotate the plane/line to align with companion
     if shape != 'line_z':
