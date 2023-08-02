@@ -62,7 +62,7 @@ Get a 2D array containing the [x,y,z]-components of all pixels
 def getPixels(shape, n, r, data, bound):
 
     pixCoord = np.zeros(n)
-    # for a spherical slice --> use healpy
+    # for a spherical slice centred around the AGB star (viewpoint from AGB surface) --> use healpy
     if shape == 'r':
         # define the amount of pixels for the spherical plot: always of the form 12*n**2
         npix = 12*n**2
@@ -148,7 +148,7 @@ def getPixels(shape, n, r, data, bound):
 
 
 '''
-Get the values on a healpy sphere for n pixels, 'neighbours' neighbours for a list of parameters 'params'
+Get the values on a healpy sphere/plane or line for n pixels, 'neighbours' neighbours for a list of parameters 'params'
       'n' and 'neighbours' are integers
       'params'  is a list of strings with the name of the parameter
       'data'    is the dictionary with all the data of the dump

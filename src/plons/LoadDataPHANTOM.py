@@ -22,7 +22,7 @@ Load the data for a general model
 def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
     
     setup       = stp.LoadSetup(run, loc, userSettingsDictionary)
-    dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary, number)
+    dumpData    = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary, number)
     if setup['single_star']:
         sinkData  = snk.LoadSink_single_cgs(run, loc, setup, userSettingsDictionary)
         outerData = None
@@ -34,15 +34,15 @@ def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
         outerData = dmp.LoadDump_outer_cgs(factor, bound, setup, dumpData)
 
     # save the final specifics of the AGB star to dumpData
-    dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
-    dumpData['velAGB'   ] = sinkData['velAGB'     ][-1]
-    dumpData['rAGB'     ] = sinkData['rAGB'       ][-1]
-    dumpData['massAGB'  ] = sinkData['massAGB'    ][-1]
+    #dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]     #No, we want position of the dump file we use
+    # dumpData['velAGB'   ] = sinkData['velAGB'     ][-1]    #No, we want velocity of the dump file we use
+    #dumpData['rAGB'     ] = sinkData['rAGB'       ][-1]
+    #dumpData['massAGB'  ] = sinkData['massAGB'    ][-1]
     dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
 
     # save the final specifics of the companion to dumpData
     if not setup['single_star']:
-        dumpData['velComp'  ] = sinkData['velComp'    ][-1]
+        # dumpData['velComp'  ] = sinkData['velComp'    ][-1] #No, we want velocity of the dump file we use
         dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
         # dumpData['period_fi'] = sinkData['period_t'   ][-1]
         dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
@@ -51,7 +51,7 @@ def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
         #dumpData['v_orb_fi' ] = pq.getOrbitalVelocity(dumpData['period_fi'], dumpData['sma_fi'] /cgs.au )
 
     if setup['triple_star']:
-        dumpData['velComp_in'  ] = sinkData['velComp_in'    ][-1]
+        # dumpData['velComp_in'  ] = sinkData['velComp_in'    ][-1] #No, we want velocity of the dump file we use
         dumpData['maccrComp_in'] = sinkData['maccrComp_in'  ][-1]
         # dumpData['period_fi_in'] = sinkData['period_t_in'   ][-1]
         dumpData['v_orbComp_in'] = sinkData['v_orbComp_in_t'][-1]

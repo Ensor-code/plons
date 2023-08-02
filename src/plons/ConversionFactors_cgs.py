@@ -1,7 +1,7 @@
 
 # --- Physical constants in cgs ---
 
-G = 6.674e-8                    # gravitational constant     [cm^3 g^-1 s^-1]
+G = 6.674e-8                    # gravitational constant     [cm^3 g^-1 s^-2]
 mH = 1.6735337254999998e-24     # mass of a hydrogen         [g]
 kB = 1.380649e-16               # Boltzmann constant         [erg K^-1] 
 Rg = 8.31446261815324e7         # Gas constant               [erg/K/g]
