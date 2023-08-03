@@ -41,7 +41,7 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
     pixCoord = sk.getPixels('z', n_grid_vec, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_z_vec = sk.getSmoothingKernelledPix(nneighb, dumpData, ['vx', 'vy', 'vz'], sk.rotatePixCoordAroundZ(theta, pixCoord))
     VX1, VY1, VZ1, results_sph_sl_z_vec = sk.convertToMesh(pixCoord, results_sph_sl_z_vec, ['vx', 'vy', 'vz'])
-    results_sph_sl_z_vec = sk.rotateVelocityAroundZ(theta, results_sph_sl_z_vec)
+    results_sph_sl_z_vec = sk.rotateVelocityAroundZ(-theta, results_sph_sl_z_vec)
     
     pixCoord = sk.getPixels('y', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_y = sk.getSmoothingKernelledPix(nneighb, dumpData, observables, sk.rotatePixCoordAroundZ(theta, pixCoord))
@@ -50,7 +50,7 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
     pixCoord = sk.getPixels('y', n_grid_vec, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_y_vec = sk.getSmoothingKernelledPix(nneighb, dumpData, ['vx', 'vy', 'vz'], sk.rotatePixCoordAroundZ(theta, pixCoord)) 
     VX2, VY2, VZ2, results_sph_sl_y_vec = sk.convertToMesh(pixCoord, results_sph_sl_y_vec, ['vx', 'vy', 'vz'])
-    results_sph_sl_y_vec = sk.rotateVelocityAroundZ(theta, results_sph_sl_z_vec)
+    results_sph_sl_y_vec = sk.rotateVelocityAroundZ(-theta, results_sph_sl_z_vec)
 
     if setup['single_star']:
         smooth = {  'smooth_z'     :  results_sph_sl_z,

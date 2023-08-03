@@ -261,6 +261,14 @@ def rotatePixCoordAroundZ(theta, pixCoord):
 
     return rotatedArray
 
+@nb.njit()
+def rotateMeshAroundZ(theta, X, Y, Z):
+    X_rot = X * np.cos(theta) - Y * np.sin(theta)
+    Y_rot = X * np.sin(theta) + Y * np.cos(theta)
+    Z_rot = Z
+
+    return X_rot, Y_rot, Z_rot
+
 def rotateVelocityAroundZ(theta, velocity):
     VX = velocity['vx']
     VY = velocity['vy']
