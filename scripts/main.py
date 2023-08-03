@@ -11,12 +11,11 @@ import argparse                     as ap
 import plons.RadialStructurePlots1D       as rs
 import plons.SlicePlots2D                 as sl
 import plons.CMF_meanRho                  as cmf
-import plons.OrbitalEvolutionWAql         as ov
+import plons.OrbitalEvolution             as ov
 import plons.LoadData              as ld
 import plons.TerminalVelocity             as tmv
-import plons.Tubes                        as tb
 import plons.Profiles1D                   as dp
-import plons.userSettings                 as us
+import userSettings                 as us
 import plons.ArchimedianSpiral            as ars
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
@@ -42,11 +41,11 @@ helpoptions = "The integers of options you want to run:"
 for option in options:
     helpoptions+='\n'+options[option]
 p.add_argument("-o", "--options", action="store", default='', type = str, nargs='*', dest = "options", help = helpoptions)
-p.add_argument("-z", "--zoom", action="store", default='', type = str, nargs='*', dest = "zoom", help = helpoptions)
+p.add_argument("-z", "--zoom", action="store", default='1 5 10', type = str, nargs='*', dest = "zoom")
 args = p.parse_args()
 runModels = args.models
 runParts = args.options
-zoomin = args.zoom
+zoomin = np.array(args.zoom.split(), dtype=int)
 
 def run_main(outputloc,runParts,numbers, models):
     for number in numbers:
@@ -63,7 +62,7 @@ def run_main(outputloc,runParts,numbers, models):
             
         print('')
         print('Data is loading...')
-        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound, userSettingsDictionary)
+        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, userSettingsDictionary, bound, factor)
         print('All data is loaded and ready to use.')
         print('')
         for part in runParts:
@@ -87,11 +86,10 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
     if part == '1':
         print('')
         print('(1)  Start calculations for slice plots...')
-        if zoomin != '':
-            for i in range(len(zoomin)): zoomin[i] = int(zoomin[i])
-            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
+        if customRanges:
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, limits=limits)
         else:
-            sl.SlicePlots(run, saveloc, dumpData, setup, observables=observables)
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
         
     if part == '2':
         print('')
@@ -151,6 +149,57 @@ phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
 if "observables" in userSettingsDictionary:
     observables = userSettingsDictionary["observables"]
 else: observables = ['rho', 'Tgas', 'speed']
+
+customRanges = True
+if customRanges:
+    limits = {}
+    for observable in observables:
+        limits[observable] = {}
+        for zoom in zoomin:
+           limits[observable][zoom] = [0.,0.]
+    if customRanges:
+        if "rho" in observables:
+            limits["rho"][1]  = [-19, -14]
+            limits["rho"][2]  = [-19, -14]
+            limits["rho"][4]  = [-17, -14]
+            limits["rho"][5]  = [-17, -14]
+            limits["rho"][10] = [-19, -14]
+            limits["rho"][20] = [-18, -13]
+
+        if "speed" in observables:
+            limits["speed"][1]  = [0., 20.]
+            limits["speed"][2]  = [0., 20.]
+            limits["speed"][5]  = [0., 20.]
+            limits["speed"][10] = [0., 20.]
+            limits["speed"][20] = [0., 20.]
+
+        if "Tgas" in observables:
+            limits["Tgas"][1]  = [1., 4.]
+            limits["Tgas"][2]  = [1., 4.]
+            limits["Tgas"][5]  = [1., 4.]
+            limits["Tgas"][10] = [1., 4.]
+            limits["Tgas"][20] = [1., 4.]
+
+        if "tau" in observables:
+            limits["tau"][1]  = [0, 1]
+            limits["tau"][2]  = [0, 1]
+            limits["tau"][5]  = [0, 1]
+            limits["tau"][10] = [0, 1]
+            limits["tau"][20] = [0, 1]
+
+        if "kappa" in observables:
+            limits["kappa"][1]  = [0., 3.]
+            limits["kappa"][2]  = [0., 3.]
+            limits["kappa"][5]  = [0., 3.]
+            limits["kappa"][10] = [0., 3.]
+            limits["kappa"][20] = [0., 3.]
+
+        if "Gamma" in observables:
+            limits["Gamma"][1]  = [0., 1.]
+            limits["Gamma"][2]  = [0., 1.]
+            limits["Gamma"][5]  = [0., 1.]
+            limits["Gamma"][10] = [0., 1.]
+            limits["Gamma"][20] = [0., 1.]
 
 # Which parts do you want to run?
 factor      = 3   # the without inner, is without r< factor * sma
