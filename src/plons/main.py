@@ -12,7 +12,7 @@ import plons.RadialStructurePlots1D       as rs
 import plons.SlicePlots2D                 as sl
 import plons.CMF_meanRho                  as cmf
 import plons.OrbitalEvolution             as ov
-import plons.LoadDataPHANTOM              as ld
+import plons.LoadData              as ld
 import plons.TerminalVelocity             as tmv
 import plons.Profiles1D                   as dp
 import plons.userSettings                 as us
