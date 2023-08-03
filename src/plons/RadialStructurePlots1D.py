@@ -81,23 +81,16 @@ def radialStructPlots(run,loc, dumpData, setup):
         if setup['single_star'] == False:
             theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
-        pixCoord    = getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
-        results_line_X, xX, yX, zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'Tgas', 'speed'], pixCoord,
-                                                                 'line_x', theta)
-        pixCoord    = getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
-        results_line_Z, xZ, yZ, zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho', 'Tgas', 'speed'], pixCoord,
-                                                                 'line_z', theta)
+        pixCoordX      = getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
+        pixCoordZ      = getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        results_line_Z = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], pixCoordZ)
 
-        parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
-        parY = np.zeros_like(parX)
-        parZ = getParamsLine(results_line_Z, zZ, 1., gamma)
+        parX = getParamsLine(results_line_X, pixCoordX.transpose()[0], 1., gamma, pixCoordX.transpose()[1], dumpData)
+        parZ = getParamsLine(results_line_Z, pixCoordZ.transpose()[2], 1., gamma)
 
         X = parX[3]
-        Y = np.zeros_like(X)
         Z = parZ[3]
-
-        Mdot = setup['Mdot']
-        vini = setup['v_ini']
 
         # Bounds
         
@@ -105,7 +98,6 @@ def radialStructPlots(run,loc, dumpData, setup):
         rhoMinZ, rhoMaxZ = np.min(parZ[0]), np.max(parZ[0])
         rhoMin           = 0.1 * min(rhoMinX[rhoMinX>0], rhoMinZ[rhoMinZ>0])
         rhoMax           = 10 * max(rhoMaxX, rhoMaxZ)
-        #print('rhomin en max zijn: ',rhoMin,rhoMax)
 
         vMinX, vMaxX = np.min(parX[1]), np.max(parX[1])
         vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
@@ -188,23 +180,17 @@ def radialStructPlots(run,loc, dumpData, setup):
         if setup['single_star'] == False:
             theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
-        pixCoord    = getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
-        results_line_X,xX,yX,zX = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','Tgas','speed'],'line_x', theta)
-        pixCoord    = getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
-        results_line_Z,xZ,yZ,zZ = sk.getSmoothingKernelledPix(n_grid, 20, dumpData, ['rho','Tgas','speed'],'line_z', theta)
+        pixCoordX      = getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
+        pixCoordZ      = getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        results_line_Z = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], pixCoordZ)
 
         gamma = setup["gamma"]
-        parX = getParamsLine(results_line_X, xX, 1., gamma, yX, dumpData)
-        parY = np.zeros_like(parX)
-        parZ = getParamsLine(results_line_Z, zZ, 1., gamma)
-
+        parX = getParamsLine(results_line_X, pixCoordX.transpose()[0], 1., gamma, pixCoordX.transpose()[1], dumpData)
+        parZ = getParamsLine(results_line_Z, pixCoordZ.transpose()[2], 1., gamma)
 
         X = parX[3]
-        Y = np.zeros_like(X)
         Z = parZ[3]
-
-        Mdot  = setup['Mdot' ]
-        vini  = setup['v_ini']
 
         # Bounds
         rhoMinX, rhoMaxX = np.min(parX[0]), np.max(parX[0])

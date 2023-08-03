@@ -146,22 +146,28 @@ def getPixels(shape, n, r, data, bound):
 
     return pixCoord
 
+'''
+Smooth a plane described in the XYZ mesh
+      'X', 'Y', 'Z' are meshgrids in the XYZ plane, on which params need to be smoothed
+      'dumpData'    is the dictionary with all the data of the dump
+      'observables' is a list of strings with the name of the parameter
+      'neighbours' is an integer representing how many neighbours are used in the calculation
+'''
+def smoothMesh(X, Y, Z, dumpData, observables, neighbours = 100):
+    pixCoord = convertFromMesh(X, Y, Z)
+    smooth = getSmoothingKernelledPix(neighbours, dumpData, observables, pixCoord)
+    X, Y, Z, smooth = convertToMesh(pixCoord, smooth, observables)
+    return smooth
+
 
 '''
-Get the values on a healpy sphere for n pixels, 'neighbours' neighbours for a list of parameters 'params'
-      'n' and 'neighbours' are integers
+Get the smoothed values for the params, using the smoothing kernel with neighbours
+      'neighbours' is an integer representing how many neighbours are used in the calculation
       'params'  is a list of strings with the name of the parameter
       'data'    is the dictionary with all the data of the dump
-      'r'       is a string with the radius of the wanted sphere
-                if 'comp', take the radius up to the companion, else, float('r') --> radius
-      'shape' to specify which kind of slice
-      'theta' is the angle between the x-axis and companion
 '''
-def getSmoothingKernelledPix(n, neighbours, data, params, pixCoord, shape, theta, mesh=False, vec=False):
-
-    # Rotate the plane/line to align with companion
-    if shape != 'line_z':
-        pixCoord = rotatePixCoordAroundZ(theta, pixCoord)
+def getSmoothingKernelledPix(neighbours, data, params, pixCoord):
+    from scipy.spatial import cKDTree
 
     # define all nearest neighbours
     tree = cKDTree(data['position'])
@@ -176,7 +182,7 @@ def getSmoothingKernelledPix(n, neighbours, data, params, pixCoord, shape, theta
                           - of every closest neighbour of that point
                           - the x, y, z values of th position of the closest neighbour
     '''
-    position_closest_points = data['position'][closest_points]
+    # position_closest_points = data['position'][closest_points]
     h_closest_points        = data['h'       ][closest_points]
 
     # Get the smoothing kernel W_ab for all nearest neighbours for every pixel in 'sphere'
@@ -188,59 +194,46 @@ def getSmoothingKernelledPix(n, neighbours, data, params, pixCoord, shape, theta
         # Get the corresponding values for the parameter 'param' for every pixel, by param = sum(param_i*W_i), for i ~ [0,neighbours]
         results[param] = getParamSmoothingKernel(closest_points, W_ab, data[param]) 
 
-    if shape == 'r':
-        return results
-    
-    if shape == 'z' or shape == 'y' or shape == 'line_x' or shape == 'line_y' or shape == 'line_z':
-        pixCoord = np.array(pixCoord).transpose()
+    return results
 
-        if ('line' not in shape) and (mesh == True):
-            X, Y, Z, results = convertToMesh(n, pixCoord[0], pixCoord[1], pixCoord[2], results, params, theta)
+def convertFromMesh(X, Y, Z):
+    n = len(X)
 
-            if (shape == 'z'):
-                X, Y, Z = rotateOrbitalPlaneAroundZ(theta, X, Y, Z)
+    r = np.zeros((n**2, 3))
 
-            if vec == True:
-                vecx, vecy, vecz = rotateOrbitalPlaneAroundZ(theta, results[params[0]], results[params[1]], results[params[2]])
-                results[params[0]] = vecx
-                results[params[1]] = vecy
-                results[params[2]] = vecz
+    i0 = 0
+    i1 = n
+    for i in range(n):
+        r[:,0][i0: i1] = np.transpose(X[:n, i])
+        r[:,1][i0: i1] = np.transpose(Y[:n, i])
+        r[:,2][i0: i1] = np.transpose(Z[:n, i])
+        i0 += n
+        i1 += n
 
-            return results, X, Y, Z
-
-        else:
-            return results, pixCoord[0], pixCoord[1], pixCoord[2]
-
+    return r
             
 '''
 Transform one dimensional arrays to a 2D mesh. 
     'n' is the length of the arrays
-    'x', 'y' and 'z' are the regular one dimensional arrays
+    'r' is the position vector, x=r[:,0], y=r[:,1] and z=r[:,2] the regular one dimensional arrays
     params is a list of strings for the parameters of interest
     data_params is a dictionary for the data of params
 '''
-def convertToMesh(n, x, y, z, data_params, params, theta):
+def convertToMesh(r, data_params, params):
+    n = int(np.sqrt(len(r[:,0])))
+
     X = np.zeros(shape=(n, n))
     Y = np.zeros(shape=(n, n))
     Z = np.zeros(shape=(n, n))
 
-    if theta == 0.:
-        x_cut = x[::n]
-        y_cut = y[:n]
-        z_cut = z[:n]
-
-        X, Y  = np.meshgrid(x_cut, y_cut)
-        X, Z  = np.meshgrid(x_cut, z_cut)
-
-    else:
-        i0 = 0
-        i1 = n
-        for i in range(n):
-            X[:n, i] = np.transpose(x[i0: i1])
-            Y[:n, i] = np.transpose(y[i0: i1])
-            Z[:n, i] = np.transpose(z[i0: i1])
-            i0 += n
-            i1 += n
+    i0 = 0
+    i1 = n
+    for i in range(n):
+        X[:n, i] = np.transpose(r[:,0][i0: i1])
+        Y[:n, i] = np.transpose(r[:,1][i0: i1])
+        Z[:n, i] = np.transpose(r[:,2][i0: i1])
+        i0 += n
+        i1 += n
 
     for param in params:
         temp_mesh = np.zeros(shape=(n, n))
@@ -252,8 +245,7 @@ def convertToMesh(n, x, y, z, data_params, params, theta):
             i1 += n
         data_params[param] = temp_mesh
 
-
-    return [X, Y, Z, data_params]
+    return X, Y, Z, data_params
 
 @nb.njit()
 def rotatePixCoordAroundZ(theta, pixCoord):
@@ -273,13 +265,13 @@ def rotatePixCoordAroundZ(theta, pixCoord):
 
     return rotatedArray
 
-@nb.njit()
-def rotateOrbitalPlaneAroundZ(theta, X, Y, Z):
-    # Subtract the angle of the companion from the orbital plane
-    theta = -theta
+def rotateVelocityAroundZ(theta, velocity):
+    VX = velocity['vx']
+    VY = velocity['vy']
+    VZ = velocity['vz']
+    
+    velocity['vx'] = VX * np.cos(theta) - VY * np.sin(theta)
+    velocity['vy'] = VX * np.sin(theta) + VY * np.cos(theta)
+    velocity['vz'] = VZ
 
-    X_rot = X * np.cos(theta) - Y * np.sin(theta)
-    Y_rot = X * np.sin(theta) + Y * np.cos(theta)
-    Z_rot = Z
-
-    return [X_rot, Y_rot, Z_rot]
+    return velocity

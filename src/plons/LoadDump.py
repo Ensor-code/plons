@@ -12,28 +12,17 @@ import plons.ConversionFactors_cgs    as cgs
 Loads the final full dump of a phantom model, given the number, in cgs-units 
     
 INPUT:
-    - 'run'   is the number of the run specifically           [str]
-    - 'loc'   is the directory where the model is located     [str]
+    - 'dir'   is the directory where the model is located     [str]
     - 'setup' is the setup data                               [dict]
     
 RETURNS
     a dictionary containing the data from the dump (all units in cgs)
 '''
-def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
+def LoadDump_cgs(fileName, setup, phantom_dir):
 
     # Load read_dump script to read PHANTOM dump files
-    runName = os.path.join(loc,run)
-    userPrefix = userSettingsDictionary["prefix"]
-    phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
     sys.path.append(phantom_dir+"/scripts")
     from readPhantomDump import read_dump
-
-    # Pick either last dump file or user chosen file
-    if number == -1: index = findLastFullDumpIndex(userPrefix, setup, runName)
-    else: index = number
-
-    # make filename of this filenumber
-    fileName       = runName+'/{0:s}_{1:05d}'.format(userPrefix, index)
 
     # reading the dumpfile
     dump = read_dump(fileName)
@@ -54,7 +43,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
     xAGB     = dump["blocks"][1]["data"]["x"][0] * unit_dist
     yAGB     = dump["blocks"][1]["data"]["y"][0] * unit_dist
     zAGB     = dump["blocks"][1]["data"]["z"][0] * unit_dist
-    posAGB   = [xAGB, yAGB, zAGB]
+    posAGB   = np.array([xAGB, yAGB, zAGB])
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
     massAGB  = dump["blocks"][1]["data"]["m"][0] * unit_mass
     lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
@@ -64,7 +53,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         xComp    = dump["blocks"][1]["data"]["x"][1] * unit_dist
         yComp    = dump["blocks"][1]["data"]["y"][1] * unit_dist
         zComp    = dump["blocks"][1]["data"]["z"][1] * unit_dist
-        posComp  = [xComp, yComp, zComp]
+        posComp  = np.array([xComp, yComp, zComp])
         rComp    = gf.calc_r(xComp, yComp, zComp)
         massComp = dump["blocks"][1]["data"]["m"][1] * unit_mass
         rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
@@ -74,7 +63,7 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             xComp_in    = dump["blocks"][1]["data"]["x"][2] * unit_dist
             yComp_in    = dump["blocks"][1]["data"]["y"][2] * unit_dist
             zComp_in    = dump["blocks"][1]["data"]["z"][2] * unit_dist
-            posComp_in  = [xComp_in, yComp_in, zComp_in]
+            posComp_in  = np.array([xComp_in, yComp_in, zComp_in])
             rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
             massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
 
@@ -126,16 +115,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
         else:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB)
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
-        
-    # σ     = 5.670374419e-8 # W m^-2 K^-4
-    # Tdust = (np.load(dir+'Jfull.npy')*np.pi/σ)**(1/4)
-    # kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
-    # rho   = np.load(dir+'Errfull.npy')
-    # Gamma = np.load(dir+'Gamma.npy')
-    # x     = np.load(dir+'xtemp.npy')*unit_dist
-    # y     = np.load(dir+'ytemp.npy')*unit_dist
-    # z     = np.load(dir+'ztemp.npy')*unit_dist
-    # h     = np.load(dir+'htemp.npy')*unit_dist
 
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
@@ -160,7 +139,6 @@ def LoadDump_cgs(run, loc, setup, userSettingsDictionary, number = -1):
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,                  
             'vtvv'          : vtvv,     
-            'fileNumber'    : index,
             'r'             : r,                     # [cm]
             'phi'           : phi,     
             'theta'         : theta,     
@@ -304,7 +282,6 @@ def findLastFullDumpIndex(userPrefix, setup, runName):
 
 def findAllFullDumpIndices(userSettingsDictionary, setup, runName):
     userPrefix = userSettingsDictionary['prefix']
-    listDumps = sortedDumpList(userPrefix, runName)
     lastFullDumpIndex = findLastFullDumpIndex(userPrefix, setup, runName)
     fullDumpLists = np.arange(0, lastFullDumpIndex + 1, setup['nfulldump'], dtype=int)
     return fullDumpLists

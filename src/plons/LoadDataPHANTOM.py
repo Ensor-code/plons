@@ -5,6 +5,8 @@ import plons.LoadDump                 as dmp
 import plons.LoadSink                 as snk
 import plons.LoadSetup                as stp
 
+import os
+
 
 '''
 Load the data for a general model
@@ -19,19 +21,23 @@ Load the data for a general model
         - 'sinkData'        data of the two sink particles in function of time
         - 'outerData'       data from the last dump in a chosen range (None for a single model)
 '''
-def LoadData_cgs(run, loc, factor, bound, userSettingsDictionary, number = -1):
+def LoadData_cgs(run, loc, userSettingsDictionary, bound = None, factor = -1, number = -1):
     
-    setup       = stp.LoadSetup(run, loc, userSettingsDictionary)
-    dumpData  = dmp.LoadDump_cgs(run, loc, setup, userSettingsDictionary, number)
-    if setup['single_star']:
-        sinkData  = snk.LoadSink_single_cgs(run, loc, setup, userSettingsDictionary)
-        outerData = None
+    dir       = os.path.join(loc, run)
+    setup     = stp.LoadSetup(dir, userSettingsDictionary["prefix"])
 
-    else:
-        sinkData  = snk.LoadSink_cgs(run, loc, setup, userSettingsDictionary)
-        if bound == None:
-            bound = setup['bound']
+    # Pick either last dump file or user chosen file
+    if number == -1: index = dmp.findLastFullDumpIndex(userSettingsDictionary["prefix"], setup, dir)
+    else: index = number
+    fileName       = dir+'/{0:s}_{1:05d}'.format(userSettingsDictionary["prefix"], index)
+    dumpData  = dmp.LoadDump_cgs(fileName, setup, userSettingsDictionary["hard_path_to_phantom"])
+
+    sinkData  = snk.LoadSink_cgs(dir, userSettingsDictionary['prefix'], setup["icompanion_star"])
+    if bound == None:
+        bound = setup['bound']
+    if factor > 0:
         outerData = dmp.LoadDump_outer_cgs(factor, bound, setup, dumpData)
+    else: outerData = None
 
     # save the final specifics of the AGB star to dumpData
     dumpData['posAGB'   ] = sinkData['posAGB'     ][-1]
