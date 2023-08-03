@@ -62,7 +62,7 @@ def run_main(outputloc,runParts,numbers, models):
             
         print('')
         print('Data is loading...')
-        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, factor, bound, userSettingsDictionary)
+        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, userSettingsDictionary, bound, factor)
         print('All data is loaded and ready to use.')
         print('')
         for part in runParts:
@@ -86,7 +86,10 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
     if part == '1':
         print('')
         print('(1)  Start calculations for slice plots...')
-        sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
+        if customRanges:
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, limits=limits)
+        else:
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
         
     if part == '2':
         print('')

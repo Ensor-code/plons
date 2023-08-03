@@ -87,13 +87,9 @@ def getPixels(shape, n, r, data, bound):
         pixCoord = []
         for i in range(len(pix)):
             for j in range(len(pix)):
-                if bound >  0:
-                    pixCoord.append([pix[i],pix[j],0])
-                else:
-                    pixCoord.append([pix[i]+6*1.496e13,pix[j]-2*1.496e13,0])
+                pixCoord.append([pix[i],pix[j],0])
 
         pixCoord = np.array(pixCoord)
-        #print(pixCoord)
     
     # xz-plane
     if shape == 'y':

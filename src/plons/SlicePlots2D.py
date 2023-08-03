@@ -36,20 +36,20 @@ Load the smoothing kernel data
 def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10, n_grid = 200, n_grid_vec = 25):
     pixCoord = sk.getPixels('z', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_z = sk.getSmoothingKernelledPix(nneighb, dumpData, observables, sk.rotatePixCoordAroundZ(theta, pixCoord))
-    X1, Y1, Z1, results_sph_sl_z = sk.convertToMesh(pixCoord.transpose(), results_sph_sl_z, observables)
+    X1, Y1, Z1, results_sph_sl_z = sk.convertToMesh(pixCoord, results_sph_sl_z, observables)
 
     pixCoord = sk.getPixels('z', n_grid_vec, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_z_vec = sk.getSmoothingKernelledPix(nneighb, dumpData, ['vx', 'vy', 'vz'], sk.rotatePixCoordAroundZ(theta, pixCoord))
-    VX1, VY1, VZ1, results_sph_sl_z_vec = sk.convertToMesh(pixCoord.transpose(), results_sph_sl_z_vec, ['vx', 'vy', 'vz'])
+    VX1, VY1, VZ1, results_sph_sl_z_vec = sk.convertToMesh(pixCoord, results_sph_sl_z_vec, ['vx', 'vy', 'vz'])
     results_sph_sl_z_vec = sk.rotateVelocityAroundZ(theta, results_sph_sl_z_vec)
     
     pixCoord = sk.getPixels('y', n_grid, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_y = sk.getSmoothingKernelledPix(nneighb, dumpData, observables, sk.rotatePixCoordAroundZ(theta, pixCoord))
-    X2, Y2, Z2, results_sph_sl_z = sk.convertToMesh(pixCoord.transpose(), results_sph_sl_y, observables)
+    X2, Y2, Z2, results_sph_sl_y = sk.convertToMesh(pixCoord, results_sph_sl_y, observables)
     
     pixCoord = sk.getPixels('y', n_grid_vec, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_y_vec = sk.getSmoothingKernelledPix(nneighb, dumpData, ['vx', 'vy', 'vz'], sk.rotatePixCoordAroundZ(theta, pixCoord)) 
-    VX2, VY2, VZ2, results_sph_sl_y_vec = sk.convertToMesh(pixCoord.transpose(), results_sph_sl_y_vec, ['vx', 'vy', 'vz'])
+    VX2, VY2, VZ2, results_sph_sl_y_vec = sk.convertToMesh(pixCoord, results_sph_sl_y_vec, ['vx', 'vy', 'vz'])
     results_sph_sl_y_vec = sk.rotateVelocityAroundZ(theta, results_sph_sl_z_vec)
 
     if setup['single_star']:
@@ -63,7 +63,7 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
 
         smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
                         'x_z'      :  VX1,
-                        'x_z'      :  VY1,
+                        'y_z'      :  VY1,
                         'smooth_y' :  results_sph_sl_y_vec,
                         'x_y'      :  VX2,
                         'z_y'      :  VZ2
@@ -76,15 +76,15 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
                     'y_z'          :  Y1,
                     'smooth_y'     :  results_sph_sl_y,
                     'x_y'          :  X2, # planeCoordinates(n_grid, X2, Y2, xcomp, ycomp),
-                    'x_z'          :  Z2
+                    'z_y'          :  Z2
                     }
         smooth_vec = {
-            'smooth_z' :  results_sph_sl_z_vec,
+                        'smooth_z' :  results_sph_sl_z_vec,
                         'x_z'      :  VX1,
-                        'x_z'      :  VX1,
+                        'y_z'      :  VX1,
                         'smooth_y' :  results_sph_sl_y_vec,
                         'x_y'      :  VX2, # planeCoordinates(n_grid_vec, VX2, VY2, xcomp, ycomp),
-                        'x_z'      :  VZ2
+                        'z_y'      :  VZ2
                         }
 
     return smooth, smooth_vec
@@ -112,7 +112,7 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
 
     axPlot = None
     if orbital:
-        dataRho = np.log10(smooth[zoom]['smooth_z']["rho"])
+        dataRho = np.log10(smooth[zoom]['smooth_z']["rho"]+1e-99)
         if not mesh:
             axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.au, smooth[zoom]['y_z']/cgs.au,
                                 s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
@@ -122,7 +122,7 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, run, loc, rAccComp, rAccC
                                 dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
                                 rasterized=True)
     else:
-        dataRho = np.log10(smooth[zoom]['smooth_y']["rho"])
+        dataRho = np.log10(smooth[zoom]['smooth_y']["rho"]+1e-99)
         if not mesh:
             axPlot = ax.scatter(smooth[zoom]['x_y']/cgs.au, smooth[zoom]['z_y']/cgs.au,
                                 s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
