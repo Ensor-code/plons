@@ -47,6 +47,11 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
     massAGB  = dump["blocks"][1]["data"]["m"][0] * unit_mass
     lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
+    vxAGB    = dump["blocks"][1]["data"]["vx"][0] * unit_velocity
+    vyAGB    = dump["blocks"][1]["data"]["vy"][0] * unit_velocity
+    vzAGB    = dump["blocks"][1]["data"]["vz"][0] * unit_velocity
+    velAGB   = [vxAGB, vyAGB, vzAGB]
+
 
     # companion
     if not setup["single_star"]:
@@ -57,6 +62,11 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
         rComp    = gf.calc_r(xComp, yComp, zComp)
         massComp = dump["blocks"][1]["data"]["m"][1] * unit_mass
         rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
+        vxComp   = dump["blocks"][1]["data"]["vx"][1] * unit_velocity
+        vyComp   = dump["blocks"][1]["data"]["vy"][1] * unit_velocity
+        vzComp   = dump["blocks"][1]["data"]["vz"][1] * unit_velocity
+        velComp  = [vxComp,vyComp,vzComp]
+
 
         if setup['triple_star']:
             # inner companion
@@ -66,6 +76,10 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
             posComp_in  = np.array([xComp_in, yComp_in, zComp_in])
             rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
             massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
+            vxComp_in   = dump["blocks"][1]["data"]["vx"][2] * unit_velocity
+            vyComp_in   = dump["blocks"][1]["data"]["vy"][2] * unit_velocity
+            vzComp_in   = dump["blocks"][1]["data"]["vz"][2] * unit_velocity
+
 
     containsTau  = "tau" in dump["blocks"][0]["data"]
     containsTauL = "tau_lucy" in dump["blocks"][0]["data"]
@@ -90,7 +104,7 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
     y     = y                     [filter] * unit_dist     
     z     = z                     [filter] * unit_dist
     mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
-    vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]
+    vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]  !!---> no, in km/s??
     vy    = vy                    [filter] * unit_velocity / cgs.kms
     vz    = vz                    [filter] * unit_velocity / cgs.kms
     u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
@@ -146,6 +160,7 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
             'massAGB'       : massAGB,               # [g]
+            'velAGB'        : velAGB,
             'vx'            : vx,                    # [cm/s]
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz,                    # [cm/s]
@@ -156,12 +171,14 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
         data['posComp'    ] = posComp                # [cm]
         data['rComp'      ] = rComp                  # [cm]
         data['massComp'   ] = massComp               # [g]
+        data['velComp'    ] = velComp
         data['rHill'      ] = rHill                  # [cm]
 
     if setup['triple_star']:
         data["posComp_in" ] = posComp_in               # [cm]
         data['rComp_in'   ] = rComp_in                 # [cm]
         data['massComp_in'] = massComp_in              # [g]
+        data['velComp_in' ] = velComp_in
         
     if containsTau:
         data["tau"        ] = tau
@@ -173,7 +190,6 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
         data["kappa"      ] = kappa                  # [cm^2/g]
         data["Tdust"      ] = Tdust
 
-    
     return data
 
 '''
@@ -231,7 +247,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     h     = h                         [filter]             # cm
     r     = r                         [filter]
     
-    p     = pq.getPressure(rho, u, setup['gamma'])              # pressureure                   [Ba = 1e-1 Pa]
+    p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
     vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
     r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates

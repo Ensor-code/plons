@@ -110,6 +110,7 @@ def getEpsilon(vwind, sma, mComp, mAGB):
 
 '''
 Calculate the polar angle of the companion w.r.t. the x-axis
+! Same as phi from TransformToSpherical in GeometricalFunctions (which is for arrays)
 '''
 def getPolarAngleCompanion(x, y):
     theta = np.abs(np.arctan(y/x))
