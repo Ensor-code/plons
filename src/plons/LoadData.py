@@ -323,6 +323,7 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
             'massAGB'       : massAGB,               # [g]
+            'lumAGB'        : lumAGB,                # [erg/s]
             'velAGB'        : velAGB,
             'vx'            : vx,                    # [cm/s]
             'vy'            : vy,                    # [cm/s]
