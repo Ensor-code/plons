@@ -7,7 +7,7 @@ Welcome to plons's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 0
    :caption: Contents:
 
    1_examples/index
