@@ -2,3 +2,4 @@ sphinx>=4.4.0
 sphinx-copybutton
 nbsphinx
 breathe
+sphinx_rtd_theme
