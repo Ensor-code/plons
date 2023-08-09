@@ -163,7 +163,6 @@ Get the smoothed values for the params, using the smoothing kernel with neighbou
       'data'    is the dictionary with all the data of the dump
 '''
 def getSmoothingKernelledPix(neighbours, data, params, pixCoord):
-    from scipy.spatial import cKDTree
 
     # define all nearest neighbours
     tree = cKDTree(data['position'])

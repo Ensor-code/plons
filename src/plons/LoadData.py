@@ -11,54 +11,6 @@ import os
 
 
 '''
-Load the data for a general model
-    * INPUT
-        - 'run'     [str]   number of the model 
-        - 'loc'     [str]   directory of the output data from PHANTOM 
-        - 'factor'  [float] factor of the semi-major axis that you can to discard in order to consider the selfsimilar part of the model 
-        - 'bound'   [float] outer boundary you want to consider [AU] if you want the setup outer boundary, use None
-    * RETURN: four different dictionaries for a binary/single model containing:           
-        - 'setup'           setup information of the model
-        - 'dumpData'        data from the last full dump (last time step of the model)
-        - 'sinkData'        data of the two sink particles in function of time
-        - 'outerData'       data from the last dump in a chosen range (None for a single model)
-'''
-def LoadData_cgs(run, loc, userSettingsDictionary, bound = None, factor = -1, number = -1):
-    
-    dir       = os.path.join(loc, run)
-    setup     = LoadSetup(dir, userSettingsDictionary["prefix"])
-
-    # Pick either last dump file or user chosen file
-    if number == -1: index = findLastFullDumpIndex(userSettingsDictionary["prefix"], setup, dir)
-    else: index = number
-    fileName       = dir+'/{0:s}_{1:05d}'.format(userSettingsDictionary["prefix"], index)
-    dumpData  = LoadDump_cgs(fileName, setup, userSettingsDictionary["hard_path_to_phantom"])
-
-    sinkData  = LoadSink_cgs(dir, userSettingsDictionary['prefix'], setup["icompanion_star"])
-    if bound == None:
-        bound = setup['bound']
-    if factor > 0:
-        outerData = LoadDump_outer_cgs(factor, bound, setup, dumpData)
-    else: outerData = None
-
-    # save the final specifics of the AGB star to dumpData
-    dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
-
-    # save the final specifics of the companion to dumpData
-    if not setup['single_star']:
-        dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
-        dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
-        dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
-        dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
-
-    if setup['triple_star']:
-        dumpData['maccrComp_in'] = sinkData['maccrComp_in'  ][-1]
-        dumpData['v_orbComp_in'] = sinkData['v_orbComp_in_t'][-1]
-
-    return setup, dumpData, sinkData, outerData
-
-
-'''
 Only load the prefix.in and prefix.setup files to get general information about the phantom model
       Suited for binary and single model
       

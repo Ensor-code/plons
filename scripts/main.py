@@ -62,7 +62,7 @@ def run_main(outputloc,runParts,numbers, models):
             
         print('')
         print('Data is loading...')
-        [setup, dumpData, sinkData, outerData] = ld.LoadData_cgs(run, loc, userSettingsDictionary, bound, factor)
+        [setup, dumpData, sinkData, outerData] = LoadData_cgs(run, loc, userSettingsDictionary, bound=bound, factor=factor, runPart=runParts)
         print('All data is loaded and ready to use.')
         print('')
         for part in runParts:
@@ -127,6 +127,40 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('')
         print('(7)  Archimedian spiral')
         ars.ArchimedianSpiral(run, saveloc, setup)
+
+def LoadData_cgs(run, loc, userSettingsDictionary, bound = None, factor = -1, number = -1, runPart = 0):
+    dir       = os.path.join(loc, run)
+    setup     = ld.LoadSetup(dir, userSettingsDictionary["prefix"])
+
+    # Pick either last dump file or user chosen file
+    if number == -1: index = ld.findLastFullDumpIndex(userSettingsDictionary["prefix"], setup, dir)
+    else: index = number
+    fileName       = dir+'/{0:s}_{1:05d}'.format(userSettingsDictionary["prefix"], index)
+    dumpData  = ld.LoadDump_cgs(fileName, setup, userSettingsDictionary["hard_path_to_phantom"])
+
+    if len(set(runPart)-set([1, 2, 4, 6, 7]))>0:
+        sinkData  = ld.LoadSink_cgs(dir, userSettingsDictionary['prefix'], setup["icompanion_star"])
+        if bound == None:
+            bound = setup['bound']
+        if factor > 0:
+            outerData = ld.LoadDump_outer_cgs(factor, bound, setup, dumpData)
+        else: outerData = None
+
+    # save the final specifics of the AGB star to dumpData
+    dumpData['maccrAGB' ] = sinkData['maccrAGB'   ][-1]
+
+    # save the final specifics of the companion to dumpData
+    if not setup['single_star']:
+        dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
+        dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
+        dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
+        dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
+
+    if setup['triple_star']:
+        dumpData['maccrComp_in'] = sinkData['maccrComp_in'  ][-1]
+        dumpData['v_orbComp_in'] = sinkData['v_orbComp_in_t'][-1]
+
+    return setup, dumpData, sinkData, outerData
 
 print('')
 print('-------------------------------------------------------')
