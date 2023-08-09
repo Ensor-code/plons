@@ -3,8 +3,6 @@ import numpy                    as np
 import sys
 
 #import plons scripts
-import plons.LoadDump                 as dmp
-import plons.LoadSink                 as snk
 import plons.PhysicalQuantities       as pq
 import plons.ConversionFactors_cgs    as cgs
 import plons.GeometricalFunctions     as gf
@@ -31,16 +29,16 @@ def LoadData_cgs(run, loc, userSettingsDictionary, bound = None, factor = -1, nu
     setup     = LoadSetup(dir, userSettingsDictionary["prefix"])
 
     # Pick either last dump file or user chosen file
-    if number == -1: index = dmp.findLastFullDumpIndex(userSettingsDictionary["prefix"], setup, dir)
+    if number == -1: index = findLastFullDumpIndex(userSettingsDictionary["prefix"], setup, dir)
     else: index = number
     fileName       = dir+'/{0:s}_{1:05d}'.format(userSettingsDictionary["prefix"], index)
-    dumpData  = dmp.LoadDump_cgs(fileName, setup, userSettingsDictionary["hard_path_to_phantom"])
+    dumpData  = LoadDump_cgs(fileName, setup, userSettingsDictionary["hard_path_to_phantom"])
 
-    sinkData  = snk.LoadSink_cgs(dir, userSettingsDictionary['prefix'], setup["icompanion_star"])
+    sinkData  = LoadSink_cgs(dir, userSettingsDictionary['prefix'], setup["icompanion_star"])
     if bound == None:
         bound = setup['bound']
     if factor > 0:
-        outerData = dmp.LoadDump_outer_cgs(factor, bound, setup, dumpData)
+        outerData = LoadDump_outer_cgs(factor, bound, setup, dumpData)
     else: outerData = None
 
     # save the final specifics of the AGB star to dumpData
@@ -294,16 +292,15 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
 
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
-    vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
-    r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
+    # r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
 
         
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
         
+    r = np.linalg.norm(position, axis=1)
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
-    vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
     
     # output
     data = {'position'      : position,              # [cm]
@@ -315,10 +312,9 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
             'Tgas'          : temp,                  # [K] 
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,                  
-            'vtvv'          : vtvv,     
             'r'             : r,                     # [cm]
-            'phi'           : phi,     
-            'theta'         : theta,     
+            # 'phi'           : phi,
+            # 'theta'         : theta,
             'cs'            : cs,                    # [cm]
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
@@ -413,8 +409,7 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
-    vtan  = pq.getRadTanVelocity(x,y,vx,vy)                     # tangential velocity           [cm/s]
-    r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
+    # r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
 
     
     position = np.array((x, y, z )).transpose()
@@ -422,7 +417,6 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
-    vtvv  = (vtan/speed)**2      # fraction of the velocity that is tangential: if vtvv > 0.5 -> tangential
   
  
     
@@ -436,10 +430,9 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
             'Tgas'          : temp,          # [K]  
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          
-            'vtvv'          : vtvv,
             'r'             : r,             # [cm]
-            'phi'           : phi,           
-            'theta'         : theta,         
+            # 'phi'           : phi,           
+            # 'theta'         : theta,         
             'cs'            : cs             # [cm]
             }
     if "tau"   in dump: data["tau"]   = tau
@@ -619,8 +612,6 @@ def LoadSink_cgs(dir, userPrefix, icompanion_star = 0):
     # NOT CORRECT!!!
     #period          = pq.getPeriod(mass1, mass2, setup['sma_ini'] )
 
-    #print('period 1',period)
-    #print('period 2',setup['period'])
     #periodFixed = setup['period']
     #ONLY ORBITAL VEL OF OUTER COMPANION WILL BE CORRECT IN CASE OF TRIPLE, INNER HAS COMPLICATED ORBITAL VELOCITY
     #orbitalVel_AGB  = pq.getOrbitalVelocity(period, r1     /cgs.au_cm() )
@@ -634,12 +625,6 @@ def LoadSink_cgs(dir, userPrefix, icompanion_star = 0):
             orbitalVel_comp_in = np.sqrt(np.transpose(velocity3)[0]**2+np.transpose(velocity3)[1]**2)
 
 
-
-
-    #print('test orbital velocity:')
-    #print(np.shape(np.linalg.norm(np.transpose(velocity1))),np.shape(orbitalVel_AGB))
-    #print(np.nanmean(np.linalg.norm(np.transpose(velocity1))),np.nanmean(orbitalVel_AGB))
-    #print(np.array(np.linalg.norm(velocity1))[0:20],orbitalVel_AGB[0:20])
 
     # output
     #    "_t" stands for the fact that these values are in function of the evolution time, not from the last dump in function of location
