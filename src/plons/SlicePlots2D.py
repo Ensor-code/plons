@@ -8,7 +8,6 @@ import math
 import plons.SmoothingKernelScript    as sk
 import plons.ConversionFactors_cgs    as cgs
 import plons.PhysicalQuantities       as pq
-import plons.ArchimedianSpiral        as ars
 import plons.Plotting                 as plot
 
 # import certain things from packages

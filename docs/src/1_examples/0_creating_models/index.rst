@@ -4,12 +4,14 @@
 Creating models
 ###############
 
-The following examples show how to create Magritte models from analytic or tabulated data.
+The following examples show how to create figures using plons.
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
    
-   SliceLine.ipynb
-   SlicePlot.ipynb
+   0_SliceLine.ipynb
+   1_SlicePlot (beginner).ipynb
+   2_SlicePlot (advanced).ipynb
+   3_SliceLine Animations.ipynb

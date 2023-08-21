@@ -6,6 +6,7 @@
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/build-and-test.yaml/badge.svg)
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/upload-to-pypi.yaml/badge.svg)
 ![Build status](https://github.com/Ensor-code/plons/actions/workflows/upload-to-anaconda.yaml/badge.svg)
+![Build status](https://readthedocs.org/projects/plons/badge/?version=latest)
 
 
 This is the README for the PLONS PLOtting tool for Nice Simulations. It can be used to
