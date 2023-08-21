@@ -55,7 +55,6 @@ def oneRadialStructurePlot(parX,parZ, X, Z, parName, axis, parMin, parMax, rcomp
     axis.tick_params(axis='x', pad=9)
 
 def radialStructPlots(run,loc, dumpData, setup):
-    from plons.SmoothingKernelScript import getPixels
     #plots radial structure of log(rho), |v| and T on the x- and y-axis
     fig = None
     gamma = setup["gamma"]
@@ -81,9 +80,9 @@ def radialStructPlots(run,loc, dumpData, setup):
         if setup['single_star'] == False:
             theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
-        pixCoordX      = getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        pixCoordX      = sk.getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
         results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
-        pixCoordZ      = getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        pixCoordZ      = sk.getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
         results_line_Z = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], pixCoordZ)
 
         parX = getParamsLine(results_line_X, pixCoordX.transpose()[0], 1., gamma, pixCoordX.transpose()[1], dumpData)
@@ -180,9 +179,9 @@ def radialStructPlots(run,loc, dumpData, setup):
         if setup['single_star'] == False:
             theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
 
-        pixCoordX      = getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        pixCoordX      = sk.getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
         results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
-        pixCoordZ      = getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+        pixCoordZ      = sk.getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
         results_line_Z = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], pixCoordZ)
 
         gamma = setup["gamma"]

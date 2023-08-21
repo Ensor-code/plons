@@ -250,7 +250,10 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
         
-    r = np.linalg.norm(position, axis=1)
+    r     = np.linalg.norm(position, axis=1)
+    theta = gf.calcTheta(x,y,z)
+    phi   = gf.calcPhi(x, y, z)
+    
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
     
@@ -265,8 +268,8 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,                  
             'r'             : r,                     # [cm]
-            # 'phi'           : phi,
-            # 'theta'         : theta,
+            'theta'         : theta,
+            'phi'           : phi,
             'cs'            : cs,                    # [cm]
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
@@ -339,6 +342,8 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     if "Tdust" in dump: Tdust = dump['Tdust']
     h     = dump['h']
     r     = dump['r']
+    theta = dump['theta']
+    phi   = dump['phi']
 
     filter = (r > factor * setup['sma_ini'] * cgs.au) & (r < bound * cgs.au)
     x     = x                         [filter]             # cm
@@ -358,11 +363,11 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     if "Tdust" in dump: Tdust = Tdust [filter]
     h     = h                         [filter]             # cm
     r     = r                         [filter]
+    theta = theta                     [filter]
+    phi   = phi                       [filter]
     
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
-    # r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
-
     
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -383,8 +388,8 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
             'speed'         : speed,         # [cm/s]
             'mach'          : mach,          
             'r'             : r,             # [cm]
-            # 'phi'           : phi,           
-            # 'theta'         : theta,         
+            'phi'           : phi,           
+            'theta'         : theta,         
             'cs'            : cs             # [cm]
             }
     if "tau"   in dump: data["tau"]   = tau

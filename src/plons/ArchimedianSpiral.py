@@ -30,7 +30,7 @@ def ArchimedianSpiral(run, saveLoc, setup):
     if velocities(run):
         xi, yi, theta, xo, yo = ArchSpiral(run, setup, thetaIni)
     else:
-        print(run)
+        # print(run)
         return
 
     a_AGB  = setup['massAGB_ini']/(setup['massAGB_ini']+setup['massComp_ini'])*setup['sma_ini']*au

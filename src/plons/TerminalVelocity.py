@@ -397,24 +397,15 @@ def flattening(setup, sinkData):
 
 def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
     
-    single_star = setup['single_star']
-    
-    if single_star == False:
-
+    if not setup['single_star']:
         terminal_speed, binned_term_speed, wind_comp, index = getTerminalVelocity(setup, dump)
-        #print('')
-        #print('(3) Start calculations for morphological parameters eta, Qp and epsilon...')   #already printed in main.py
-        #print('')
         eta1, eta2                   = getEta_binary(setup, dump, sinkData, terminal_speed, wind_comp)
         massHill                     = getMassHillTorus(setup, dump)
         Qp_1, Qp_2, wind_comp_mean   = getQp(setup, wind_comp, massHill)
         epsilon_1                    = getEpsilon(wind_comp_mean, setup)
         epsilon_2                    = getEpsilon(wind_comp['mean'], setup)
         theta, flratio, EllipsEcc    = flattening(setup, sinkData)
-        
-        
-        
-    if single_star == True:
+    else:
         terminal_speed, binned_term_speed = getTerminalVelocity(setup, dump)
         wind_speed_single                 = getVelocity_single(binned_term_speed)
         Hill                              = getMassHillTorus(setup, dump)
@@ -434,7 +425,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         f.write('Initial wind velocity:     '+str(round(setup['v_ini'      ]              , 2))+' km/s   \n' )
         f.write('Initial mass loss rate:    '+str(round(setup['Mdot'       ]              , 10))+' Msun/yr\n' )
         f.write('\n')
-        if single_star == False:    
+        if not setup['single_star']:    
             f.write('Companion mass:            '+str(round(setup['massComp_ini']                 , 2))+' Msun\n')
             f.write('Orbital separation (a):    '+str(round(setup['sma_ini'     ]                 , 2))+' au  \n')
             if setup['triple_star']==True:
@@ -475,8 +466,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write('Apastron:                  ' + str(round(EllipsEcc[0],2))+ ' \n')
                 f.write('Mean:                      ' + str(round(EllipsEcc[1],2))+ ' \n')
                 f.write('Periastron:                ' + str(round(EllipsEcc[2],2))+ ' \n')
-
-        if single_star == True: 
+        else: 
             f.write('Single star model, so no companion information.\n')
             f.write('\n')
         f.write('\n')
@@ -485,7 +475,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         f.write('   - For the terminal velocity and eta, three different values are given.\n')
         f.write('     This is due to the spread on the speed of the model, because of the morphology.\n')
         f.write('     By the method of binning, a minimum, mean and maximum value is computed\n')
-        if single_star == False:
+        if not setup['single_star']:
             f.write('   - For the Q1 and epsilon parameters, two values are calculated:\n')
             f.write('     For the first one the mean velocity of the wind at the location is used\n')
             f.write('       as calculated from the binning.\n')
@@ -497,7 +487,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
         f.write(str(round(terminal_speed['mean']/cgs.kms, 3))+'\n' )
         f.write(str(round(terminal_speed['min' ]/cgs.kms, 3))+'\n' )
         f.write('\n')
-        if single_star == False:
+        if not setup['single_star']:
             if setup['ecc'] == 0:
                 f.write('Wind speed at companion [km/s]:\n')
                 f.write(str(round(wind_comp['min' ]/cgs.kms , 2))+'\n')
@@ -559,7 +549,7 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('epsilon = kin_energy / grav_energy\n')
             f.write(str(epsilon_1)+'\n')
             f.write(str(epsilon_2)+'\n')
-        if single_star == True:
+        else:
             f.write('Velocities [km/s] at the different orbital separations:\n')
             for key in wind_speed_single['min' ]:
                 f.write('At '+str(key)+' au:\n')
@@ -575,9 +565,9 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
                 f.write(str(Hill[key][1][1]   /cgs.Msun)+'   for a 0.01 Msun comp\n')
                 f.write('\n')
                 
-        if single_star == False:
+        if not setup['single_star']:
             print('         The output of terminal velocity and morphological parameters is saved in a text file!')
-        if single_star == True:
+        else:
             print('     The terminal velocity data is ready and saved!')
         print('')
     

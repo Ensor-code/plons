@@ -76,33 +76,6 @@ def getRadiusCoordinate(position,AGBcoord):
     r = np.sqrt((x-AGBcoord[0])**2+(y-AGBcoord[1])**2+(z-AGBcoord[2])**2)
     return r
 
-
-'''
-Transform from cartesian to spherical coordinates
-      math.atan() requiers some special attention, as you can see in the code
-NOTE: returns np.array
-'''
-def TransformToSpherical(x,y,z):
-    rlist = []
-    phi = []
-    theta = []
-    for i in range(len(x)):
-    # r component
-        r = np.sqrt(x[i]**2+y[i]**2+z[i]**2)
-        rlist.append(r)
-    # phi component
-        if x[i] >= 0 and y[i] >= 0:
-            phi.append(math.atan(y[i]/x[i]))
-        if x[i] < 0 and y[i] < 0:
-            phi.append(math.atan(y[i]/x[i])+np.pi)
-        if x[i] < 0 and y[i] > 0:
-            phi.append(math.atan(y[i]/x[i])+np.pi)
-        if x[i] > 0 and y[i] < 0:
-            phi.append(math.atan(y[i]/x[i])+2*np.pi)
-    # theta component
-        theta.append(math.acos(z[i]/r))
-    return np.array(rlist), np.array(phi), np.array(theta)
-
 '''
 Calculate radius from the centre of mass
 '''
@@ -122,12 +95,15 @@ Calculate azimuthal angle theta
       Returns np.array
 '''
 def calcTheta(x,y,z):
-    theta = []
-    r = calc_r(x,y,z)
-    for i in range(len(r)):
-        theta.append(math.acos(z[i]/r[i]))
-    return np.array(theta)
+    return np.arctan2(np.sqrt(x * x + y * y), z)
 
+
+'''
+Calculate azimuthal angle theta
+      Returns np.array
+'''
+def calcPhi(x,y,z):
+    return np.arctan2(y, x)
 
 
 ######-----    SHELL   -----######

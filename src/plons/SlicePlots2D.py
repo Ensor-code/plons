@@ -35,6 +35,7 @@ cm =   {'rho':   plt.cm.get_cmap('inferno'),
         #'Tgas': plt.cm.get_cmap('RdYlGn'),
         'Tgas':  plt.cm.get_cmap('hot'), #nipy_spectral
         'tau':   plt.cm.get_cmap('viridis_r'),
+        'tauL':  plt.cm.get_cmap('viridis'),
         'kappa': plt.cm.get_cmap('Spectral_r'),
         'Tdust': plt.cm.get_cmap('Spectral_r'),
         'Gamma': plt.cm.get_cmap('Spectral_r')
@@ -44,7 +45,8 @@ cm =   {'rho':   plt.cm.get_cmap('inferno'),
 name = {'rho':   r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
         'speed': r'$v$ [km/s]',
         'Tgas':  r'$\log \, T$ [K]',
-        'tau':   r'$\tau [/]$',
+        'tau':   r'$\tau$ [/]',
+        'tauL':  r'$\tau_L$ [/]',
         'kappa': r'$\kappa$ [g/cm$^3$]',
         'Tdust': r'$T_{\rm eq}$ [K]',
         'Gamma': r'$\Gamma$ [/]'
@@ -55,6 +57,7 @@ log =  {'rho':   True,
         'speed': False,
         'Tgas':  True,
         'tau':   False,
+        'tauL':  False,
         'kappa': False,
         'Tdust': False,
         'Gamma': False
@@ -80,40 +83,23 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
     pixCoord = sk.getPixels('y', n_grid_vec, 'comp', dumpData, (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom)
     results_sph_sl_y_vec = sk.getSmoothingKernelledPix(nneighb, dumpData, ['vx', 'vy', 'vz'], sk.rotatePixCoordAroundZ(theta, pixCoord)) 
     VX2, VY2, VZ2, results_sph_sl_y_vec = sk.convertToMesh(pixCoord, results_sph_sl_y_vec, ['vx', 'vy', 'vz'])
-    results_sph_sl_y_vec = sk.rotateVelocityAroundZ(-theta, results_sph_sl_z_vec)
+    results_sph_sl_y_vec = sk.rotateVelocityAroundZ(-theta, results_sph_sl_y_vec)
 
-    if setup['single_star']:
-        smooth = {  'smooth_z'     :  results_sph_sl_z,
-                    'x_z'          :  X1,
-                    'y_z'          :  Y1,
-                    'smooth_y'     :  results_sph_sl_y,
-                    'x_y'          :  X2,
-                    'z_y'          :  Z2
-                    }
+    smooth = {  'smooth_z'     :  results_sph_sl_z,
+                'x_z'          :  X1,
+                'y_z'          :  Y1,
+                'smooth_y'     :  results_sph_sl_y,
+                'x_y'          :  X2,
+                'z_y'          :  Z2
+                }
 
-        smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
-                        'x_z'      :  VX1,
-                        'y_z'      :  VY1,
-                        'smooth_y' :  results_sph_sl_y_vec,
-                        'x_y'      :  VX2,
-                        'z_y'      :  VZ2
-                        }
-    else:
-        smooth = {  'smooth_z'     :  results_sph_sl_z,
-                    'x_z'          :  X1,
-                    'y_z'          :  Y1,
-                    'smooth_y'     :  results_sph_sl_y,
-                    'x_y'          :  X2,
-                    'z_y'          :  Z2
+    smooth_vec = {  'smooth_z' :  results_sph_sl_z_vec,
+                    'x_z'      :  VX1,
+                    'y_z'      :  VY1,
+                    'smooth_y' :  results_sph_sl_y_vec,
+                    'x_y'      :  VX2,
+                    'z_y'      :  VZ2
                     }
-        smooth_vec = {
-                        'smooth_z' :  results_sph_sl_z_vec,
-                        'x_z'      :  VX1,
-                        'y_z'      :  VX1,
-                        'smooth_y' :  results_sph_sl_y_vec,
-                        'x_y'      :  VX2,
-                        'z_y'      :  VZ2
-                        }
 
     return smooth, smooth_vec
 
@@ -127,9 +113,8 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - setup         setup data
     - rAccComp      accretion radius of the companion
 '''
-def densityPlot(smooth, zoom, limits, dumpData, setup, orbital=True):
-
-    cm_rho  = plt.cm.get_cmap('inferno')
+def densityPlot(smooth, zoom, limits, dumpData, setup, orbital=True, cmap=plt.cm.get_cmap('inferno')):
+    
     fig, ax = plt.subplots(1, figsize=(7, 7))
 
     ax.set_aspect('equal')
@@ -139,12 +124,12 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, orbital=True):
     if orbital:
         dataRho = np.log10(smooth[zoom]['smooth_z']["rho"]+1e-99)
         axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
-                            dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
+                            dataRho, cmap=cmap, vmin=limits[0], vmax=limits[1],
                             rasterized=True)
     else:
         dataRho = np.log10(smooth[zoom]['smooth_y']["rho"]+1e-99)
         axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au,
-                            dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
+                            dataRho, cmap=cmap, vmin=limits[0], vmax=limits[1],
                             rasterized=True)
 
     plot.plotSink(ax, dumpData, setup, rotate=True)
@@ -187,7 +172,7 @@ INPUT
     - zoom      zoom factor for the plot
 '''
 
-def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, velocity_vec = False):
+def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, plane, cbar=True, velocity_vec = False):
     axPlot = None
     if plane == 'z':
         if log[par]:
@@ -222,20 +207,14 @@ def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs
             ax.quiver(smooth_vec[zoom]['x_y'] / cgs.au, smooth_vec[zoom]['z_y'] / cgs.au,
                         vx / normaliseVectorLength, vz / normaliseVectorLength, scale_units="dots", scale=0.05)
 
-    if ax == axs[2] or ax == axs[4] or ax == axs[6]:
-        ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-        plot.plotSink(ax, dumpData, setup, rotate=True)
+    plot.plotSink(ax, dumpData, setup, rotate=True)
 
+    if cbar:
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="7%", pad=0.15)
         cbar = fig.colorbar(axPlot, cax=cax)
         cbar.set_label(name[par], fontsize=24)
         cbar.ax.tick_params(labelsize=20)
-
-    # plot the position of the AGB star and comp in the face-on plane
-    if ax == axs[1] or ax == axs[3] or ax == axs[5]:
-        ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-        plot.plotSink(ax, dumpData, setup, rotate=True)
 
     ax.tick_params(labelsize=20)
     ax.set_aspect('equal')
@@ -276,41 +255,33 @@ INPUT:
 '''
 
 
-def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, observables, number = - 1):
+def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, observables):
 
-    fig = plt.figure(figsize=(10 + 0.35*5, 15))
+    fig = plt.figure(figsize=(10 + 0.35*5, 5*len(observables)))
     spec = fig.add_gridspec(ncols=2, nrows=len(observables), width_ratios=[1., 1.], height_ratios=[1.]*len(observables))
 
-    ax1 = fig.add_subplot(spec[0, 0])
-    ax2 = fig.add_subplot(spec[0, 1])
-    ax3 = fig.add_subplot(spec[1, 0])
-    ax4 = fig.add_subplot(spec[1, 1])
-    ax5 = fig.add_subplot(spec[2, 0])
-    ax6 = fig.add_subplot(spec[2, 1])
-
-    axs = {1: ax1,
-            2: ax2,
-            3: ax3,
-            4: ax4,
-            5: ax5,
-            6: ax6
-            }
+    axs = []
+    for i in range(len(observables)):
+        axs.append(fig.add_subplot(spec[i, 0]))
+        axs.append(fig.add_subplot(spec[i, 1]))
 
     for i in range(len(observables)):
         if observables[i] == 'speed':
-            onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', velocity_vec = velocity_vec)
-            onePlot(fig, axs[2*i+2], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', velocity_vec = velocity_vec)
-            axs[2*i+2].set_yticklabels([])
+            onePlot(fig, axs[2*i],   observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, 'z', cbar=False, velocity_vec = velocity_vec)
+            onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, 'y', cbar=True, velocity_vec = velocity_vec)
         else:
-            onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z')
-            onePlot(fig, axs[2*i+2], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y')
-            axs[2*i+2].set_yticklabels([])
+            onePlot(fig, axs[2*i],   observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, 'z', cbar=False)
+            onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, 'y', cbar=True)
 
     for i in range(len(observables)-1):
+        axs[2*i].set_xticklabels([])
         axs[2*i+1].set_xticklabels([])
-        axs[2*i+2].set_xticklabels([])
-    axs[2*len(observables)-1].set_xlabel(r"$x$ [AU]", fontsize=22)
-    axs[2*len(observables)  ].set_xlabel(r"$x$ [AU]", fontsize=22)
+    for i in range(len(observables)):
+        axs[2*i].set_ylabel(r"$y$ [AU]", fontsize=22)
+        axs[2*i+1].set_ylabel(r"$z$ [AU]", fontsize=22)
+        axs[2*i+1].set_yticklabels([])
+    axs[-1].set_xlabel(r"$x$ [AU]", fontsize=22)
+    axs[-2].set_xlabel(r"$x$ [AU]", fontsize=22)
 
     fig.subplots_adjust(wspace=-0.1, hspace=0.15)
 
@@ -374,11 +345,11 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10],
         saveFig(fig, loc, '2Dplot_density_orbital', zoom, number)
         fig = densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=False)
         saveFig(fig, loc, '2Dplot_density_meridional', zoom, number)
-        fig = allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, observables, number = number)
+        fig = allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, observables)
         struct = ""
         for i in observables:
             struct+=i
-        saveFig(fig, loc, 'png/2Dplot_'+struct, zoom, number)
+        saveFig(fig, loc, '2Dplot_'+struct, zoom, number)
         plt.close()
         if printout: print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
 

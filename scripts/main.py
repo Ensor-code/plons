@@ -1,7 +1,5 @@
 #import datetime                     as dt
-from distutils.command.config import dump_file
 import numpy                        as np
-import sys
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -12,10 +10,10 @@ import plons.RadialStructurePlots1D       as rs
 import plons.SlicePlots2D                 as sl
 import plons.CMF_meanRho                  as cmf
 import plons.OrbitalEvolution             as ov
-import plons.LoadData              as ld
+import plons.LoadData                     as ld
 import plons.TerminalVelocity             as tmv
 import plons.Profiles1D                   as dp
-import userSettings                 as us
+import userSettings                       as us
 import plons.ArchimedianSpiral            as ars
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
@@ -87,9 +85,9 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('')
         print('(1)  Start calculations for slice plots...')
         if customRanges:
-            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, limits=limits)
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, limits=limits, printout=True)
         else:
-            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables)
+            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, printout=True)
         
     if part == '2':
         print('')
@@ -220,6 +218,20 @@ if customRanges:
             limits["tau"][5]  = [0, 1]
             limits["tau"][10] = [0, 1]
             limits["tau"][20] = [0, 1]
+
+        if "Tdust" in observables:
+            limits["Tdust"][1]  = [0, 2000]
+            limits["Tdust"][2]  = [0, 2000]
+            limits["Tdust"][5]  = [0, 2000]
+            limits["Tdust"][10] = [0, 2000]
+            limits["Tdust"][20] = [0, 2000]
+
+        if "tauL" in observables:
+            limits["tauL"][1]  = [0, 0.05]
+            limits["tauL"][2]  = [0, 0.05]
+            limits["tauL"][5]  = [0, 0.05]
+            limits["tauL"][10] = [0, 0.05]
+            limits["tauL"][20] = [0, 0.05]
 
         if "kappa" in observables:
             limits["kappa"][1]  = [0., 3.]

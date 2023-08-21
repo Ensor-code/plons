@@ -232,7 +232,6 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     handles       = [left, full, right, theta_25, theta_50, theta_75]
     handlestheta  = [theta_25, theta_50, theta_75]
 
-
     # Calculation of theta, mean rho, mass fractions, ...
     # Get info needed to make plots
     # Perc contains all the mass fractions for which we calculate what theta is
@@ -241,7 +240,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     #delta  = calculateDeltaValues(infoForPlot)
 
     # Select apastron and periastron side data in case of binary
-    if setup['single_star'] == False:
+    if not setup['single_star']:
         x = data['position'].transpose()[0]
         thetaR = data['theta'] [x>0]
         massR  = data['mass']  [x>0]
@@ -256,9 +255,6 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         
         thetaL = calcThetaValues(infoForPlotL)
         thetaR = calcThetaValues(infoForPlotR)
-        
-        #deltaR = calculateDeltaValues(infoForPlotR)
-        #deltaL = calculateDeltaValues(infoForPlotL)
 
 
         # Mean density profile plots, left and right side
