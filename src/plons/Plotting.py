@@ -5,7 +5,7 @@ import plons.SmoothingKernelScript    as sk
 import plons.PhysicalQuantities       as pq
 import plons.ConversionFactors_cgs    as cgs
 
-def plotSlice(ax, X, Y, smooth, observable, logplot=False, cmap = plt.cm.get_cmap('inferno'), vmin=None, vmax=None):
+def plotSlice(ax, X, Y, smooth, observable, logplot=False, cmap = plt.cm.get_cmap('inferno'), clim=(None, None)):
     ax.set_aspect('equal')
     ax.set_facecolor('k')
 
@@ -13,7 +13,7 @@ def plotSlice(ax, X, Y, smooth, observable, logplot=False, cmap = plt.cm.get_cma
         obs = np.log10(smooth[observable]+1e-99)
     else:
         obs = smooth[observable]
-    axPlot = ax.pcolormesh(X/cgs.au, Y/cgs.au, obs, cmap=cmap, vmin=vmin, vmax = vmax)
+    axPlot = ax.pcolormesh(X/cgs.au, Y/cgs.au, obs, cmap=cmap, vmin=clim[0], vmax = clim[1])
 
     cbar = plt.colorbar(axPlot, ax = ax, location='right', fraction=0.0471, pad=0.01)
     if logplot:
@@ -37,8 +37,8 @@ def plotSink(ax, dumpData, setup, rotate=False):
             else: circleComp_in = plt.Circle(dumpData['posComp_in']/cgs.au, setup["rAccrComp_in"], color="black", zorder=10)
             ax.add_artist(circleComp_in)
 
-def SlicePlot2D(dumpData, setup, n = 200, xlim=(-30, 30), ylim=(-30, 30), zlim=None, rotate = False,
-                observable="rho", logplot=True, cmap = plt.cm.get_cmap('inferno'), vmin=-17, vmax=-14):
+def SlicePlot2D(ax, dumpData, setup, n = 200, xlim=(-30, 30), ylim=(-30, 30), zlim=None, rotate = False,
+                observable="rho", logplot=True, cmap = plt.cm.get_cmap('inferno'), clim = (-17, -14)):
     x = np.linspace(xlim[0], xlim[1], n)*cgs.au
     y = np.linspace(ylim[0], ylim[1], n)*cgs.au
     X, Y = np.meshgrid(x, y)
@@ -51,8 +51,7 @@ def SlicePlot2D(dumpData, setup, n = 200, xlim=(-30, 30), ylim=(-30, 30), zlim=N
     else:
         smooth = sk.smoothMesh(X, Y, Z, dumpData, [observable])
 
-    fig, ax = plt.subplots(1, figsize=(4, 4))
-    cbar = plotSlice(ax, X, Y, smooth, observable, logplot=logplot, cmap=cmap, vmin=vmin, vmax=vmax)
+    cbar = plotSlice(ax, X, Y, smooth, observable, logplot=logplot, cmap=cmap, clim = clim)
     plotSink(ax, dumpData, setup, rotate)
 
-    return fig, ax, cbar
+    return ax, cbar
