@@ -19,7 +19,6 @@ from matplotlib.ticker          import MultipleLocator
 import warnings
 warnings.filterwarnings("ignore")
 
-mesh            = True
 roundToInteger  = True
 round_bounds    = False
 velocity_vec    = True
@@ -30,6 +29,37 @@ maxInf          = 10.**maxInfLog
 sigma_bounds_u  = 3.
 sigma_bounds_l  = 2.
 
+
+# colormap per parameter
+cm =   {'rho':   plt.cm.get_cmap('inferno'),
+        'speed': plt.cm.get_cmap('CMRmap'),
+        #'Tgas': plt.cm.get_cmap('RdYlGn'),
+        'Tgas':  plt.cm.get_cmap('hot'), #nipy_spectral
+        'tau':   plt.cm.get_cmap('viridis_r'),
+        'kappa': plt.cm.get_cmap('Spectral_r'),
+        'Tdust': plt.cm.get_cmap('Spectral_r'),
+        'Gamma': plt.cm.get_cmap('Spectral_r')
+        }
+
+# label name per parameter
+name = {'rho':   r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
+        'speed': r'$v$ [km/s]',
+        'Tgas':  r'$\log \, T$ [K]',
+        'tau':   r'$\tau [/]$',
+        'kappa': r'$\kappa$ [g/cm$^3$]',
+        'Tdust': r'$T_{\rm eq}$ [K]',
+        'Gamma': r'$\Gamma$ [/]'
+        }
+
+# label name per parameter
+log =  {'rho':   True,
+        'speed': False,
+        'Tgas':  True,
+        'tau':   False,
+        'kappa': False,
+        'Tdust': False,
+        'Gamma': False
+        }
 
 '''
 Load the smoothing kernel data
@@ -70,13 +100,11 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
                         'z_y'      :  VZ2
                         }
     else:
-        xcomp = dumpData['posComp'][0]
-        ycomp = dumpData['posComp'][1]
         smooth = {  'smooth_z'     :  results_sph_sl_z,
                     'x_z'          :  X1,
                     'y_z'          :  Y1,
                     'smooth_y'     :  results_sph_sl_y,
-                    'x_y'          :  X2, # planeCoordinates(n_grid, X2, Y2, xcomp, ycomp),
+                    'x_y'          :  X2,
                     'z_y'          :  Z2
                     }
         smooth_vec = {
@@ -84,7 +112,7 @@ def smoothData(dumpData, setup, observables, theta = 0., zoom = 1, nneighb = 10,
                         'x_z'      :  VX1,
                         'y_z'      :  VX1,
                         'smooth_y' :  results_sph_sl_y_vec,
-                        'x_y'      :  VX2, # planeCoordinates(n_grid_vec, VX2, VY2, xcomp, ycomp),
+                        'x_y'      :  VX2,
                         'z_y'      :  VZ2
                         }
 
@@ -111,24 +139,14 @@ def densityPlot(smooth, zoom, limits, dumpData, setup, orbital=True):
     axPlot = None
     if orbital:
         dataRho = np.log10(smooth[zoom]['smooth_z']["rho"]+1e-99)
-        if not mesh:
-            axPlot = ax.scatter(smooth[zoom]['x_z']/cgs.au, smooth[zoom]['y_z']/cgs.au,
-                                s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
-                                rasterized=True)
-        else:
-            axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
-                                dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
-                                rasterized=True)
+        axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
+                            dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
+                            rasterized=True)
     else:
         dataRho = np.log10(smooth[zoom]['smooth_y']["rho"]+1e-99)
-        if not mesh:
-            axPlot = ax.scatter(smooth[zoom]['x_y']/cgs.au, smooth[zoom]['z_y']/cgs.au,
-                                s=5, c=dataRho,cmap=cm_rho,vmin=limits[0], vmax = limits[1],
-                                rasterized=True)
-        else:
-            axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au,
-                                dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
-                                rasterized=True)
+        axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au,
+                            dataRho, cmap=cm_rho, vmin=limits[0], vmax=limits[1],
+                            rasterized=True)
 
     plot.plotSink(ax, dumpData, setup, rotate=True)
 
@@ -171,122 +189,54 @@ INPUT
 '''
 
 def onePlot(fig, ax, par, limits, smooth, smooth_vec, zoom, dumpData, setup, axs, plane, velocity_vec = False):
-    # colormap per parameter
-    cm = {'rho': plt.cm.get_cmap('inferno'),
-          'speed': plt.cm.get_cmap('CMRmap'),
-          #'Tgas': plt.cm.get_cmap('RdYlGn'),
-          'Tgas': plt.cm.get_cmap('hot'), #nipy_spectral
-          'tau': plt.cm.get_cmap('viridis_r'),
-          'kappa': plt.cm.get_cmap('Spectral_r'),
-          'Tdust': plt.cm.get_cmap('Spectral_r'),
-          'Gamma': plt.cm.get_cmap('Spectral_r')
-          }
-
-    # label name per parameter
-    name = {'rho': r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
-            'speed': '$v$ [km/s]',
-            'Tgas': r'$\log \, T$ [K]',
-            'tau': r'$\tau [/]$',
-            'kappa': r'$\kappa$ [g/cm$^3$]',
-            'Tdust': r'$T_{\rm eq}$ [g/cm$^3$]',
-            'Gamma': r'$\Gamma$ [/]'
-            }
-    logtau = False
-
-    xAGB = dumpData['posAGB'][0] / cgs.au
-    yAGB = dumpData['posAGB'][1] / cgs.au
-    zAGB = dumpData['posAGB'][2] / cgs.au
-
-
-    if setup['single_star'] == False:
-        xcomp = dumpData['posComp'][0] / cgs.au
-        ycomp = dumpData['posComp'][1] / cgs.au
-        zcomp = dumpData['posComp'][2] / cgs.au
-        if setup['triple_star']==True:
-            xcomp_in = dumpData['posComp_in'][0] / cgs.au
-            ycomp_in = dumpData['posComp_in'][1] / cgs.au
-            zcomp_in = dumpData['posComp_in'][2] / cgs.au
-            
-
-    gamma = setup["gamma"]
     axPlot = None
     if plane == 'z':
-        if (not logtau and par == 'tau') or par in ('kappa', 'Gamma', 'speed'):
+        if log[par]:
+            data = np.log10(smooth[zoom]['smooth_z'][par]+1e-99)
+        else:
             data = smooth[zoom]['smooth_z'][par]
-        else:
-            data = np.log10(smooth[zoom]['smooth_z'][par])
             
-        if mesh == False:
-            axPlot = ax.scatter(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au, s=5,
-                                c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
-                                rasterized=True)
-        else:
-            axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
-                                    data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
-                                    rasterized=True, shading="nearest")
+        axPlot = ax.pcolormesh(smooth[zoom]['x_z'] / cgs.au, smooth[zoom]['y_z'] / cgs.au,
+                                data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
+                                rasterized=True, shading="nearest")
 
-            if par == 'speed' and velocity_vec:
-                vx = smooth_vec[zoom]['smooth_z']['vx']
-                vy = smooth_vec[zoom]['smooth_z']['vy']
-                normaliseVectorLength = np.hypot(vx, vy)
-                ax.quiver(smooth_vec[zoom]['x_z'] / cgs.au, smooth_vec[zoom]['y_z'] / cgs.au,
-                            vx / normaliseVectorLength, vy / normaliseVectorLength, scale_units="dots", scale=0.05)
+        if par == 'speed' and velocity_vec:
+            vx = smooth_vec[zoom]['smooth_z']['vx']
+            vy = smooth_vec[zoom]['smooth_z']['vy']
+            normaliseVectorLength = np.hypot(vx, vy)
+            ax.quiver(smooth_vec[zoom]['x_z'] / cgs.au, smooth_vec[zoom]['y_z'] / cgs.au,
+                        vx / normaliseVectorLength, vy / normaliseVectorLength, scale_units="dots", scale=0.05)
 
     if plane == 'y':
-        if (not logtau and par == 'tau') or par in ('kappa', 'Gamma', 'speed'):
+        if log[par]:
+            data = np.log10(smooth[zoom]['smooth_y'][par]+1e-99)
+        else:
             data = smooth[zoom]['smooth_y'][par]
-        else:
-            data = np.log10(smooth[zoom]['smooth_y'][par])
-        if mesh == False:
-            axPlot = ax.scatter(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au, s=5,
-                                c=data, cmap=cm[par], vmin=limits[0], vmax=limits[1],
-                                rasterized=True)
 
-        else:
-            axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au, data,
-                                    cmap=cm[par], vmin=limits[0], vmax=limits[1], rasterized=True, shading="nearest")
+        axPlot = ax.pcolormesh(smooth[zoom]['x_y'] / cgs.au, smooth[zoom]['z_y'] / cgs.au, data,
+                                cmap=cm[par], vmin=limits[0], vmax=limits[1], rasterized=True, shading="nearest")
 
-            if par == 'speed' and velocity_vec:
-                vx = smooth_vec[zoom]['smooth_y']['vx']
-                vz = smooth_vec[zoom]['smooth_y']['vz']
-                normaliseVectorLength = np.hypot(vx, vz)
-                ax.quiver(smooth_vec[zoom]['x_y'] / cgs.au, smooth_vec[zoom]['z_y'] / cgs.au,
-                            vx / normaliseVectorLength, vz / normaliseVectorLength, scale_units="dots", scale=0.05)
+        if par == 'speed' and velocity_vec:
+            vx = smooth_vec[zoom]['smooth_y']['vx']
+            vz = smooth_vec[zoom]['smooth_y']['vz']
+            normaliseVectorLength = np.hypot(vx, vz)
+            ax.quiver(smooth_vec[zoom]['x_y'] / cgs.au, smooth_vec[zoom]['z_y'] / cgs.au,
+                        vx / normaliseVectorLength, vz / normaliseVectorLength, scale_units="dots", scale=0.05)
 
-    # plot the position of the AGB star and comp in the edge-on plane & make colorbar
-    if gamma <= 1.:
-        if ax == axs[2] or ax == axs[4]:
-            ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            plot.plotSink(ax, dumpData, setup, rotate=True)
+    if ax == axs[2] or ax == axs[4] or ax == axs[6]:
+        ax.set_ylabel(r"$z$ [AU]", fontsize=22)
+        plot.plotSink(ax, dumpData, setup, rotate=True)
 
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="7%", pad=0.15)
-            cbar = fig.colorbar(axPlot, cax=cax)
-            cbar.set_label(name[par], fontsize=24)
-            cbar.ax.tick_params(labelsize=20)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="7%", pad=0.15)
+        cbar = fig.colorbar(axPlot, cax=cax)
+        cbar.set_label(name[par], fontsize=24)
+        cbar.ax.tick_params(labelsize=20)
 
-        # plot the position of the AGB star and comp in the face-on plane
-        if ax == axs[1] or ax == axs[3]:
-            ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            plot.plotSink(ax, dumpData, setup, rotate=True)
-                
-                
-
-    else:
-        if ax == axs[2] or ax == axs[4] or ax == axs[6]:
-            ax.set_ylabel(r"$z$ [AU]", fontsize=22)
-            plot.plotSink(ax, dumpData, setup, rotate=True)
-
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="7%", pad=0.15)
-            cbar = fig.colorbar(axPlot, cax=cax)
-            cbar.set_label(name[par], fontsize=24)
-            cbar.ax.tick_params(labelsize=20)
-
-        # plot the position of the AGB star and comp in the face-on plane
-        if ax == axs[1] or ax == axs[3] or ax == axs[5]:
-            ax.set_ylabel(r"$y$ [AU]", fontsize=22)
-            plot.plotSink(ax, dumpData, setup, rotate=True)
+    # plot the position of the AGB star and comp in the face-on plane
+    if ax == axs[1] or ax == axs[3] or ax == axs[5]:
+        ax.set_ylabel(r"$y$ [AU]", fontsize=22)
+        plot.plotSink(ax, dumpData, setup, rotate=True)
 
     ax.tick_params(labelsize=20)
     ax.set_aspect('equal')
@@ -328,88 +278,44 @@ INPUT:
 
 
 def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, observables, number = - 1):
-    gamma = setup["gamma"]
 
-    fig = None
-    if gamma <= 1.:
-        fig = plt.figure(figsize=(10 + 0.35*5, 10))
-        spec = fig.add_gridspec(ncols=2, nrows=2, width_ratios=[1., 1.], height_ratios=[1, 1])
+    fig = plt.figure(figsize=(10 + 0.35*5, 15))
+    spec = fig.add_gridspec(ncols=2, nrows=len(observables), width_ratios=[1., 1.], height_ratios=[1.]*len(observables))
 
-        ax1 = fig.add_subplot(spec[0, 0])
-        ax2 = fig.add_subplot(spec[0, 1])
-        ax3 = fig.add_subplot(spec[1, 0])
-        ax4 = fig.add_subplot(spec[1, 1])
+    ax1 = fig.add_subplot(spec[0, 0])
+    ax2 = fig.add_subplot(spec[0, 1])
+    ax3 = fig.add_subplot(spec[1, 0])
+    ax4 = fig.add_subplot(spec[1, 1])
+    ax5 = fig.add_subplot(spec[2, 0])
+    ax6 = fig.add_subplot(spec[2, 1])
 
-        axs = {1: ax1,
-               2: ax2,
-               3: ax3,
-               4: ax4
-               }
+    axs = {1: ax1,
+            2: ax2,
+            3: ax3,
+            4: ax4,
+            5: ax5,
+            6: ax6
+            }
 
-        # the temperature colorbar limits may have to be changed...
-        onePlot(fig, ax1, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z')
-        onePlot(fig, ax2, 'rho', limits["rho"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y')
-        onePlot(fig, ax3, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', velocity_vec = velocity_vec)
-        onePlot(fig, ax4, 'speed', limits["speed"][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', velocity_vec = velocity_vec)
+    for i in range(len(observables)):
+        if observables[i] == 'speed':
+            onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', velocity_vec = velocity_vec)
+            onePlot(fig, axs[2*i+2], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', velocity_vec = velocity_vec)
+            axs[2*i+2].set_yticklabels([])
+        else:
+            onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z')
+            onePlot(fig, axs[2*i+2], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y')
+            axs[2*i+2].set_yticklabels([])
 
-        ax2.set_yticklabels([])
-        ax4.set_yticklabels([])
-
-        ax1.set_xticklabels([])
-        ax2.set_xticklabels([])
-        ax3.set_xlabel(r"$x$ [AU]", fontsize=22)
-        ax4.set_xlabel(r"$x$ [AU]", fontsize=22)
-
-    else:
-        fig = plt.figure(figsize=(10 + 0.35*5, 15))
-        spec = fig.add_gridspec(ncols=2, nrows=len(observables), width_ratios=[1., 1.], height_ratios=[1.]*len(observables))
-
-        ax1 = fig.add_subplot(spec[0, 0])
-        ax2 = fig.add_subplot(spec[0, 1])
-        ax3 = fig.add_subplot(spec[1, 0])
-        ax4 = fig.add_subplot(spec[1, 1])
-        ax5 = fig.add_subplot(spec[2, 0])
-        ax6 = fig.add_subplot(spec[2, 1])
-
-        axs = {1: ax1,
-               2: ax2,
-               3: ax3,
-               4: ax4,
-               5: ax5,
-               6: ax6
-               }
-
-        for i in range(len(observables)):
-            if observables[i] == 'speed':
-                onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z', velocity_vec = velocity_vec)
-                onePlot(fig, axs[2*i+2], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y', velocity_vec = velocity_vec)
-                axs[2*i+2].set_yticklabels([])
-            else:
-                onePlot(fig, axs[2*i+1], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'z')
-                onePlot(fig, axs[2*i+2], observables[i], limits[observables[i]][zoom], smooth, smooth_vec, zoom, dumpData, setup, axs, 'y')
-                axs[2*i+2].set_yticklabels([])
-
-        for i in range(len(observables)-1):
-            axs[2*i+1].set_xticklabels([])
-            axs[2*i+2].set_xticklabels([])
-        axs[2*len(observables)-1].set_xlabel(r"$x$ [AU]", fontsize=22)
-        axs[2*len(observables)  ].set_xlabel(r"$x$ [AU]", fontsize=22)
+    for i in range(len(observables)-1):
+        axs[2*i+1].set_xticklabels([])
+        axs[2*i+2].set_xticklabels([])
+    axs[2*len(observables)-1].set_xlabel(r"$x$ [AU]", fontsize=22)
+    axs[2*len(observables)  ].set_xlabel(r"$x$ [AU]", fontsize=22)
 
     fig.subplots_adjust(wspace=-0.1, hspace=0.15)
-    struct = ""
-    for i in observables:
-        struct+=i
-    if number == -1:
-        plt.savefig(os.path.join(loc, 'png/2Dplot_'+struct+'_zoom{0:01d}.png'.format(zoom)), dpi=200, bbox_inches="tight")
-        fig.savefig(os.path.join(loc, 'pdf/2Dplot_'+struct+'_zoom{0:01d}.pdf'.format(zoom)), bbox_inches="tight")
-        print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
 
-    else:
-        fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
-        plt.savefig(os.path.join(loc, 'animation/2Dplot_DensSpeedTau_zoom{0:01d}_{1:04d}.png'.format(zoom, int(number/setup['nfulldump']))), dpi=200,
-                    bbox_inches="tight")
-    plt.close()
-
+    return fig
 
 
 def makeLimits(observables, smooth, zoom):
@@ -433,84 +339,49 @@ def makeLimits(observables, smooth, zoom):
         limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
         limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
 
-    print("          Ranges of Parameters: zoom = "+str(zoom))
-    if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
-    if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
-    if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
-    if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
-    if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
-    if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
-
     return limits
-
-def saveData(observables, loc, smooth, smooth_vec, zoom):
-    try:
-        os.makedirs(os.path.join(loc, 'txt/SlicePlots2D'))
-    except OSError:
-        pass
-
-    if "rho" in observables:
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_z'.format(zoom)), smooth[zoom]['x_z']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_y_z'.format(zoom)), smooth[zoom]['y_z']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_z'.format(zoom)), smooth[zoom]['smooth_z']["rho"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_x_y'.format(zoom)), smooth[zoom]['x_y']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_z_y'.format(zoom)), smooth[zoom]['z_y']/cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_rho_y'.format(zoom)), smooth[zoom]['smooth_y']["rho"])
-    if "speed" in observables:
-        vx = smooth_vec[zoom]['smooth_z']['vx']
-        vy = smooth_vec[zoom]['smooth_z']['vy']
-        normaliseVectorLength = np.hypot(vx, vy)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_z'.format(zoom)), smooth[zoom]['smooth_z']["speed"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speed_y'.format(zoom)), smooth[zoom]['smooth_y']["speed"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_x'.format(zoom)), smooth_vec[zoom]['x_z'] / cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_y'.format(zoom)), smooth_vec[zoom]['y_z'] / cgs.au)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vx'.format(zoom)), vx / normaliseVectorLength)
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_speedvec_vy'.format(zoom)), vy / normaliseVectorLength)
-
-    if "Gamma" in observables:
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_z'.format(zoom)), smooth[zoom]['smooth_z']["Gamma"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Gamma_y'.format(zoom)), smooth[zoom]['smooth_y']["Gamma"])
-    if "Tdust" in observables:
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_z'.format(zoom)), smooth[zoom]['smooth_z']["Tdust"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_Tdust_y'.format(zoom)), smooth[zoom]['smooth_y']["Tdust"])
-    if "tau" in observables:
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_z'.format(zoom)), smooth[zoom]['smooth_z']["tau"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tau_y'.format(zoom)), smooth[zoom]['smooth_y']["tau"])
-    if "tauL" in observables:
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_z'.format(zoom)), smooth[zoom]['smooth_z']["tauL"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_tauL_y'.format(zoom)), smooth[zoom]['smooth_y']["tauL"])
-    if "kappa" in observables:
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_z'.format(zoom)), smooth[zoom]['smooth_z']["kappa"])
-        np.save(os.path.join(loc, 'txt/SlicePlots2D/zoom{0:01d}_kappa_y'.format(zoom)), smooth[zoom]['smooth_y']["kappa"])
 
 '''
 main definition
 '''
 def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], 
-               observables = ['rho', 'Tgas', 'speed'], limits = False, save = False,
-               nneighb = 10, n_grid = 200, n_grid_vec = 25):
+               observables = ['rho', 'Tgas', 'speed'], limits = False,
+               nneighb = 10, n_grid = 200, n_grid_vec = 25, printout=False):
     if limits: customRanges = True
     else:      customRanges = False
     theta=0
     if not setup["single_star"]:
         theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
-
-    print('     Calculating the smoothing kernels. This may take a while, please wait...')
+    
+    if printout: print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}
     smooth_vec = {}
     for zoom in zoomin:
         smooth[zoom], smooth_vec[zoom] = smoothData(dumpData, setup, observables, theta, zoom, nneighb, n_grid, n_grid_vec)
 
-        if save: saveData(observables, loc, smooth, smooth_vec, zoom)
-
-        if not customRanges: limits = makeLimits(observables, smooth, zoom)
+        if not customRanges: 
+            limits = makeLimits(observables, smooth, zoom)    
+        if printout:
+            print("          Ranges of Parameters: zoom = "+str(zoom))
+            if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
+            if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
+            if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
+            if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
+            if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
+            if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
 
         # Make plots
         fig = densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=True)
         saveFig(fig, loc, '2Dplot_density_orbital', zoom, number)
         fig = densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=False)
         saveFig(fig, loc, '2Dplot_density_meridional', zoom, number)
-        allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, observables, number = number)
+        fig = allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, run, loc, observables, number = number)
+        struct = ""
+        for i in observables:
+            struct+=i
+        saveFig(fig, loc, 'png/2Dplot_'+struct, zoom, number)
+        plt.close()
+        if printout: print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
 
 def saveFig(fig, loc, name, zoom, number):
     if number == -1:
@@ -520,7 +391,6 @@ def saveFig(fig, loc, name, zoom, number):
         fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
         fig.savefig(os.path.join(loc, 'animation/'+name+'_zoom{0:01d}_{1:04d}.png'.format(zoom,number)), dpi=200, bbox_inches="tight")
     plt.close()
-
     
 def findBounds(data, log = False, round = False):
     filtered_data = data
@@ -551,11 +421,3 @@ def findBounds(data, log = False, round = False):
         result = np.round(result)
 
     return result
-
-def planeCoordinates(n, x, y, x_comp, y_comp):
-    r = np.zeros(shape=(n, n))
-    dot_product = x * x_comp + y * y_comp
-    r[dot_product < 0] = -np.hypot(x[dot_product < 0], y[dot_product < 0])
-    r[dot_product >= 0] = np.hypot(x[dot_product >= 0], y[dot_product >= 0])
-
-    return r
