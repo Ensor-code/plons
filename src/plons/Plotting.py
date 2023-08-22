@@ -36,6 +36,9 @@ def plotSink(ax, dumpData, setup, rotate=False):
             if rotate: circleComp_in = plt.Circle((np.linalg.norm(dumpData['posComp_in'])/cgs.au, 0.), setup["rAccrComp_in"], transform=ax.transData._b, color="black", zorder=10)
             else: circleComp_in = plt.Circle(dumpData['posComp_in']/cgs.au, setup["rAccrComp_in"], color="black", zorder=10)
             ax.add_artist(circleComp_in)
+            return circleAGB, circleComp, circleComp_in
+        return circleAGB, circleComp
+    return circleAGB
 
 def SlicePlot2D(ax, dumpData, setup, n = 200, xlim=(-30, 30), ylim=(-30, 30), zlim=None, rotate = False,
                 observable="rho", logplot=True, cmap = plt.cm.get_cmap('inferno'), clim = (-17, -14)):
