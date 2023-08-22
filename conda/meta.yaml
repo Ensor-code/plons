@@ -23,6 +23,5 @@ requirements:
     - matplotlib
     - healpy
     - scipy
-    - astropy
     - numpy>=1.17
     - numba

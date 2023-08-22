@@ -1,8 +1,6 @@
-.. _link-examples:
-
-
 Examples
-########
+========
+
 
 The following examples demonstrate how to use plons as a Python library.
 
@@ -10,7 +8,8 @@ The corresponding jupyter notebooks can be found in the source code at :code:`do
 They can be run using jupyter-notebook/-lab.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-   0_creating_models/index
+   0_creating_figures_package/index
+   1_creating_figures_pipeline/index

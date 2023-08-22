@@ -22,12 +22,9 @@ keywords = ["SPH", "Phantom", "Astrophysics", "Astronomy"]
 dependencies = [
     "matplotlib",
     "healpy",
-    "astropy",
     "scipy",
     "numpy>=1.17",
     "numba",
-    "argparse",
-    "datetime",
 ]
 requires-python = ">=3.7"
 
