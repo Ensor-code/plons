@@ -4,6 +4,7 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 import argparse                     as ap
+from typing import Dict, List
 
 # import plons scripts
 import plons.RadialStructurePlots1D       as rs
@@ -126,22 +127,22 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('(7)  Archimedian spiral')
         ars.ArchimedianSpiral(run, saveloc, setup)
 
-def LoadData_cgs(run, loc, userSettingsDictionary, bound = None, factor = -1, number = -1, runPart = 0):
+def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1, runPart = 0):
     dir       = os.path.join(loc, run)
-    setup     = ld.LoadSetup(dir, userSettingsDictionary["prefix"])
+    setup     = ld.LoadSetup(dir, userSettings["prefix"])
 
     # Pick either last dump file or user chosen file
-    if number == -1: index = ld.findLastFullDumpIndex(userSettingsDictionary["prefix"], setup, dir)
+    if number == -1: index = ld.lastFullDumpIndex(dir, userSettings["prefix"], setup)
     else: index = number
-    fileName       = dir+'/{0:s}_{1:05d}'.format(userSettingsDictionary["prefix"], index)
-    dumpData  = ld.LoadDump_cgs(fileName, setup, userSettingsDictionary["hard_path_to_phantom"])
+    fileName       = dir+'/{0:s}_{1:05d}'.format(userSettings["prefix"], index)
+    dumpData  = ld.LoadDump(fileName, setup, userSettings["hard_path_to_phantom"])
 
     if len(set(runPart)-set([1, 2, 4, 6, 7]))>0:
-        sinkData  = ld.LoadSink_cgs(dir, userSettingsDictionary['prefix'], setup["icompanion_star"])
+        sinkData  = ld.LoadSink(dir, userSettings['prefix'], setup["icompanion_star"])
         if bound == None:
             bound = setup['bound']
         if factor > 0:
-            outerData = ld.LoadDump_outer_cgs(factor, bound, setup, dumpData)
+            outerData = ld.LoadDump_outer(factor, bound, setup, dumpData)
         else: outerData = None
 
     # save the final specifics of the AGB star to dumpData
@@ -184,7 +185,7 @@ else: observables = ['rho', 'Tgas', 'speed']
 
 customRanges = True
 if customRanges:
-    limits = {}
+    limits: Dict[str, Dict[int, List]] = {}
     for observable in observables:
         limits[observable] = {}
         for zoom in zoomin:

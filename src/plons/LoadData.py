@@ -1,5 +1,8 @@
-import math                     as math
-import numpy                    as np
+from typing import Dict, Any
+
+import math            as math
+import numpy           as np
+import numpy.typing    as npt
 import sys
 
 #import plons scripts
@@ -9,20 +12,18 @@ import plons.GeometricalFunctions     as gf
 
 import os
 
+def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
+    """ Load the prefix.in and prefix.setup files to get general information about the phantom model
 
-'''
-Only load the prefix.in and prefix.setup files to get general information about the phantom model
-      Suited for binary and single model
-      
-INPUT:
-    - 'location' is the directory where the model is located     [str]
-    
-RETURNS
-    a dictionary containing the info from the setup files 
+    Args:
+        dir (str): directory of the simulation
+        prefix (str): prefix used for the files
+
+    Returns:
+        Dict[str, Any]: a dictionary containing the info from the setup files
         (!! check units, they are not all in SI or cgs)
+    """
 
-'''
-def LoadSetup(dir, prefix):
     # load the prefix.in & prefix.setup file
     setup = {}
     try:  
@@ -120,17 +121,17 @@ def LoadSetup(dir, prefix):
     
     return setup
 
-'''
-Loads the final full dump of a phantom model, given the number, in cgs-units 
-    
-INPUT:
-    - 'dir'   is the directory where the model is located     [str]
-    - 'setup' is the setup data                               [dict]
-    
-RETURNS
-    a dictionary containing the data from the dump (all units in cgs)
-'''
-def LoadDump_cgs(fileName, setup, phantom_dir):
+def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str, Any]:
+    """ Loads the dump of a phantom model, given the number
+
+    Args:
+        fileName (str): the filename of the dump file to load
+        setup (Dict[str, Any]): the setup data
+        phantom_dir (str): hard path to phantom
+
+    Returns:
+        Dict[str, Any]: a dictionary containing the data from the dump (all units in cgs)
+    """
 
     # Load read_dump script to read PHANTOM dump files
     sys.path.append(phantom_dir+"/scripts")
@@ -209,9 +210,6 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
     u = dump["blocks"][0]["data"]["u"]
 
     filter = h > 0.0
-    # dir   = '/STER/matse/Magritte/Lucy/'
-    # filter[len(np.load(dir+'xtemp.npy')):] = False
-    # filter[-1] = False
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [filter] * unit_dist          # position coordinates          [cm]
     y     = y                     [filter] * unit_dist     
@@ -244,8 +242,6 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
 
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
-    # r, phi, theta = gf.TransformToSpherical(x,y,z)              # sperical coordinates
-
         
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -307,20 +303,19 @@ def LoadDump_cgs(fileName, setup, phantom_dir):
 
     return data
 
-'''
-Cut out the inner part of the wind, since here the wind is not yet self-similar.
-      Suited only for binary model
-    
-INPUT:
-    - 'factor' is the factor of the semi-major axis you want to cut out [float]
-    - 'bound'  is a chosen boundary of the model                        [float]
-    - 'setup'  is the setup data                                        [dict]
-    - 'dump'   is the original dump data                                [dict]
+def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dict[str, Any]) -> Dict[str, Any]:
+    """ Cut out the inner part of the wind, since here the wind is not yet self-similar.
+        Suited only for binary model
 
-RETURNS
-    a dictionary containing the data from the dump of a chosen outer range (all units in cgs)
-'''
-def LoadDump_outer_cgs(factor, bound, setup, dump):
+    Args:
+        factor (float): the factor of the semi-major axis you want to cut out
+        bound (float): a chosen boundary of the model
+        setup (Dict[str, Any]): the setup data
+        dump (Dict[str, Any]): the original dump data
+
+    Returns:
+        Dict[str, Any]: _description_
+    """
 
     position = dump['position'].transpose()
     velocity = dump['velocity'].transpose()
@@ -400,49 +395,81 @@ def LoadDump_outer_cgs(factor, bound, setup, dump):
     
     return data
 
-# Pick last full dump file from model
-def findLastFullDumpIndex(userPrefix, setup, runName):
-    listDumps = sortedDumpList(userPrefix, runName)
+def lastFullDumpIndex(dir: str, prefix: str, setup: Dict[str, Any]) -> int:
+    """ Find last full dump file from model
+
+    Args:
+        dir (str): directory of the dump files
+        prefix (str): prefix used for the simulation
+        setup (Dict[str, Any]): the setup data
+
+    Returns:
+        int: numper of the last full dump
+    """
+
+    listDumps = sortedDumpList(dir, prefix)
     lastFile = listDumps[-1]
-    lastDumpIndex = int(lastFile.lstrip("%s_0" % userPrefix))
+    lastDumpIndex = int(lastFile.lstrip("%s_0" % prefix))
    
     # Nearest full dump to max
     lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump']) 
     return lastFullDumpIndex
 
-def findAllFullDumpIndices(userSettingsDictionary, setup, runName):
-    userPrefix = userSettingsDictionary['prefix']
-    lastFullDumpIndex = findLastFullDumpIndex(userPrefix, setup, runName)
+
+def allFullDumpIndices(dir: str, prefix: str, setup: Dict[str, Any]) -> npt.NDArray[np.int_]:
+    """ Find all full dump file from model
+
+    Args:
+        dir (str): directory of the dump files
+        prefix (str): prefix used for the simulation
+        setup (Dict[str, Any]): the setup data
+
+    Returns:
+        npt.NDArray[np.int_]: list of numpers of all full dumps
+    """
+
+    lastFullDumpIndex = lastFullDumpIndex(prefix, setup, dir)
     fullDumpLists = np.arange(0, lastFullDumpIndex + 1, setup['nfulldump'], dtype=int)
     return fullDumpLists
 
-def sortedDumpList(userPrefix, runName):
-    return np.sort(list(filter(lambda x: ("%s_"%userPrefix in x) and (not (".asc" in x or ".dat" in x)), os.listdir(runName))))
-'''
-Load the .ev-files from a phantom model
-      - This file gives the specifics of the sink particles present in the model (AGB star and companion, not of the sph particles)
-        in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
-      - Only suited for a binary model
-      - Units in cgs
 
-INPUT:
-    - 'run'   is the number of the run specifically           [str]
-    - 'loc'   is the directory where the model is located     [str]
-    - 'setup' is the setup data                               [dict]
+def sortedDumpList(dir: str, prefix: str) -> npt.NDArray[np.int_]:
+    """ Find all dump models in the directory
 
-RETURN:
-    a dictionary containing the data from the sink files (all units in cgs)
+    Args:
+        dir (str): directory of the dump files
+        prefix (str): prefix used for the simulation
 
-'''
-def LoadSink_cgs(dir, userPrefix, icompanion_star = 0):
+    Returns:
+        npt.NDArray[np.int_]: list of numpers of all dumps in the directory
+    """
+
+    return np.sort(list(filter(lambda x: ("%s_"%prefix in x) and (not (".asc" in x or ".dat" in x)), os.listdir(dir))))
+
+
+def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
+    """ Load the .ev-files from a phantom model
+        - This file gives the specifics of the sink particles present in the model (AGB star and companion, not of the sph particles)
+            in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
+        - Only suited for a binary model
+        - Units in cgs
+
+    Args:
+        dir (str): directory of the dump files
+        prefix (str): prefix used for the simulation
+        icompanion_star (int, optional): amount of companion stars. Defaults to 0.
+
+    Returns:
+        Dict[str, Any]: a dictionary containing the data from the sink files (all units in cgs)
+    """
     
-    fileName_sink1 = os.path.join(dir, str('%sSink0001N0'%userPrefix+'1.ev'))
+    fileName_sink1 = os.path.join(dir, str('%sSink0001N0'%prefix+'1.ev'))
     # companion
     if icompanion_star > 0:
-        fileName_sink2 = os.path.join(dir, str('%sSink0002N0'%userPrefix+'1.ev'))
+        fileName_sink2 = os.path.join(dir, str('%sSink0002N0'%prefix+'1.ev'))
         # inner companion
         if icompanion_star == 2:
-            fileName_sink3 = os.path.join(dir, str('%sSink0003N0'%userPrefix+'1.ev'))
+            fileName_sink3 = os.path.join(dir, str('%sSink0003N0'%prefix+'1.ev'))
 
     try:
     # to calculate period, we need masses and sma, so coordinates
@@ -456,13 +483,13 @@ def LoadSink_cgs(dir, userPrefix, icompanion_star = 0):
         print(' ERROR: No sink files found for this model in the current directory!')
 
 
-    numberOfevFiles = findLastWindSinkIndex(dir,userPrefix)
+    numberOfevFiles = findLastWindSinkIndex(dir,prefix)
     for n in range(2,numberOfevFiles+1):
-        fileName_sink1 = os.path.join(dir, str('%sSink0001N0'%userPrefix+str(n)+'.ev'))
+        fileName_sink1 = os.path.join(dir, str('%sSink0001N0'%prefix+str(n)+'.ev'))
         if icompanion_star > 0:
-            fileName_sink2 = os.path.join(dir, str('%sSink0002N0'%userPrefix+str(n)+'.ev'))
+            fileName_sink2 = os.path.join(dir, str('%sSink0002N0'%prefix+str(n)+'.ev'))
             if icompanion_star == 2:
-                fileName_sink3 = os.path.join(dir, str('%sSink0003N0'%userPrefix+str(n)+'.ev'))
+                fileName_sink3 = os.path.join(dir, str('%sSink0003N0'%prefix+str(n)+'.ev'))
 
         try:
         # to calculate period, we need masses and sma, so coordinates
@@ -614,15 +641,34 @@ def LoadSink_cgs(dir, userPrefix, icompanion_star = 0):
     return data
 
 
-# Pick last wind evolution file
-def findLastWindSinkIndex(runName,userPrefix):
-    listevFiles = sortedWindSinkList(userPrefix+'Sink0001N0', runName)
+def findLastWindSinkIndex(dir: str, prefix: str) -> int:
+    """ Pick last wind evolution file
+
+    Args:
+        dir (str): directory of the dump files
+        prefix (str): prefix used for the simulation
+
+    Returns:
+        int: number of the last wind evolution file
+    """
+
+    listevFiles = sortedWindSinkList(dir, prefix+'Sink0001N0')
     lastFile = listevFiles[-1]
-    t1 = lastFile.lstrip(userPrefix+'Sink0001')
+    t1 = lastFile.lstrip(prefix+'Sink0001')
     t2 = t1.lstrip("N")
     t3 = t2.rstrip(".ev")
     lastIndex = int(t3)
     return lastIndex
 
-def sortedWindSinkList(userPrefix, runName):
-    return np.sort(list(filter(lambda x: ("%s"%userPrefix in x) and (".ev" in x), os.listdir(runName))))
+def sortedWindSinkList(dir: str, prefix: str) -> npt.NDArray[np.int_]:
+    """ Return a list of all sink files in the directory
+
+    Args:
+        dir (str): directory of the dump files
+        prefix (str): prefix used for the simulation
+
+    Returns:
+        npt.NDArray[np.int_]: list of all sink files in the directory
+    """
+
+    return np.sort(list(filter(lambda x: ("%s"%prefix in x) and (".ev" in x), os.listdir(dir))))
