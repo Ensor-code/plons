@@ -5,9 +5,9 @@ import math     as math
 '''
 README:
 
-This script contains geometrical function for defining planes, shells, 
-distances to planes, normals of planes,... needed for the first script 
-ever to plot PHANTOM data. Many of these functions might not be 
+This script contains geometrical function for defining planes, shells,
+distances to planes, normals of planes,... needed for the first script
+ever to plot PHANTOM data. Many of these functions might not be
 relevant anymore, but might ever come in handy.
 
 If you ever need to define planes analytically with python, this is where to look :)
@@ -41,7 +41,7 @@ def coordTransf(x,y,alpha):
 
 
 '''
-Get the radial and tangential velocity 
+Get the radial and tangential velocity
   x, y, and phi are lists
 '''
 def getRadTanVelocity(x,y,v_x,v_y):
@@ -54,7 +54,7 @@ def getRadTanVelocity(x,y,v_x,v_y):
     for i in range(len(x)):
         v_rad.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[0]))
         v_tan.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[1]))
-    return v_rad,v_tan 
+    return v_rad,v_tan
 
 '''
 Get ratio between the radial and tangential velocity
@@ -66,7 +66,7 @@ def getRatioRadTan(v_r,v_t):
     return np.abs(ratio)
 
 '''
-Return the position of all particles in function of radius with the AGB star as centre
+Return the position of all particles as a function of radius with the AGB star as centre
 '''
 def getRadiusCoordinate(position,AGBcoord):
     position = position.transpose()
@@ -109,7 +109,7 @@ def calcPhi(x,y,z):
 ######-----    SHELL   -----######
 
 '''
-Get a the shell you want to model: 
+Get a the shell you want to model:
   Returns a list of indices which belong to the chosen shell
       r = [int] a certain radius where you want to take the shell
       dr = [int] thickness of the shell
@@ -141,7 +141,7 @@ def getDataInSlice(index, data, boolean, sphericalCoords):
             for i in range(len(index)-2):
                 rInSlice.append(sphericalCoords[:,index[i]])
             return np.matrix.transpose(np.array(dataInSlice)), np.matrix.transpose(np.array(rInSlice))
-        else: 
+        else:
             return np.matrix.transpose(np.array(dataInSlice))
     else:
         print('No data in this shell!')
@@ -374,7 +374,7 @@ def getAlpha(p1,p2,p3):
     c = getDistanceTwoPoints(p2,p3)
     alpha = np.arccos((b**2+c**2-a**2)/(2*b*c))
     return alpha
-    
+
 
 
 '''
@@ -394,16 +394,16 @@ def getProjectionElement(x,y,z,plane):
     a = plane[0]
     b = plane[1]
     c = plane[2]
-    d = plane[3]    
-    
+    d = plane[3]
+
     distToPlane = getDistancePlane(plane, [x,y,z])
     r = np.sqrt(x**2+y**2)
     newy = np.sqrt(r**2-distToPlane**2)
-    
+
     normal = (1/(np.sqrt(a**2+b**2+c**2)))*np.array([a,b,c])
     newOrigin = distToPlane*normal
-    
-    
+
+
     if x >= newOrigin[0] and y >= newOrigin[1]:
         newy = -newy
     if x < newOrigin[0] and y >= newOrigin[1]:
