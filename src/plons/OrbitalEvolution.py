@@ -93,9 +93,11 @@ def plotEccentricity(data, setup, loc):
     v2     = data['velComp' ]
     M2     = data['massComp']
     t      = data['time'][1:]
-
+    
+    print('mass AGB',M1[0])
+    print('pos AGB',r1[0])
     #centre of mass position and velocity
-    Mtot  = M1+M2
+    Mtot  = (M1+M2)*cgs.G
 
     #position and velocity coordinates relative to each other
     r  = r2 - r1
@@ -111,15 +113,42 @@ def plotEccentricity(data, setup, loc):
 
     trueAnomaly = np.arccos(np.sum(ecc*r,axis=1)/(rnorm*eccentricity))*180/(math.pi)
 
-    # Write text file with this info
-    np.savetxt('r_t',t)
-    np.savetxt('r_eccy',eccentricity)
-    np.savetxt('r_rnom',rnorm)
-    np.savetxt('r_ano',trueAnomaly)
-    np.savetxt('r_ecc',ecc)
+    #  #Write text file with this info
+    #np.savetxt('r_t',t)
+    #np.savetxt('r_eccy',eccentricity)
+    #np.savetxt('r_rnom',rnorm)
+    #np.savetxt('r_ano',trueAnomaly)
+    #np.savetxt('r_ecc',ecc)
 
-
+    print('The eccentricity is about ',np.mean(eccentricity[1:]))
     fig, ((ax))= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
+    
+  
+    # Plot vertical lines indicating where there should be apastron and periastron passages
+    period = setup['period'] / cgs.year
+    #print('period in years: ',period)
+    i = 0         # Start at apastron
+    mini = 0
+    if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
+        maxi = np.max(eccentricity[1:])
+        mini = np.min(eccentricity[1:])
+        for orbit in range(0, int(data['time'][-1]/period)+1):
+            plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
+            i = i+period
+        plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
+    else:
+        maxi = np.max(eccentricity[1:])
+        mini = np.min(eccentricity[1:])
+        j = period/2  # First periastron
+        for orbit in range(0, int(data['time'][-1]/period)+1):
+            plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
+            plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+            i = i+period
+            j = j+period
+        plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
+        plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+
+    plt.hlines(setup['ecc'],t[0],t[-1])
     ax.set_xlabel('time [yrs]', fontsize = 16)
     #ax.plot(trueAnomaly[1:], eccentricity[1:], c='gold')
     ax.plot(t, eccentricity[1:], c='gold')
@@ -224,10 +253,10 @@ def plotEstimate_a_Per(sinkData,setup,loc):
     t = (timeApa+timePer)/2
 
     # Find indices corresponding to these times
-    ind  = np.array([])
+    ind  = []
     for time in t:
         i  = tl.find_nearest(sinkData['time'], time)
-        ind = np.append(ind,i)
+        ind.append(i)
     
     # Estimate period using the estimate of a [au], and the masses of the AGB and companion [gram] at these times t
     est_p     = pq.getPeriod(sinkData['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
@@ -460,7 +489,32 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         #Plot BHL mass accretion rate
         MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
         plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
-
+    
+    # '''
+    # Plot vertical lines indicating where there are apastron and periastron passages
+    period = setup['period'] / cgs.year
+    #print('period in years: ',period)
+    i = 0         # Start at apastron
+    mini = 0
+    if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
+        maxi = max(np.max(accrRates),np.max(accrRates_in))/Mdot
+        for orbit in range(0, int(sinkData['time'][-1]/period)+1):
+            plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
+            i = i+period
+        plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)   
+    else:
+        maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))/Mdot
+        j = period/2  # First periastron
+        for orbit in range(0, int(sinkData['time'][-1]/period)+1):
+            plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
+            plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
+            i = i+period
+            j = j+period
+        # plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
+        # plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
+    # '''   
+    
+    
     ax = plt.subplot(111)
     # ax.grid()
     plt.xlabel('Time [yrs]', fontsize = 14)
@@ -737,7 +791,9 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         return
 
     else:
-
+        #test:
+        plotEccentricity(sinkData,setup,loc)
+        '''
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)
 
@@ -749,25 +805,9 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             plotEstimate_a_Per(sinkData,setup,loc)
             # Make plot of change in orbital separation at apastron and periastron passages
             plotApaPerChange(sinkData,setup,loc)
-
-        # Plot evolution of the mass accretion by the companion
-        #print('(5)  Start calculations for orbital evolution...')  # already printed in main
-        # BHLMassAccrRate(setup,sinkData,loc)
-        #uncomment na testen BHL
-        
-        # # Visualise the orbit of the system
-        # plot_orbit(sinkData,setup,loc)
-        
-        # #For eccentric binaries
-        # if setup['ecc']>0 and setup['triple_star']==False and setup['single_star']==False:
-        #     # Make plot of estimates of orbital period, a and e, using apastron and periastron passages           
-        #     plotEstimate_a_Per(sinkData,setup,loc)       
-        #     # Make plot of change in orbital separation at apastron and periastron passages
-        #     plotApaPerChange(sinkData,setup,loc)
           
         # Plot evolution of the mass accreted by the companion
         plotMassAccr(setup,sinkData, run, loc)
-
         # Plot evolution of the mass accretion rate by the companion
         plotMassAccrRate(setup,sinkData, run, loc)
         # Plot evolution of orbital velocities
@@ -778,8 +818,9 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         plotOrbRadSeperate(setup,sinkData, run, loc)
         #else:
         plotOrbRad(setup,sinkData, run, loc)
-
         
+        '''
+       
         #   UNCOMMENT (PARTS) IF YOU WANT TO WRITE OUT INFO IN TEXT FILE
         # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
         # Save it in dictionary 'info'
