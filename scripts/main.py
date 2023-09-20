@@ -117,14 +117,9 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
             print('     The orbital evolution part is therefore skipped.')
         else:
             print('(5)  Start calculations for orbital evolution...')
-<<<<<<< Updated upstream:scripts/main.py
-            ov.orbEv_main(run, saveloc, sinkData, setup)
 
-=======
             # ov.orbEv_main(run, saveloc, sinkData, setup)
             ov.orbEv_main(run, saveloc, sinkData, setup, dumpData)
-        
->>>>>>> Stashed changes:src/plons/main.py
     if part == '6':
         print('')
         print('(6)  Start calculating for the 1D spherical plots')
@@ -134,7 +129,6 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('')
         print('(7) Start calculations for accretion disk analysis')
         acd.accrDiskAnalysis(run, saveloc, dumpData, setup)
-
 
     # if part == '7':
     #     print('')
