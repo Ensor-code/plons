@@ -461,34 +461,6 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
         plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
 
-
-    # '''
-    # Plot vertical lines indicating where there are apastron and periastron passages
-    period = setup['period'] / cgs.year
-    #print('period in years: ',period)
-    i = 0         # Start at apastron
-    mini = 0
-    if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
-        maxi = max(np.max(accrRates),np.max(accrRates_in))
-        for orbit in range(0, int(sinkData['time'][-1]/period)+1):
-            plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
-            i = i+period
-        plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
-    else:
-        maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))
-        j = period/2  # First periastron
-        for orbit in range(0, int(sinkData['time'][-1]/period)+1):
-            plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
-            plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
-            i = i+period
-            j = j+period
-        plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-        plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-        # plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
-        # plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
-
-
-
     ax = plt.subplot(111)
     # ax.grid()
     plt.xlabel('Time [yrs]', fontsize = 14)
@@ -807,17 +779,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         #else:
         plotOrbRad(setup,sinkData, run, loc)
 
-        '''
-        t_yrs, accrRates = plotMassAccrRate(setup,sinkData, run, loc)
-        # # Plot evolution of orbital velocities 
-        # plotOrbVel(setup,sinkData, run, loc)
-        
-        # # Plot evolution of orbital radii and orbital separation
-        # #if setup['ecc'] == 0:
-        # plotOrbRadSeperate(setup,sinkData, run, loc)            
-        # #else:
-        # plotOrbRad(setup,sinkData, run, loc)
-        
         
         #   UNCOMMENT (PARTS) IF YOU WANT TO WRITE OUT INFO IN TEXT FILE
         # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
@@ -878,5 +839,4 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         '''
 
         
-        '''
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
