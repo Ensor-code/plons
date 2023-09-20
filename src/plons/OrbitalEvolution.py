@@ -165,13 +165,9 @@ def orbSep_apa_per(data, setup):
     periastronOS = np.array(orbSep[indicesPer])
     timeApa      = np.array(time[indicesApa])
     timePer      = np.array(time[indicesPer])
-<<<<<<< Updated upstream
 
-    #Simulations stars in apastron, so its possible that there is one apastron separation value mores
-=======
-    
-    #Simulations starts in apastron, so its possible that there is one apastron separation value mores
->>>>>>> Stashed changes
+
+    #Simulations starts in apastron, so its possible that there is one apastron separation value more
     if len(apastronOS)>len(periastronOS):
         apastronOS   = apastronOS[:-1]
         timeApa      = timeApa[:-1]
@@ -231,12 +227,8 @@ def plotEstimate_a_Per(sinkData,setup,loc):
     ind  = np.array([])
     for time in t:
         i  = tl.find_nearest(sinkData['time'], time)
-<<<<<<< Updated upstream
-
-=======
         ind = np.append(ind,i)
     
->>>>>>> Stashed changes
     # Estimate period using the estimate of a [au], and the masses of the AGB and companion [gram] at these times t
     est_p     = pq.getPeriod(sinkData['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
 
@@ -420,12 +412,9 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
     perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
     periodLine    = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
-<<<<<<< Updated upstream
-
-=======
     BHL           = mlines.Line2D([],[], color = 'royalblue', linestyle = 'dotted', linewidth = 0.8, label = 'BHL')
     simulation    = mlines.Line2D([],[], color = 'crimson', linestyle = 'solid', linewidth = 1, label = 'simulation')
->>>>>>> Stashed changes
+
     # Make empty array for accrRates per year
     accrRates    = np.array([]) 
     if setup['triple_star']==True:
@@ -441,16 +430,7 @@ def plotMassAccrRate(setup, sinkData, run, loc):
 
     yrs          = np.arange(1,int(max(sinkData['time']))+1,1./factor)   # 1 datapunt per 1/factor jaar
     # Make array with the indices of years in sinkData['time']
-<<<<<<< Updated upstream
-    indices_yrs  = [0]
-    t_yrs        = [sinkData['time'][0]]
 
-    #For each year, calculate the mass accreted in that 1 year and add it to the accRates array
-    for year in yrs:
-        i           = tl.find_nearest(sinkData['time'], year)
-        indices_yrs.append(i)
-        t_yrs.append(sinkData['time'][i])
-=======
     indices_yrs  = np.array([0])
     t_yrs        = np.array([sinkData['time'][0]])
     
@@ -459,22 +439,15 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         i           = tl.find_nearest(sinkData['time'], year)
         indices_yrs = np.append(indices_yrs,i)
         t_yrs = np.append(t_yrs,sinkData['time'][i])
->>>>>>> Stashed changes
 
         #calculate difference in accreted mass between this and the previous year, to find accretion rate per year in this year
         accrRate = factor*(sinkData['maccrComp'][indices_yrs[-1]]-sinkData['maccrComp'][indices_yrs[-2]])/cgs.Msun   #accreted mass * factor
         accrRates = np.append(accrRates,accrRate)
         if setup['triple_star']==True:
             accrRate_in = factor*(sinkData['maccrComp_in'][indices_yrs[-1]]-sinkData['maccrComp_in'][indices_yrs[-2]])/cgs.Msun
-<<<<<<< Updated upstream
-            accrRates_in.append(accrRate_in)
-
-    plt.plot(t_yrs[:-1], accrRates,color = 'crimson', linestyle = 'solid')
-=======
             accrRates_in = np.append(accrRates_in,accrRate_in)
     
     plt.plot(t_yrs[:-1], accrRates,color = 'crimson', linestyle = 'solid')    
->>>>>>> Stashed changes
     if setup['triple_star']==True:
         plt.plot(t_yrs[:-1], accrRates_in,color = 'lime', linestyle = 'solid')
         comp_out       = mlines.Line2D([],[], color = 'crimson', linestyle = 'solid', linewidth = 0.5, label = 'outer comp')
@@ -509,18 +482,13 @@ def plotMassAccrRate(setup, sinkData, run, loc):
             plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
             i = i+period
             j = j+period
-<<<<<<< Updated upstream
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
-    '''
-=======
         # plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
         # plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
-    # '''   
 
 
 
->>>>>>> Stashed changes
     ax = plt.subplot(111)
     # ax.grid()
     plt.xlabel('Time [yrs]', fontsize = 14)
@@ -530,12 +498,6 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     plt.legend(handles = handles_ap)
     fig.tight_layout()
 
-<<<<<<< Updated upstream
-    plt.savefig(os.path.join(loc, 'png/evolution_MaccrRate_companion.png'))
-    plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion.pdf'))
-
-    #return(t_yrs[:-1], accrRates)
-=======
     plt.savefig(os.path.join(loc, 'png/evolution_MaccrRate_companion_BHLcomp.png'))
     plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion_BHLcomp.pdf'))
     plt.close()
@@ -589,8 +551,6 @@ def plotMassAccrRate(setup, sinkData, run, loc):
 
     return t_yrs,accrRates
 
-
->>>>>>> Stashed changes
 
 
 '''
@@ -805,7 +765,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         return
 
     else:
-<<<<<<< Updated upstream
 
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)
@@ -820,7 +779,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             plotApaPerChange(sinkData,setup,loc)
 
         # Plot evolution of the mass accretion by the companion
-=======
         #print('(5)  Start calculations for orbital evolution...')  # already printed in main
         # BHLMassAccrRate(setup,sinkData,loc)
         #uncomment na testen BHL
@@ -836,11 +794,9 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         #     plotApaPerChange(sinkData,setup,loc)
           
         # Plot evolution of the mass accreted by the companion
->>>>>>> Stashed changes
         plotMassAccr(setup,sinkData, run, loc)
 
         # Plot evolution of the mass accretion rate by the companion
-<<<<<<< Updated upstream
         plotMassAccrRate(setup,sinkData, run, loc)
         # Plot evolution of orbital velocities
         plotOrbVel(setup,sinkData, run, loc)
@@ -852,7 +808,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         plotOrbRad(setup,sinkData, run, loc)
 
         '''
-=======
         t_yrs, accrRates = plotMassAccrRate(setup,sinkData, run, loc)
         # # Plot evolution of orbital velocities 
         # plotOrbVel(setup,sinkData, run, loc)
@@ -864,7 +819,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         # plotOrbRad(setup,sinkData, run, loc)
         
         
->>>>>>> Stashed changes
         #   UNCOMMENT (PARTS) IF YOU WANT TO WRITE OUT INFO IN TEXT FILE
         # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
         # Save it in dictionary 'info'
@@ -921,11 +875,8 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 35 character width
             for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
                     f.write(col_format.format(*i))
-<<<<<<< Updated upstream
         '''
 
-=======
         
         '''
->>>>>>> Stashed changes
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
