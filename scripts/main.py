@@ -16,6 +16,7 @@ import plons.TerminalVelocity             as tmv
 import plons.Profiles1D                   as dp
 import userSettings                       as us
 import plons.ArchimedianSpiral            as ars
+import plons.AccrDisk                     as acd
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
@@ -26,7 +27,8 @@ options = { '1': '(1) 2D slice plots',
             '4': '(4) Cummulative mass fraction',
             '5': '(5) Orbital evolution',
             '6': '(6) 1D spherical model',
-            '7': '(7) ArchimedianSpiral'
+            '7': '(7) Accretion disk'
+            # '7': '(7) ArchimedianSpiral'
             }
 
 
@@ -115,8 +117,14 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
             print('     The orbital evolution part is therefore skipped.')
         else:
             print('(5)  Start calculations for orbital evolution...')
+<<<<<<< Updated upstream:scripts/main.py
             ov.orbEv_main(run, saveloc, sinkData, setup)
 
+=======
+            # ov.orbEv_main(run, saveloc, sinkData, setup)
+            ov.orbEv_main(run, saveloc, sinkData, setup, dumpData)
+        
+>>>>>>> Stashed changes:src/plons/main.py
     if part == '6':
         print('')
         print('(6)  Start calculating for the 1D spherical plots')
@@ -124,8 +132,14 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
 
     if part == '7':
         print('')
-        print('(7)  Archimedian spiral')
-        ars.ArchimedianSpiral(run, saveloc, setup)
+        print('(7) Start calculations for accretion disk analysis')
+        acd.accrDiskAnalysis(run, saveloc, dumpData, setup)
+
+
+    # if part == '7':
+    #     print('')
+    #     print('(7)  Archimedian spiral')
+    #     ars.ArchimedianSpiral(run, saveloc, setup)
 
 def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1, runPart = 0):
     dir       = os.path.join(loc, run)
@@ -286,8 +300,9 @@ else:
         print('     (4) Cummulative mass fraction as a function of the polar coordinate theta.')
         print('     (5) Information of the orbital evolution.')
         print('     (6) 1D spherical profiles for single star models.')
+        print('     (7) Analysis of accretion disk')
         print()
-        print('Choose from 0 to 6, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
+        print('Choose from 0 to 7, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
         runParts = input('  >>>   ')
         runParts = runParts.split()
     if any(part in ('q', 'exit') for part in runParts):
