@@ -165,8 +165,13 @@ def orbSep_apa_per(data, setup):
     periastronOS = np.array(orbSep[indicesPer])
     timeApa      = np.array(time[indicesApa])
     timePer      = np.array(time[indicesPer])
+<<<<<<< Updated upstream
 
     #Simulations stars in apastron, so its possible that there is one apastron separation value mores
+=======
+    
+    #Simulations starts in apastron, so its possible that there is one apastron separation value mores
+>>>>>>> Stashed changes
     if len(apastronOS)>len(periastronOS):
         apastronOS   = apastronOS[:-1]
         timeApa      = timeApa[:-1]
@@ -223,11 +228,15 @@ def plotEstimate_a_Per(sinkData,setup,loc):
     t = (timeApa+timePer)/2
 
     # Find indices corresponding to these times
-    ind  = []
+    ind  = np.array([])
     for time in t:
         i  = tl.find_nearest(sinkData['time'], time)
-        ind.append(i)
+<<<<<<< Updated upstream
 
+=======
+        ind = np.append(ind,i)
+    
+>>>>>>> Stashed changes
     # Estimate period using the estimate of a [au], and the masses of the AGB and companion [gram] at these times t
     est_p     = pq.getPeriod(sinkData['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
 
@@ -326,6 +335,81 @@ def plotMassAccr(setup, sinkData, run, loc):
     plt.savefig(os.path.join(loc, 'pdf/evolution_Maccr_companion.pdf'))
 
 '''
+Calculate theoretical BHL mass accretion rate
+'''
+def BHLMassAccrRate(setup,data,loc):
+    
+    alphaBHL = 0.75
+    Mdot     = setup['Mdot'] * cgs.Msun / cgs.year                               # [g/s]
+    orbSep   = (data['rComp'] + data['rAGB'])                                    # cm   ?
+    G        = cgs.G                                                             # [cm^3 g^-1 s^-1]
+    Mc       = data['massComp']                                                  # [g]
+    Md       = data['massAGB']
+    vorbp    = data['v_orbAGB_t']                                                # [cm/s]  ?
+    # vorbc    = data['v_orbComp_t']/cgs.kms                                     # [cm/s]
+    vw       = np.sqrt(np.mean(vorbp)**2 + (setup['v_ini']*cgs.kms)**2)          # [cm/s]  local wind velocity, wordt berekend in ander script, nu afschatten door np.sqrt(vw^2+vorb^2) En gemiddelde, want klopt niet anders
+    #v1       = vorbc + vorbp                                                    # Instantaneous relative velocity of stars, exactly the same as v
+    v        = np.sqrt(G * (Mc + Md)/orbSep)                                     # [cm/s] Instantaneous relative velocity of stars
+    # print('Mdot ',Mdot)
+    # print('orbSep ',np.mean(orbSep))
+    # print('G ',G)
+    # print('Mass comp ',np.mean(Mc))
+    # print('vw',setup['v_ini']*cgs.kms)
+    # print('vorbP',np.mean(vorbp))
+    # print('vw ',np.mean(vw))
+    # print('vOrb', np.mean(v))
+    MaccrBHL = (alphaBHL * (Mdot / orbSep**2)  * ( G * Mc / ( vw**2))**2 * (1 +  (v/vw)**2)**(-1.5) )    #g/s
+    MaccrEffBHL = MaccrBHL/Mdot #*100  #%
+    ecc      = setup['ecc']
+    sma      = setup['sma_ini']        *cgs.au                               # [cm]  
+    Mc       = setup['massComp_ini']   *cgs.Msun                             # [g]
+    Md       = setup['massAGB_ini']    *cgs.Msun                             # [g]
+    v_orb    = np.sqrt(G * (Mc + Md)/sma)                                    # [cm/s]
+    vw       = np.sqrt(vorbp[0]**2 + (setup['v_ini']*cgs.kms)**2)            # local wind velocity, wordt berekend in ander script, nu eventjes afschatten door np.sqrt(vw^2+vorb^2)
+    
+    print('-------------------')
+    # print('sma ',sma)
+    # print('Mc', Mc)
+    # print('vw ',vw)
+    # print('v_orb ',(v_orb))
+    # print('-------------------')
+
+   # average mass accretion rate:
+    MaccrBHL_av    = (alphaBHL * (Mdot/  (sma**2 * np.sqrt(1 - ecc**2))) * ( G * Mc / ( vw**2))**2 * (1 + (v_orb/vw)**2)**(-1.5) )  #g/s
+    # average mass accretion efficiency:
+    MaccrEffBHL_av  = MaccrBHL_av / Mdot #*100 # %
+    print('Average BHL accr rate (formula) [Msun/yr]', MaccrBHL_av/cgs.Msun * cgs.year)  #Msun/yr)
+    print('Mean Maccr: ', np.mean(MaccrBHL)/cgs.Msun * cgs.year)
+    print('Average BHL accr efficiency (formula)',MaccrEffBHL_av)
+    print('Mean Maccr: ',np.mean(MaccrEffBHL))
+
+    '''
+    fig = plt.figure(figsize=(8, 5))
+    plt.plot(data['time'],  MaccrBHL /cgs.Msun * cgs.year, color = 'royalblue', linestyle = 'solid')  #Msun/yr
+    ax = plt.subplot(111)
+    plt.xlabel('Time[yrs]', fontsize = 16)
+    plt.ylabel('BHL mass accretion rate [Msun/yr]', fontsize = 16)
+
+    plt.title('Theoretical mass accr rate', fontsize = 18)
+    fig.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/BHL_Maccr_companion.png'))
+    plt.close()
+
+    fig = plt.figure(figsize=(8, 5))
+    plt.plot(data['time'],  MaccrEffBHL, color = 'royalblue', linestyle = 'solid')
+    ax = plt.subplot(111)
+    plt.xlabel('Time[yrs]', fontsize = 16)
+    plt.ylabel('BHL mass accretion efficiency [%]', fontsize = 16)
+
+    # plt.title('Theoretical mass accr rate', fontsize = 18)
+    fig.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/BHL_MaccrEff_companion.png'))
+    '''
+
+    return MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av
+
+
+'''
 Makes plot of the evolution of mass accretion rate by the companion
 returns t_yrs and mass accretion rate to make plot yourself
 '''
@@ -333,14 +417,19 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     # Make plot of the mass accretion evolution, very interesting to plot!
     fig = plt.figure(figsize=(8, 5))
     # Legend
-    apaLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
-    perLine       = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
+    apaLine       = mlines.Line2D([],[], color = 'k', linestyle = 'solid', linewidth = 0.5, label = 'Apastron')
+    perLine       = mlines.Line2D([],[], color = 'k', linestyle = 'dotted', linewidth = 0.5, label = 'Periastron')
     periodLine    = mlines.Line2D([],[], color = 'navy', linestyle = 'dotted', linewidth = 0.5, label = 'orbital period')
+<<<<<<< Updated upstream
 
+=======
+    BHL           = mlines.Line2D([],[], color = 'royalblue', linestyle = 'dotted', linewidth = 0.8, label = 'BHL')
+    simulation    = mlines.Line2D([],[], color = 'crimson', linestyle = 'solid', linewidth = 1, label = 'simulation')
+>>>>>>> Stashed changes
     # Make empty array for accrRates per year
-    accrRates    = []
+    accrRates    = np.array([]) 
     if setup['triple_star']==True:
-        accrRates_in = []
+        accrRates_in = np.array([]) 
         # Make array with the years
         factor   = 0.5
     else:
@@ -348,8 +437,11 @@ def plotMassAccrRate(setup, sinkData, run, loc):
             factor = 0.5
         else: #close binary
             factor   = 5.0
+
+
     yrs          = np.arange(1,int(max(sinkData['time']))+1,1./factor)   # 1 datapunt per 1/factor jaar
     # Make array with the indices of years in sinkData['time']
+<<<<<<< Updated upstream
     indices_yrs  = [0]
     t_yrs        = [sinkData['time'][0]]
 
@@ -358,24 +450,46 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         i           = tl.find_nearest(sinkData['time'], year)
         indices_yrs.append(i)
         t_yrs.append(sinkData['time'][i])
+=======
+    indices_yrs  = np.array([0])
+    t_yrs        = np.array([sinkData['time'][0]])
+    
+    #For each year, calculate the mass accreted in that 1 year and add it to the accRates array
+    for year in yrs:
+        i           = tl.find_nearest(sinkData['time'], year)
+        indices_yrs = np.append(indices_yrs,i)
+        t_yrs = np.append(t_yrs,sinkData['time'][i])
+>>>>>>> Stashed changes
 
         #calculate difference in accreted mass between this and the previous year, to find accretion rate per year in this year
-        accrRate = factor*(sinkData['maccrComp'][indices_yrs[-1]]-sinkData['maccrComp'][indices_yrs[-2]])/cgs.Msun
-        accrRates.append(accrRate)
+        accrRate = factor*(sinkData['maccrComp'][indices_yrs[-1]]-sinkData['maccrComp'][indices_yrs[-2]])/cgs.Msun   #accreted mass * factor
+        accrRates = np.append(accrRates,accrRate)
         if setup['triple_star']==True:
             accrRate_in = factor*(sinkData['maccrComp_in'][indices_yrs[-1]]-sinkData['maccrComp_in'][indices_yrs[-2]])/cgs.Msun
+<<<<<<< Updated upstream
             accrRates_in.append(accrRate_in)
 
     plt.plot(t_yrs[:-1], accrRates,color = 'crimson', linestyle = 'solid')
+=======
+            accrRates_in = np.append(accrRates_in,accrRate_in)
+    
+    plt.plot(t_yrs[:-1], accrRates,color = 'crimson', linestyle = 'solid')    
+>>>>>>> Stashed changes
     if setup['triple_star']==True:
         plt.plot(t_yrs[:-1], accrRates_in,color = 'lime', linestyle = 'solid')
         comp_out       = mlines.Line2D([],[], color = 'crimson', linestyle = 'solid', linewidth = 0.5, label = 'outer comp')
         comp_in        = mlines.Line2D([],[], color = 'lime', linestyle = 'solid', linewidth = 0.5, label = 'inner comp')
         handles_ap    = [periodLine,comp_in,comp_out]
-    #else:
-        #handles_ap    = [apaLine, perLine]
+    else:
+        handles_ap    = [BHL,simulation, apaLine, perLine]
 
-    '''
+    if setup['triple_star']==False:
+        #Plot BHL mass accretion rate
+        MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
+        plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
+
+
+    # '''
     # Plot vertical lines indicating where there are apastron and periastron passages
     period = setup['period'] / cgs.year
     #print('period in years: ',period)
@@ -388,30 +502,95 @@ def plotMassAccrRate(setup, sinkData, run, loc):
             i = i+period
         plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
     else:
-        maxi = np.max(accrRates)
+        maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))
         j = period/2  # First periastron
         for orbit in range(0, int(sinkData['time'][-1]/period)+1):
-            plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
-            plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
+            plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
+            plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
             i = i+period
             j = j+period
+<<<<<<< Updated upstream
         plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
         plt.vlines(j,mini, maxi,  linestyle = 'dotted', linewidth = 0.5)
     '''
+=======
+        # plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
+        # plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
+    # '''   
+
+
+
+>>>>>>> Stashed changes
     ax = plt.subplot(111)
-    ax.grid()
-    plt.xlabel('Time[yrs]', fontsize = 14)
+    # ax.grid()
+    plt.xlabel('Time [yrs]', fontsize = 14)
     plt.ylabel('Mass accretion rate [Msun/yr]', fontsize = 14)
 
-    plt.title('Mass accretion rate by the companion', fontsize = 18)
-    if setup['triple_star']==True:
-        plt.legend(handles = handles_ap)
+    # plt.title('Mass accretion rate by the companion', fontsize = 18)
+    plt.legend(handles = handles_ap)
     fig.tight_layout()
 
+<<<<<<< Updated upstream
     plt.savefig(os.path.join(loc, 'png/evolution_MaccrRate_companion.png'))
     plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion.pdf'))
 
     #return(t_yrs[:-1], accrRates)
+=======
+    plt.savefig(os.path.join(loc, 'png/evolution_MaccrRate_companion_BHLcomp.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion_BHLcomp.pdf'))
+    plt.close()
+
+    ## Mass accretion efficiency plot
+    Mdot     = setup['Mdot']                                # [Msun/yr]
+    fig = plt.figure(figsize=(8, 5))
+    plt.plot(t_yrs[:-1], accrRates/Mdot,color = 'crimson', linestyle = 'solid')    
+    if setup['triple_star']==False:
+        #Plot BHL mass accretion rate
+        MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
+        plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year /Mdot,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
+
+
+    # '''
+    # Plot vertical lines indicating where there are apastron and periastron passages
+    period = setup['period'] / cgs.year
+    #print('period in years: ',period)
+    i = 0         # Start at apastron
+    mini = 0
+    if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
+        maxi = max(np.max(accrRates),np.max(accrRates_in))/Mdot
+        for orbit in range(0, int(sinkData['time'][-1]/period)+1):
+            plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
+            i = i+period
+        plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)   
+    else:
+        maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))/Mdot
+        j = period/2  # First periastron
+        for orbit in range(0, int(sinkData['time'][-1]/period)+1):
+            plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
+            plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
+            i = i+period
+            j = j+period
+        # plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
+        # plt.vlines(j,mini, maxi, color='k', linestyle = 'dotted', linewidth = 0.5)
+    # '''   
+
+    ax = plt.subplot(111)
+    # ax.grid()
+    plt.xlabel('Time [yrs]', fontsize = 14)
+    plt.ylabel(r'Mass accretion efficiency $\beta$', fontsize = 14)
+
+    # plt.title('Mass accretion efficiency', fontsize = 18)
+    plt.legend(handles = handles_ap)
+    fig.tight_layout()
+
+    plt.savefig(os.path.join(loc, 'png/evolution_MaccrEff_companion_BHLcomp.png'))
+    plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrEff_companion_BHLcomp.pdf'))
+    plt.close()
+
+    return t_yrs,accrRates
+
+
+>>>>>>> Stashed changes
 
 
 '''
@@ -620,12 +799,13 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
 '''
 Main function executing calculations about orbital evolution
 '''
-def orbEv_main(run,loc, sinkData, setup):
+def orbEv_main(run,loc, sinkData, setup,dumpData):
     print('')
     if setup['single_star']:
         return
 
     else:
+<<<<<<< Updated upstream
 
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)
@@ -640,9 +820,27 @@ def orbEv_main(run,loc, sinkData, setup):
             plotApaPerChange(sinkData,setup,loc)
 
         # Plot evolution of the mass accretion by the companion
+=======
+        #print('(5)  Start calculations for orbital evolution...')  # already printed in main
+        # BHLMassAccrRate(setup,sinkData,loc)
+        #uncomment na testen BHL
+        
+        # # Visualise the orbit of the system
+        # plot_orbit(sinkData,setup,loc)
+        
+        # #For eccentric binaries
+        # if setup['ecc']>0 and setup['triple_star']==False and setup['single_star']==False:
+        #     # Make plot of estimates of orbital period, a and e, using apastron and periastron passages           
+        #     plotEstimate_a_Per(sinkData,setup,loc)       
+        #     # Make plot of change in orbital separation at apastron and periastron passages
+        #     plotApaPerChange(sinkData,setup,loc)
+          
+        # Plot evolution of the mass accreted by the companion
+>>>>>>> Stashed changes
         plotMassAccr(setup,sinkData, run, loc)
 
         # Plot evolution of the mass accretion rate by the companion
+<<<<<<< Updated upstream
         plotMassAccrRate(setup,sinkData, run, loc)
         # Plot evolution of orbital velocities
         plotOrbVel(setup,sinkData, run, loc)
@@ -654,6 +852,19 @@ def orbEv_main(run,loc, sinkData, setup):
         plotOrbRad(setup,sinkData, run, loc)
 
         '''
+=======
+        t_yrs, accrRates = plotMassAccrRate(setup,sinkData, run, loc)
+        # # Plot evolution of orbital velocities 
+        # plotOrbVel(setup,sinkData, run, loc)
+        
+        # # Plot evolution of orbital radii and orbital separation
+        # #if setup['ecc'] == 0:
+        # plotOrbRadSeperate(setup,sinkData, run, loc)            
+        # #else:
+        # plotOrbRad(setup,sinkData, run, loc)
+        
+        
+>>>>>>> Stashed changes
         #   UNCOMMENT (PARTS) IF YOU WANT TO WRITE OUT INFO IN TEXT FILE
         # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
         # Save it in dictionary 'info'
@@ -661,10 +872,12 @@ def orbEv_main(run,loc, sinkData, setup):
         info['TotMaC']         = sinkData['maccrComp'][-1] # the total mass accreted by the companion
         info['TotMaA']         = sinkData['maccrAGB' ][-1]  # the total mass accreted by the AGB
         info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData['massAGB'][-1] - info['TotMaA'])
-        info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
+
+
+        # info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
         if setup['triple_star']==True:
             info['TotMaC_in']         = sinkData['maccrComp_in'][-1] # the total mass accreted by the inner companion
-            info['RatioMaC_in_MLAGB'] = info['TotMaC_in']/ info['MassLostAGB']
+            # info['RatioMaC_in_MLAGB'] = info['TotMaC_in']/ info['MassLostAGB']
 
 
         # Write text file with this info
@@ -673,15 +886,17 @@ def orbEv_main(run,loc, sinkData, setup):
             f.write('\n')
             f.write('Model '+str(run)+'\n')
             f.write('\n')
-            f.write('The total mass accreted by the companion is                                    : '+ str(info['TotMaC'      ]) +' g \n')
-            f.write('The total mass accreted by the AGB is                                          : '+ str(info['TotMaA'      ]) +' g \n')
-            f.write('The total mass lost by the AGB is                                              : '+ str(info['MassLostAGB' ]) +' g \n')
-            f.write('The ratio of the mass accreted by the companion to the mass lost by the AGB is : '+ str(round(info['RatioMaC_MLAGB'],5)))
+            f.write('The total mass accreted by the companion is                                    : '+ str(info['TotMaC'      ]/cgs.Msun) +' Msun \n')
+            f.write('The total mass accreted by the AGB is                                          : '+ str(info['TotMaA'      ]/cgs.Msun) +' Msun \n')
+            f.write('The total mass lost by the AGB sink particle is                                : '+ str(info['MassLostAGB' ]/cgs.Msun) +' Msun \n')
+            f.write('The expected mass lost by the AGB is                                           : '+ str(setup['Mdot']*sinkData['time'][-1]) + 'Msun \n')
+            f.write('The total mass in the system withouth the mass loss at the boundary is         : '+ str((info['TotMaC'] + np.sum(dumpData['mass']))/cgs.Msun )+ 'Msun \n')
+            f.write('The ratio of the mass accreted by the companion to the mass lost by the AGB is : '+ str(round((info['TotMaC']/cgs.Msun)/ (setup['Mdot']*sinkData['time'][-1]),5)))
             f.write('\n')
             if setup['triple_star']==True:
-                f.write('The total mass accreted by the inner companion is                                    : '+ str(info['TotMaC_in'      ]) +' g \n')
-                f.write('The ratio of the mass accreted by the inner companion to the mass lost by the AGB is : '+ str(round(info['RatioMaC_in_MLAGB'],5)))
-
+                f.write('The total mass accreted by the inner companion is                                    : '+ str(info['TotMaC_in'      ]/cgs.Msun) +' Msun \n')
+                f.write('The ratio of the mass accreted by the inner companion to the mass lost by the AGB is : '+ str(round(info['TotMaC_in']/ (setup['Mdot']*sinkData['time'][-1]),5)))
+        '''
         # Write text file with usefull info; if you want to do this, first save t_yrs and accrRates from plotMassAccrRate function
         title = os.path.join(loc, 'txt/data_OrbitalEvolution.txt')
         with open (title,'a') as f:
@@ -706,6 +921,11 @@ def orbEv_main(run,loc, sinkData, setup):
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 35 character width
             for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
                     f.write(col_format.format(*i))
+<<<<<<< Updated upstream
         '''
 
+=======
+        
+        '''
+>>>>>>> Stashed changes
         print('     Orbital evolution plots of model '+ run +' ready and saved!')
