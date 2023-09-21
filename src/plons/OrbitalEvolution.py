@@ -477,6 +477,8 @@ def plotMassAccrRate(setup, sinkData, run, loc):
             accrRates_in = np.append(accrRates_in,accrRate_in)
     
     plt.plot(t_yrs[:-1], accrRates,color = 'crimson', linestyle = 'solid')    
+        
+    
     if setup['triple_star']==True:
         plt.plot(t_yrs[:-1], accrRates_in,color = 'lime', linestyle = 'solid')
         comp_out       = mlines.Line2D([],[], color = 'crimson', linestyle = 'solid', linewidth = 0.5, label = 'outer comp')
@@ -489,21 +491,24 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         #Plot BHL mass accretion rate
         MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
         plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
+        
+        
     
-    # '''
+    ### Mass accretion plot
+    
     # Plot vertical lines indicating where there are apastron and periastron passages
     period = setup['period'] / cgs.year
     #print('period in years: ',period)
     i = 0         # Start at apastron
     mini = 0
     if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
-        maxi = max(np.max(accrRates),np.max(accrRates_in))/Mdot
+        maxi = max(np.max(accrRates),np.max(accrRates_in))
         for orbit in range(0, int(sinkData['time'][-1]/period)+1):
             plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
             i = i+period
         plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)   
     else:
-        maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))/Mdot
+        maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))
         j = period/2  # First periastron
         for orbit in range(0, int(sinkData['time'][-1]/period)+1):
             plt.vlines(i,mini, maxi, color='k', linestyle = 'solid' , linewidth = 0.5)
@@ -528,15 +533,22 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     plt.savefig(os.path.join(loc, 'pdf/evolution_MaccrRate_companion_BHLcomp.pdf'))
     plt.close()
 
-    ## Mass accretion efficiency plot
+    ### Mass accretion efficiency plot
     Mdot     = setup['Mdot']                                # [Msun/yr]
+    
+    
+    apatimestep   = 55.7 #after 6 full orbits. So average of last 4 orbitss 
+    MaccrRConv    = accrRates [t_yrs[:-1]>apatimestep]
+    averageMaccrR = np.mean(MaccrRConv)/Mdot
+    print('Average MaccrR is in last 4 orbital periods is',averageMaccrR)
+    
+    
     fig = plt.figure(figsize=(8, 5))
     plt.plot(t_yrs[:-1], accrRates/Mdot,color = 'crimson', linestyle = 'solid')    
     if setup['triple_star']==False:
         #Plot BHL mass accretion rate
-        MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
+        #MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
         plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year /Mdot,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
-
 
     # '''
     # Plot vertical lines indicating where there are apastron and periastron passages
@@ -791,9 +803,10 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         return
 
     else:
+        '''
         #test:
         plotEccentricity(sinkData,setup,loc)
-        '''
+        
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)
 
@@ -808,8 +821,10 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
           
         # Plot evolution of the mass accreted by the companion
         plotMassAccr(setup,sinkData, run, loc)
+        '''
         # Plot evolution of the mass accretion rate by the companion
         plotMassAccrRate(setup,sinkData, run, loc)
+        '''
         # Plot evolution of orbital velocities
         plotOrbVel(setup,sinkData, run, loc)
 
