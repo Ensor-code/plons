@@ -94,8 +94,8 @@ def plotEccentricity(data, setup, loc):
     M2     = data['massComp']
     t      = data['time'][1:]
     
-    print('mass AGB',M1[0])
-    print('pos AGB',r1[0])
+    #print('mass AGB',M1[0])
+    #print('pos AGB',r1[0])
     #centre of mass position and velocity
     Mtot  = (M1+M2)*cgs.G
 
@@ -536,11 +536,19 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     ### Mass accretion efficiency plot
     Mdot     = setup['Mdot']                                # [Msun/yr]
     
+    # To calculate average mass accretion rate and total accreted mass of last 4 orbits
+    apatimestep   = 55.7 #after 6 full orbits. 
     
-    apatimestep   = 55.7 #after 6 full orbits. So average of last 4 orbitss 
-    MaccrRConv    = accrRates [t_yrs[:-1]>apatimestep]
-    averageMaccrR = np.mean(MaccrRConv)/Mdot
-    print('Average MaccrR is in last 4 orbital periods is',averageMaccrR)
+    print(np.shape(sinkData['time']))
+    print(np.max(sinkData['time']),sinkData['time'][-1])
+    
+    maccrLast4Orbits = sinkData['maccrComp'] [sinkData['time']>apatimestep]
+    accretedMass     = (maccrLast4Orbits[-1] - maccrLast4Orbits[0])/cgs.Msun
+    MaccrRConverged  = accrRates [t_yrs[:-1]>apatimestep]
+    averageMaccrEff  = np.mean(MaccrRConverged)/Mdot
+    print('Average MaccrR efficieny is in last 4 orbital periods is',np.round(averageMaccrEff,4))
+    print(accretedMass/1e-7,' *1e-7 Msun has been accreted in these 4 orbital periods')
+    print('This would be calculated to an average Maccr of ',np.round(accretedMass/Mdot / (t_yrs[-1]-apatimestep),4))
     
     
     fig = plt.figure(figsize=(8, 5))
@@ -818,12 +826,12 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             plotEstimate_a_Per(sinkData,setup,loc)
             # Make plot of change in orbital separation at apastron and periastron passages
             plotApaPerChange(sinkData,setup,loc)
-          
+        '''
         # Plot evolution of the mass accreted by the companion
         plotMassAccr(setup,sinkData, run, loc)
-        '''
         # Plot evolution of the mass accretion rate by the companion
         plotMassAccrRate(setup,sinkData, run, loc)
+        
         '''
         # Plot evolution of orbital velocities
         plotOrbVel(setup,sinkData, run, loc)
@@ -835,7 +843,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         plotOrbRad(setup,sinkData, run, loc)
         
         '''
-       
         #   UNCOMMENT (PARTS) IF YOU WANT TO WRITE OUT INFO IN TEXT FILE
         # Calculate total mass accreted by companion and AGB star, total mass lost by the AGB star and ratio mass accreted to mass lost
         # Save it in dictionary 'info'
