@@ -121,6 +121,35 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
     
     return setup
 
+
+# reads the 1D data and computes derived quantities
+def read1D(runName, setup):
+    # Read the 1D data
+    f       = open(os.path.join(runName,'wind_1D.dat'),'r')
+    headers = f.readline()
+    headers = headers.split()[0:]
+    if (headers[0] == '#'):
+        headers.pop(0)
+    data_1D = dict()
+    #print(headers)
+    m = np.loadtxt(f)
+    for i,column in enumerate(headers):
+      data_1D[column] = m[:,i]
+    #add new variables
+    try:
+      data_1D['Tgas']  = data_1D['T']
+      data_1D['cs']    = np.sqrt(data_1D['gamma']*cgs.kB*data_1D['T']/(data_1D['mu']*cgs.mH))
+    except:
+      pass
+    data_1D['v_esc'] = np.sqrt(2*cgs.G*setup['massAGB_ini']*cgs.Msun/(data_1D['r']))
+    if setup['isink_radiation'] > 1:
+        if setup['iget_tdust'] == 1:
+            data_1D['Tdust'] = setup['primary_Teff']*(setup['primary_Reff']/data_1D['r'])**setup['tdust_exp']
+        elif setup['iget_tdust'] == 0:
+            data_1D['Tdust'] = data_1D['Tgas']
+    del headers, m, i, column
+    return data_1D
+
 def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str, Any]:
     """ Loads the dump of a phantom model, given the number
 

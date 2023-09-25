@@ -12,35 +12,9 @@ from numpy import *
 from scipy import interpolate
 import os
 import sys
-from plons.ConversionFactors_cgs import Rg, steboltz, kB, au, G, mH, Msun
 
-# reads the 1D data and computes derived quantities
-def read1D(runName, setup):
-    # Read the 1D data
-    f       = open(os.path.join(runName,'wind_1D.dat'),'r')
-    headers = f.readline()
-    headers = headers.split()[0:]
-    if (headers[0] == '#'):
-        headers.pop(0)
-    data_1D = dict()
-    #print(headers)
-    m = loadtxt(f)
-    for i,column in enumerate(headers):
-      data_1D[column] = m[:,i]
-    #add new variables
-    try:
-      data_1D['Tgas']  = data_1D['T']
-      data_1D['cs']    = sqrt(data_1D['gamma']*kB*data_1D['T']/(data_1D['mu']*mH))
-    except:
-      pass
-    data_1D['v_esc'] = sqrt(2*G*setup['massAGB_ini']*Msun/(data_1D['r']))
-    if setup['isink_radiation'] > 1:
-        if setup['iget_tdust'] == 1:
-            data_1D['Tdust'] = setup['primary_Teff']*(setup['primary_Reff']/data_1D['r'])**setup['tdust_exp']
-        elif setup['iget_tdust'] == 0:
-            data_1D['Tdust'] = data_1D['Tgas']
-    del headers, m, i, column
-    return data_1D
+from plons.ConversionFactors_cgs import Rg, steboltz, kB, au, mH
+from plons import LoadData as load
 
 # Plots the 1D data
 def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
@@ -370,56 +344,109 @@ def Dustcooling(data1D, references, ax1, ax2):
 
 # ===== GENERAL INPUT PARAMETERS ========================================================================
 def profiles_main(run, loc, saveloc, dumpData, setup):
-    if not setup['single_star']: return
-    runName = os.path.join(loc,run)
-    data1D = read1D(runName, setup)
+    if setup['single_star']:
+        runName = os.path.join(loc,run)
+        data1D = load.read1D(runName, setup)
 
-    whichPlots = ['vel', 'temp', 'rho', 'v&T']
-    if setup['idust_opacity'] > 0: whichPlots.append('dust')
-    if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
-        if setup['iget_tdust'] == 4: whichPlots.append('tau_lucy')
-        else: whichPlots.append('tau')
-    if setup['isink_radiation'] > 0: whichPlots.append('alpha')
-    
-    # specify reference values
-    r_ref  = setup['primary_Reff']*au
-    references = referenceX('r', r_ref=r_ref)
-    references.update(referenceY(whichPlots, data1D, dumpData))
-
-    # ===== GENERATE PLOT ========================================================================
-    for whichPlot in whichPlots:
-        # ===== SET UP PLOT LAYOUT =============================================================
-        fig, ax1 = plt.subplots(1,figsize=(9,6),tight_layout=True,squeeze=False,sharex=True)
-        ax1 = ax1[0][0]
-
-        if whichPlot == 'dust' or whichPlot == 'chem' or whichPlot == 'v&T' or whichPlot == 'dustcool':
-            ax2 = ax1.twinx()
-            lns3,lns4 = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
-            lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
-            lns = lns1+lns2+lns3+lns4#+[lns5]
-            labs = [l.get_label() for l in lns]
-            ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=16)
-            for item in (  [ax2.title, ax2.xaxis.label, ax2.yaxis.label]
-                    + ax2.get_xticklabels() + ax2.get_yticklabels()
-                        ):
-                item.set_fontsize(16)
-        else:
-            plot3D(dumpData, setup, references, whichPlot, ax1)
-            plot1D(data1D, setup, references, whichPlot, ax1)
-            ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=16)
-        ax1.set_xlabel(references['x_label'])
-            
-        #---------- Font size ----------
-        for item in (  [ax1.title, ax1.xaxis.label, ax1.yaxis.label]
-                    + ax1.get_xticklabels() + ax1.get_yticklabels()
-                    ):
-            item.set_fontsize(20)
+        whichPlots = ['vel', 'temp', 'rho', 'v&T']
+        if setup['idust_opacity'] > 0: whichPlots.append('dust')
+        if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
+            if setup['iget_tdust'] == 4: whichPlots.append('tau_lucy')
+            else: whichPlots.append('tau')
+        if setup['isink_radiation'] > 0: whichPlots.append('alpha')
         
-        #---------- Finalize plot ----------
-        #txt = ['high resolution, q=20','mid resolution, q=10','low resolution, q=3']
-        #ax1.text(2.6,19,txt,fontsize=16)
-        ax1.set_xlim(references['x_limits'])
-        #ax2.set_ylim([0,40])
-        #ax2.set_yscale('log')
-        plt.savefig(os.path.join(saveloc, 'png/1DProfile_'+whichPlot+'.png'), dpi=200, bbox_inches="tight")
-        fig.savefig(os.path.join(saveloc, 'pdf/1DProfile_'+whichPlot+'.pdf'), bbox_inches="tight")
+        # specify reference values
+        r_ref  = setup['primary_Reff']*au
+        references = referenceX('r', r_ref=r_ref)
+        references.update(referenceY(whichPlots, data1D, dumpData))
+
+        # ===== GENERATE PLOT ========================================================================
+        for whichPlot in whichPlots:
+            # ===== SET UP PLOT LAYOUT =============================================================
+            fig, ax1 = plt.subplots(1,figsize=(9,6),tight_layout=True,squeeze=False,sharex=True)
+            ax1 = ax1[0][0]
+
+            if whichPlot == 'dust' or whichPlot == 'chem' or whichPlot == 'v&T' or whichPlot == 'dustcool':
+                ax2 = ax1.twinx()
+                lns3,lns4 = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
+                lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
+                lns = lns1+lns2+lns3+lns4#+[lns5]
+                labs = [l.get_label() for l in lns]
+                ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=16)
+                for item in (  [ax2.title, ax2.xaxis.label, ax2.yaxis.label]
+                        + ax2.get_xticklabels() + ax2.get_yticklabels()
+                            ):
+                    item.set_fontsize(16)
+            else:
+                plot3D(dumpData, setup, references, whichPlot, ax1)
+                plot1D(data1D, setup, references, whichPlot, ax1)
+                ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=16)
+            ax1.set_xlabel(references['x_label'])
+                
+            #---------- Font size ----------
+            for item in (  [ax1.title, ax1.xaxis.label, ax1.yaxis.label]
+                        + ax1.get_xticklabels() + ax1.get_yticklabels()
+                        ):
+                item.set_fontsize(20)
+            
+            #---------- Finalize plot ----------
+            #txt = ['high resolution, q=20','mid resolution, q=10','low resolution, q=3']
+            #ax1.text(2.6,19,txt,fontsize=16)
+            ax1.set_xlim(references['x_limits'])
+            #ax2.set_ylim([0,40])
+            #ax2.set_yscale('log')
+            plt.savefig(os.path.join(saveloc, 'png/1DProfile_'+whichPlot+'.png'), dpi=200, bbox_inches="tight")
+            fig.savefig(os.path.join(saveloc, 'pdf/1DProfile_'+whichPlot+'.pdf'), bbox_inches="tight")
+    else:
+        runName = os.path.join(loc,run)
+        data1D = load.read1D(runName, setup)
+
+        whichPlots = ['vel', 'temp', 'rho', 'v&T']
+        if setup['idust_opacity'] > 0: whichPlots.append('dust')
+        if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
+            if setup['iget_tdust'] == 4: whichPlots.append('tau_lucy')
+            else: whichPlots.append('tau')
+        if setup['isink_radiation'] > 0: whichPlots.append('alpha')
+        
+        # specify reference values
+        r_ref  = setup['primary_Reff']*au
+        references = referenceX('r', r_ref=r_ref)
+        references.update(referenceY(whichPlots, data1D, dumpData))
+
+        # ===== GENERATE PLOT ========================================================================
+        for whichPlot in whichPlots:
+            # ===== SET UP PLOT LAYOUT =============================================================
+            fig, ax1 = plt.subplots(1,figsize=(9,6),tight_layout=True,squeeze=False,sharex=True)
+            ax1 = ax1[0][0]
+
+            if whichPlot == 'dust' or whichPlot == 'chem' or whichPlot == 'v&T' or whichPlot == 'dustcool':
+                ax2 = ax1.twinx()
+                # lns3,lns4 = plot3D(dumpData, setup, references, whichPlot, ax1, ax2)
+                lns1,lns2 = plot1D(data1D, setup, references, whichPlot, ax1, ax2)
+                lns = lns1+lns2#+lns3+lns4#+[lns5]
+                labs = [l.get_label() for l in lns]
+                ax1.legend(lns, labs, bbox_to_anchor=(1, 0.30), loc='lower right',fontsize=16)
+                for item in (  [ax2.title, ax2.xaxis.label, ax2.yaxis.label]
+                        + ax2.get_xticklabels() + ax2.get_yticklabels()
+                            ):
+                    item.set_fontsize(16)
+            else:
+                # plot3D(dumpData, setup, references, whichPlot, ax1)
+                plot1D(data1D, setup, references, whichPlot, ax1)
+                ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=16)
+            ax1.set_xlabel(references['x_label'])
+                
+            #---------- Font size ----------
+            for item in (  [ax1.title, ax1.xaxis.label, ax1.yaxis.label]
+                        + ax1.get_xticklabels() + ax1.get_yticklabels()
+                        ):
+                item.set_fontsize(20)
+            
+            #---------- Finalize plot ----------
+            #txt = ['high resolution, q=20','mid resolution, q=10','low resolution, q=3']
+            #ax1.text(2.6,19,txt,fontsize=16)
+            ax1.set_xlim(references['x_limits'])
+            #ax2.set_ylim([0,40])
+            #ax2.set_yscale('log')
+            plt.savefig(os.path.join(saveloc, 'png/1DProfile_'+whichPlot+'.png'), dpi=200, bbox_inches="tight")
+            fig.savefig(os.path.join(saveloc, 'pdf/1DProfile_'+whichPlot+'.pdf'), bbox_inches="tight")
