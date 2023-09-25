@@ -26,7 +26,7 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
 
     # load the prefix.in & prefix.setup file
     setup = {}
-    try:  
+    try:
         with open(os.path.join(dir,'%s.setup'%prefix), 'r') as f:
             lines = f.readlines()
             for string in lines:
@@ -42,15 +42,15 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
                         elif stringName == 'binary2_a' : stringName = 'sma_in_ini'
                         elif stringName == 'wind_gamma' or stringName == "temp_exponent": stringName = 'gamma'
                         elif stringName == 'eccentricity': stringName = 'ecc'
-                        elif stringName == 'binary2_e' : stringName = 'ecc_in'                            
+                        elif stringName == 'binary2_e' : stringName = 'ecc_in'
                         elif stringName == 'secondary_racc': stringName = 'rAccrComp'
                         elif stringName == 'accr2b' : stringName = 'rAccrComp_in'
                         elif stringName == 'racc2b' : stringName = 'rAccrComp_in'
 
                         setup[stringName] = float(line[2])
-                        
-                        if stringName == 'q2': 
-                            stringName = 'massComp_in_ini'    
+
+                        if stringName == 'q2':
+                            stringName = 'massComp_in_ini'
                             setup[stringName] = float(line[2])*setup['massAGB_ini']
 
                         # Boolean
@@ -96,7 +96,7 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
         print(" ERROR: No %s.setup file found!"%prefix)
         print('')
         exit()
-    
+
     
     # Additional Parameters
     massAGB_ini = setup["massAGB_ini"]
@@ -108,7 +108,7 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
         #v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                           # [km/s]
         Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au         # [au]
         if setup['triple_star']==True:
-            massComp_in_ini = setup["massComp_in_ini"]        
+            massComp_in_ini = setup["massComp_in_ini"]
             sma_in = setup["sma_in_ini"]
             period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun, massComp_ini * cgs.Msun, sma)  # [s]
             period_in = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_in_ini * cgs.Msun, sma_in)           # [s]
@@ -118,7 +118,9 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
 
         setup["period"] = period
         setup["Rcap"] = Rcap
-    
+    else:
+        setup["sma_ini"] = 0.
+
     return setup
 
 
@@ -172,7 +174,7 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     unit_dist = dump['units']['udist']
     unit_mass = dump['units']['umass']
     unit_time = dump['units']['utime']
-    
+
     unit_velocity = unit_dist/unit_time
     unit_density  = unit_mass/unit_dist**3
     unit_pressure = unit_mass/(unit_dist*unit_time**2)
@@ -186,7 +188,7 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     yAGB     = dump["blocks"][1]["data"]["y"][0] * unit_dist
     zAGB     = dump["blocks"][1]["data"]["z"][0] * unit_dist
     posAGB   = np.array([xAGB, yAGB, zAGB])
-    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)   
+    rAGB     = gf.calc_r(xAGB, yAGB, zAGB)
     massAGB  = dump["blocks"][1]["data"]["m"][0] * unit_mass
     lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
     vxAGB    = dump["blocks"][1]["data"]["vx"][0] * unit_velocity
@@ -227,7 +229,7 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     containsTau  = "tau" in dump["blocks"][0]["data"]
     containsTauL = "tau_lucy" in dump["blocks"][0]["data"]
     bowenDust    = "bowen_kmax" in setup
-    
+
     x = dump["blocks"][0]["data"]["x"]
     y = dump["blocks"][0]["data"]["y"]
     z = dump["blocks"][0]["data"]["z"]
@@ -241,7 +243,7 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [filter] * unit_dist          # position coordinates          [cm]
-    y     = y                     [filter] * unit_dist     
+    y     = y                     [filter] * unit_dist
     z     = z                     [filter] * unit_dist
     mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
     vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]  !!---> no, in km/s??
@@ -252,14 +254,14 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
     p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
     if containsTau:
-        tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth  
+        tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth
     if containsTauL:
-        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth  
+        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth
     if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
     else: temp = pq.getTemp(dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
     if bowenDust:
-        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]  
+        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]
     if setup['isink_radiation'] == 0: Gamma = 0.
     if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
     if bowenDust:
@@ -271,17 +273,17 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
 
     cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
-        
+
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
-        
+
     r     = np.linalg.norm(position, axis=1)
     theta = gf.calcTheta(x,y,z)
     phi   = gf.calcPhi(x, y, z)
-    
+
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
-    
+
     # output
     data = {'position'      : position,              # [cm]
             'velocity'      : velocity,              # [cm/s]
@@ -289,9 +291,9 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
             'mass'          : mass,                  # [g]
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
-            'Tgas'          : temp,                  # [K] 
+            'Tgas'          : temp,                  # [K]
             'speed'         : speed,                 # [cm/s]
-            'mach'          : mach,                  
+            'mach'          : mach,
             'r'             : r,                     # [cm]
             'theta'         : theta,
             'phi'           : phi,
@@ -319,10 +321,10 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
         data['rComp_in'   ] = rComp_in                 # [cm]
         data['massComp_in'] = massComp_in              # [g]
         data['velComp_in' ] = velComp_in
-        
+
     if containsTau:
         data["tau"        ] = tau
-        
+
     if containsTauL:
         data["tauL"       ] = tauL
 
@@ -348,7 +350,7 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
 
     position = dump['position'].transpose()
     velocity = dump['velocity'].transpose()
-    
+
     x     = position[0]
     y     = position[1]
     z     = position[2]
@@ -389,18 +391,18 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     r     = r                         [filter]
     theta = theta                     [filter]
     phi   = phi                       [filter]
-    
+
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
-    
+
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
-    
+
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
-  
- 
-    
+
+
+
     # output
     data = {'position'      : position,      # [cm]
             'velocity'      : velocity,      # [cm/s]
@@ -408,12 +410,12 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
             'u'             : u,             # [erg/g]
-            'Tgas'          : temp,          # [K]  
+            'Tgas'          : temp,          # [K]
             'speed'         : speed,         # [cm/s]
-            'mach'          : mach,          
+            'mach'          : mach,
             'r'             : r,             # [cm]
-            'phi'           : phi,           
-            'theta'         : theta,         
+            'phi'           : phi,
+            'theta'         : theta,
             'cs'            : cs             # [cm]
             }
     if "tau"   in dump: data["tau"]   = tau
@@ -421,7 +423,7 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     if "kappa" in dump: data["kappa"] = kappa
     if "Gamma" in dump: data["Gamma"] = Gamma
     if "Tdust" in dump: data["Tdust"] = Tdust
-    
+
     return data
 
 def lastFullDumpIndex(dir: str, prefix: str, setup: Dict[str, Any]) -> int:
@@ -438,10 +440,10 @@ def lastFullDumpIndex(dir: str, prefix: str, setup: Dict[str, Any]) -> int:
 
     listDumps = sortedDumpList(dir, prefix)
     lastFile = listDumps[-1]
-    lastDumpIndex = int(lastFile.lstrip("%s_0" % prefix))
-   
+    lastDumpIndex = int(lastFile.lstrip("%s_" % prefix))
+
     # Nearest full dump to max
-    lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump']) 
+    lastFullDumpIndex = int(int(math.floor(lastDumpIndex / setup['nfulldump'])) * setup['nfulldump'])
     return lastFullDumpIndex
 
 
@@ -479,19 +481,19 @@ def sortedDumpList(dir: str, prefix: str) -> npt.NDArray[np.int_]:
 def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
     """ Load the .ev-files from a phantom model
         - This file gives the specifics of the sink particles present in the model (AGB star and companion, not of the sph particles)
-            in function of the evolution time of the model. The last entry corresponds to the data from the last dump.
+            as a function of the evolution time of the model. The last entry corresponds to the data from the last dump.
         - Only suited for a binary model
         - Units in cgs
 
     Args:
         dir (str): directory of the dump files
         prefix (str): prefix used for the simulation
-        icompanion_star (int, optional): amount of companion stars. Defaults to 0.
+        icompanion_star (int, optional): number of companion stars. Defaults to 0.
 
     Returns:
         Dict[str, Any]: a dictionary containing the data from the sink files (all units in cgs)
     """
-    
+
     fileName_sink1 = os.path.join(dir, str('%sSink0001N0'%prefix+'1.ev'))
     # companion
     if icompanion_star > 0:
@@ -598,7 +600,7 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
 
         position2 = np.array((x2, y2, z2 )).transpose()
         velocity2 = np.array((vx2,vy2,vz2)).transpose()
-        
+
         rHill           = pq.getRHill( abs(r1 + r2), mass2, mass1           )         # [cm]
 
         if icompanion_star == 2:
@@ -640,7 +642,7 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
 
 
     # output
-    #    "_t" stands for the fact that these values are in function of the evolution time, not from the last dump in function of location
+    #    "_t" stands for the fact that these values are function of the evolution time, not from the last dump as a function of location
     data = {'posAGB'      : position1,              # [cm]
             'velAGB'      : velocity1,              # [cm/s]
             'massAGB'     : mass1,                  # [gram]
