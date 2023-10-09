@@ -147,7 +147,6 @@ userSettingsDictionary = us.load(userSettingsFilePath)
 prefix = userSettingsDictionary["prefix"]
 loc = userSettingsDictionary["data_location"]
 outputloc = userSettingsDictionary["pipeline_output_location"]
-phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
 if "observables" in userSettingsDictionary:
     observables = userSettingsDictionary["observables"]
 else: observables = ['rho', 'Tgas', 'speed']
