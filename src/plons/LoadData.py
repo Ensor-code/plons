@@ -133,7 +133,6 @@ def read1D(runName, setup):
     if (headers[0] == '#'):
         headers.pop(0)
     data_1D = dict()
-    #print(headers)
     m = np.loadtxt(f)
     for i,column in enumerate(headers):
       data_1D[column] = m[:,i]
@@ -237,7 +236,6 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     vy = dump["blocks"][0]["data"]["vy"]
     vz = dump["blocks"][0]["data"]["vz"]
     u = dump["blocks"][0]["data"]["u"]
-
     filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [filter] * unit_dist          # position coordinates          [cm]
@@ -258,8 +256,10 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
     else: temp = pq.getTemp(dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
-    if bowenDust:
+    if "Tdust" in dump["blocks"][0]["data"]:
         Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]
+    elif setup['isink_radiation'] == 0: Tdust = temp
+    else: Tdust = np.zeros_like(x)
     if setup['isink_radiation'] == 0: Gamma = 0.
     if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
     if bowenDust:
@@ -290,6 +290,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
             'Tgas'          : temp,                  # [K]
+            'Tdust'         : Tdust,
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,
             'r'             : r,                     # [cm]
@@ -328,7 +329,6 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
-        data["Tdust"      ] = Tdust
 
     return data
 
