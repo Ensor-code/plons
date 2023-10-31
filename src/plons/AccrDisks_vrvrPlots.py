@@ -262,7 +262,6 @@ models = ['v10e50']
 dumps  = [245,263,277,292]
 rs     = [0.48,0.58,0.59,0.63]
 zoomChoices = [20,12,8.5,2]
-zoomChoices = []
 for model in models:
     run    = '/lhome/jolienm/Documents/TierModels/R_Aql/cooling/binariesInPaper/finalAccrDisks/'+str(model)+'_T3000_res8_racc01/'
     i = 0
@@ -280,7 +279,7 @@ dumps  = [245,263,277,292]
 rs     = [0.62,0.70,0.64,0.59]
 zoomChoices = [20,12,8.5,2]
 for model in models:
-    run    = 'R_Aql/cooling/binariesInPaper/finalAccrDisks/'+str(model)+'_T3000_res8_racc01/'
+    run    = '/lhome/jolienm/Documents/TierModels/R_Aql/cooling/binariesInPaper/finalAccrDisks/'+str(model)+'_T3000_res8_racc01/'
     i = 0
     for dump in dumps:
         dumpData,setup = loadDataForSmoothing(run,dump)
@@ -310,7 +309,7 @@ for model in models:
         r = 0.75
     elif model == 'v10e00':
         r = 0.94
-    run    = 'R_Aql/cooling/binariesInPaper/finalAccrDisks/'+str(model)+'_T3000_res8_racc01/'
+    run    = '/lhome/jolienm/Documents/TierModels/R_Aql/cooling/binariesInPaper/finalAccrDisks/'+str(model)+'_T3000_res8_racc01/'
     dumpData,setup = loadDataForSmoothing(run,dump)
     for zoom in zoomChoices:
         smooth = calcSmoothVtVrRho(zoom,dumpData,setup)
