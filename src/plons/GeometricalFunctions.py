@@ -96,7 +96,7 @@ def calcTheta(x,y,z):
 Calculate azimuthal angle theta
       Returns np.array
 '''
-def calcPhi(x,y,z):
+def calcPhi(x,y):
     return np.arctan2(y, x)
 
 

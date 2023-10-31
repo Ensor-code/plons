@@ -138,7 +138,7 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('(7)  Archimedian spiral')
         ars.ArchimedianSpiral(run, saveloc, setup)
 
-def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1, runPart = 0):
+def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1, runPart = [0]):
     dir       = os.path.join(loc, run)
     setup     = ld.LoadSetup(dir, userSettings["prefix"])
 

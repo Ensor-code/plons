@@ -277,7 +277,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     r     = np.linalg.norm(position, axis=1)
     theta = gf.calcTheta(x,y,z)
-    phi   = gf.calcPhi(x, y, z)
+    phi   = gf.calcPhi(x,y)
 
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
@@ -333,11 +333,10 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 def LoadDump(fileName: str) -> Dict[str, Any]:
-    """ Loads the dump of a phantom model, given the number
+    """ Loads the dump of a phantom model, returns the position, velocity, density and internal energy
 
     Args:
         fileName (str): the filename of the dump file to load
-        setup (Dict[str, Any]): the setup data
 
     Returns:
         Dict[str, Any]: a dictionary containing the data from the dump (all units in cgs)
@@ -355,8 +354,6 @@ def LoadDump(fileName: str) -> Dict[str, Any]:
 
     unit_velocity = unit_dist/unit_time
     unit_ergg     = unit_velocity**2
-
-
 
     x = dump["blocks"][0]["data"]["x"]
     y = dump["blocks"][0]["data"]["y"]
