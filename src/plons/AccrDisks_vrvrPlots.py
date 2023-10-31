@@ -49,9 +49,17 @@ def calc_new_position(x,y,dumpData):
 Calculate velocities with velocity of companion as (0,0,0)
 '''
 def calc_new_velocities(vx,vy,vz,dumpData):
-    new_vx = vx - dumpData['velComp'][0]/cgs.kms
-    new_vy = vy - dumpData['velComp'][1]/cgs.kms
+    #Translatie
+    tr_vx = vx - dumpData['velComp'][0]/cgs.kms
+    tr_vy = vy - dumpData['velComp'][1]/cgs.kms
     new_vz = vz - dumpData['velComp'][2]/cgs.kms
+    
+    # rotation 
+    theta   = - (gf.calcPhi([dumpData['posAGB'][0]],[dumpData['posAGB'][1]],0)-np.pi)
+    # print('theta rotation is ',theta)
+    new_vx = tr_vx * np.cos(theta) - tr_vy * np.sin(theta)
+    new_vy = tr_vx * np.sin(theta) + tr_vy * np.cos(theta)
+    
     return (new_vx,new_vy,new_vz)
 
 
@@ -210,7 +218,7 @@ def plot_vrvtRho(smooth,zoom,run,dump,r):
     ax3.add_patch(circle3)
 
     plt.savefig(run+'plotsAnalysis/vrvtRho_op_wind_00'+str(dump)+'_Z'+str(zoom)+'.png')
-    plt.show()
+    # plt.show()
 
 
 # Examples:
@@ -234,7 +242,7 @@ plot_vrvtRho(smooth,zoom,run,dump,r)
 
 ## Example: all eccentric models, 4 different dumps, 4 zoom
 
-get_ipython().run_line_magic('matplotlib', 'inline')
+# get_ipython().run_line_magic('matplotlib', 'inline')
 models = ['v20e50']
 dumps  = [250,266,277,292]
 rs     = [0.44,0.37,0.5,0.41]
@@ -288,7 +296,7 @@ for model in models:
 
 ## Example: all circular models, 1 dump, 4 different zoom
 
-get_ipython().run_line_magic('matplotlib', 'inline')
+# get_ipython().run_line_magic('matplotlib', 'inline')
 
 # Load data and calculate smoothened data for sliceplots
 dump = 292
