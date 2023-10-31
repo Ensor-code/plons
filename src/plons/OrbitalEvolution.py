@@ -1,4 +1,5 @@
 # Import packages
+from re import T
 import numpy                    as np
 import matplotlib.pyplot        as plt
 import matplotlib.lines         as mlines
@@ -399,10 +400,10 @@ def BHLMassAccrRate(setup,data,loc):
     MaccrBHL_av    = (alphaBHL * (Mdot/  (sma**2 * np.sqrt(1 - ecc**2))) * ( G * Mc / ( vw**2))**2 * (1 + (v_orb/vw)**2)**(-1.5) )  #g/s
     # average mass accretion efficiency:
     MaccrEffBHL_av  = MaccrBHL_av / Mdot #*100 # %
-    print('Average BHL accr rate (formula) [Msun/yr]', MaccrBHL_av/cgs.Msun * cgs.year)  #Msun/yr)
-    print('Mean Maccr: ', np.mean(MaccrBHL)/cgs.Msun * cgs.year)
-    print('Average BHL accr efficiency (formula)',MaccrEffBHL_av)
-    print('Mean Maccr: ',np.mean(MaccrEffBHL))
+    # print('Average BHL accr rate (formula) [Msun/yr]', MaccrBHL_av/cgs.Msun * cgs.year)  #Msun/yr)
+    # print('Mean BHL Maccr: ', np.mean(MaccrBHL)/cgs.Msun * cgs.year)
+    # print('Average BHL accr efficiency (formula)',MaccrEffBHL_av)
+    print('Mean BHL MaccrEff: ',np.mean(MaccrEffBHL))
 
     '''
     fig = plt.figure(figsize=(8, 5))
@@ -537,17 +538,23 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     Mdot     = setup['Mdot']                                # [Msun/yr]
     
     # To calculate average mass accretion rate and total accreted mass of last 4 orbits
-    apatimestep   = 55.7 #after 6 full orbits. 
+    # apatimestep   = 55.7 #after 6 full orbits.
+    # print('max_yrs,period: ',np.max(t_yrs),period) 
+    n = 1
+    apatimestep   = np.max(t_yrs) - n*period
+    print('apatimestep is [yrs]',apatimestep)
+
+
     
-    print(np.shape(sinkData['time']))
-    print(np.max(sinkData['time']),sinkData['time'][-1])
+    # print(np.shape(sinkData['time']))
+    # print(np.max(sinkData['time']),sinkData['time'][-1])
     
     maccrLast4Orbits = sinkData['maccrComp'] [sinkData['time']>apatimestep]
     accretedMass     = (maccrLast4Orbits[-1] - maccrLast4Orbits[0])/cgs.Msun
     MaccrRConverged  = accrRates [t_yrs[:-1]>apatimestep]
     averageMaccrEff  = np.mean(MaccrRConverged)/Mdot
-    print('Average MaccrR efficieny is in last 4 orbital periods is',np.round(averageMaccrEff,4))
-    print(accretedMass/1e-7,' *1e-7 Msun has been accreted in these 4 orbital periods')
+    print('Average MaccrR efficieny in last ',n,' orbital periods is',np.round(averageMaccrEff,4))
+    print(accretedMass/1e-7,' *1e-7 Msun has been accreted in these ',n ,' orbital periods')
     print('This would be calculated to an average Maccr of ',np.round(accretedMass/Mdot / (t_yrs[-1]-apatimestep),4))
     
     
@@ -555,7 +562,7 @@ def plotMassAccrRate(setup, sinkData, run, loc):
     plt.plot(t_yrs[:-1], accrRates/Mdot,color = 'crimson', linestyle = 'solid')    
     if setup['triple_star']==False:
         #Plot BHL mass accretion rate
-        #MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)
+        # MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)  #Already calculated earlier
         plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year /Mdot,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
 
     # '''
@@ -869,7 +876,7 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             f.write('The total mass lost by the AGB sink particle is                                : '+ str(info['MassLostAGB' ]/cgs.Msun) +' Msun \n')
             f.write('The expected mass lost by the AGB is                                           : '+ str(setup['Mdot']*sinkData['time'][-1]) + 'Msun \n')
             f.write('The total mass in the system withouth the mass loss at the boundary is         : '+ str((info['TotMaC'] + np.sum(dumpData['mass']))/cgs.Msun )+ 'Msun \n')
-            f.write('The ratio of the mass accreted by the companion to the mass lost by the AGB is : '+ str(round((info['TotMaC']/cgs.Msun)/ (setup['Mdot']*sinkData['time'][-1]),5)))
+            f.write('The ratio of total mass accreted by companion to total mass lost by AGB is     : '+ str(round((info['TotMaC']/cgs.Msun)/ (setup['Mdot']*sinkData['time'][-1]),5)))
             f.write('\n')
             if setup['triple_star']==True:
                 f.write('The total mass accreted by the inner companion is                                    : '+ str(info['TotMaC_in'      ]/cgs.Msun) +' Msun \n')
