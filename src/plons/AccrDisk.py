@@ -65,6 +65,13 @@ def getRadTanVelocity(x,y,v_x,v_y):
         
     return v_rad,v_tan 
 
+'''
+Calculate keplerian velocity from companion mass and radius
+'''
+def kepler_vt(r,dumpData):
+    kep_vt = np.sqrt(cgs.G * dumpData['massComp'] / (r*cgs.au))/cgs.kms
+    return kep_vt
+
 def loadDataForSmoothing(run,dump):
     '''
     Load in data
@@ -179,6 +186,62 @@ def plot_vrvtRho(axs, smooth,zoom,r):
     ax1.add_patch(circle1)
     ax2.add_patch(circle2)
     ax3.add_patch(circle3)
+
+
+
+# Plot of tangential velocity divided by keplerian velocity; in function of radius
+def plot_vt_divided_vtKepl(ax,rmax,rmin,rstep,dumpData,model,colors,i):
+    # set number of rvalues for which we will plot velocities (rmin = rstep)
+    rnum = int(rmax /rstep)
+    # make rr array
+    rr = np.linspace(rmin,rmax,rnum)
+    # make empty tangential velocity array
+    r_vt = np.array([])
+    # make empty keplerian velocity array
+    k_vt   = np.array([])
+    # for each r in the array, calculate Keplerian velocities 
+    for r in rr:
+        k_vt = np.append(k_vt,kepler_vt(r,dumpData))
+        # Calculate the mean tangential velocity of all data in r-step
+        filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
+        r_vt = np.append(r_vt, np.mean(dumpData['new_vt'] [filter]))
+    ax.plot(rr,r_vt/k_vt,c=colors[i],linewidth = 1.2,label = str(model))
+
+# Plot of tangential velocity and keplerian velocity, in function of radius
+def plot_vt_vKepl(ax,rmax,rmin,rstep,dumpData,model,k_vt,r_vt_max,colors,lineStyles,i):
+    # set number of rvalues for which we will plot velocities
+    rnum = int(rmax /rstep)
+    # make rr array
+    rr = np.linspace(rmin,rmax,rnum)
+    # make empty tangential velocity array
+    r_vt = np.array([])
+    # for each r in the array, calculate tangential and keplerian velocities (Kepl only for longest model --> for i==0)
+    for r in rr:
+        if i == 0:
+            k_vt = np.append(k_vt,kepler_vt(r,dumpData))
+        filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
+        r_vt = np.append(r_vt, np.mean(dumpData['new_vt'] [filter]))
+    if i ==0:
+        ax.plot(rr,k_vt,c='k',linestyle = '--',linewidth = 1,label = 'Keplerian')
+        ax.plot(rr,k_vt*0.9,c='k',linestyle = ':',linewidth = 1,label = '90% (sub)Keplerian')
+    ax.plot(rr,r_vt,c=colors[i],linestyle = lineStyles[i],linewidth = 1.2,label = str(model))
+    r_vt_max = np.append(r_vt_max,np.nanmax(r_vt))
+    return r_vt_max
+
+'''
+ Plot of mean of radial velocity (not absolute value!); in function of radius
+'''
+def plot_vrmean(ax,rmax,rmin,rstep,dumpData,model,colors,i):
+    # set number of rvalues for which we will plot velocities
+    rnum = int(rmax /rstep)
+    # make rr array
+    rr = np.linspace(rmin,rmax,rnum)
+    r_vr = np.array([])
+    for r in rr:
+        filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
+        r_vr = np.append(r_vr, np.mean(dumpData['new_vr'] [filter]))
+    ax.plot(rr,r_vr,c=colors[i],linestyle = '-',linewidth = 1.2,label = str(model))
+
 
 
 '''
@@ -346,14 +409,14 @@ SH_array             array with scale height estimate for each r value
 
 def get_SH_diskMass_radius(lowerR,r_step,thetaArray,dumpData,maxH,n_grid,run,crit,xH,phiQuadr = False, printOut = False):
     # Make array to store the SH estimate for each r (0 at r=0.01 au (racc))
-    SH_array = np.array([0.1]) 
+    SH_array = np.array([lowerR-r_step]) 
     # Make array to store the total mass of the disk at each r (0 at r=0)
     totalMassDisk  = np.array([0]) 
     # Make array to store the relative added mass of the disk at each r (1 at r=0)
     rel_mass_added = np.array([1])
 
     # For each radius ri in the given array, but starting from r=racc
-    r_array = np.append([0.1*cgs.au],lowerR*cgs.au)
+    r_array = np.append([(lowerR-r_step)*cgs.au],lowerR*cgs.au)
     i=0
     # Calculate for each r the scale height and disk mass, until the relative mass added exceeds 0.01
     while rel_mass_added[-1]/r_step>crit:        
