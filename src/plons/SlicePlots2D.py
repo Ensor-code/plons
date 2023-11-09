@@ -7,7 +7,6 @@ import math
 # import plons scripts
 import plons.SmoothingKernelScript    as sk
 import plons.ConversionFactors_cgs    as cgs
-import plons.PhysicalQuantities       as pq
 import plons.Plotting                 as plot
 
 # import certain things from packages
@@ -19,14 +18,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 roundToInteger  = True
-round_bounds    = False
 velocity_vec    = True
-minInfLog       = -300
-minInf          = 10.**(-minInfLog)
-maxInfLog       = 300
-maxInf          = 10.**maxInfLog
-sigma_bounds_u  = 3.
-sigma_bounds_l  = 2.
 
 
 # colormap per parameter
@@ -286,108 +278,3 @@ def allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, observables):
     fig.subplots_adjust(wspace=-0.1, hspace=0.15)
 
     return fig
-
-
-def makeLimits(observables, smooth, zoom):
-    limits = {}
-    for observable in observables:
-        limits[observable] = {}
-        limits[observable][zoom] = [0.,0.]
-
-    if "rho" in observables:
-        limits["rho"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["rho"]), log=True, round=round_bounds)
-    if "speed" in observables:
-        limits["speed"][zoom] = findBounds(smooth[zoom]['smooth_y']["speed"], log=False, round=round_bounds)
-        limits["speed"][zoom][0] = max(limits["speed"][zoom][0], 0.)
-    if "Tgas" in observables:
-        limits["Tgas"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["Tgas"]), log=True, round=round_bounds)
-    if "kappa" in observables:
-        limits["kappa"][zoom] = findBounds(smooth[zoom]['smooth_y']["kappa"], log=False, round=round_bounds)
-    if "Gamma" in observables:
-        limits["Gamma"][zoom] = findBounds(smooth[zoom]['smooth_y']["Gamma"], log=False, round=round_bounds)
-    if "tau" in observables:
-        limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
-        limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
-
-    return limits
-
-'''
-main definition
-'''
-def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], 
-               observables = ['rho', 'Tgas', 'speed'], limits = False,
-               nneighb = 10, n_grid = 200, n_grid_vec = 25, printout=False):
-    if limits: customRanges = True
-    else:      customRanges = False
-    theta=0
-    if not setup["single_star"]:
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
-    
-    if printout: print('     Calculating the smoothing kernels. This may take a while, please wait...')
-    smooth = {}
-    smooth_vec = {}
-    for zoom in zoomin:
-        smooth[zoom], smooth_vec[zoom] = smoothData(dumpData, setup, observables, theta, zoom, nneighb, n_grid, n_grid_vec)
-
-        if not customRanges: 
-            limits = makeLimits(observables, smooth, zoom)    
-        if printout:
-            print("          Ranges of Parameters: zoom = "+str(zoom))
-            if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
-            if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
-            if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
-            if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
-            if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
-            if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
-
-        # Make plots
-        fig = densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=True)
-        saveFig(fig, loc, '2Dplot_density_orbital', zoom, number)
-        fig = densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=False)
-        saveFig(fig, loc, '2Dplot_density_meridional', zoom, number)
-        fig = allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, observables)
-        struct = ""
-        for i in observables:
-            struct+=i
-        saveFig(fig, loc, '2Dplot_'+struct, zoom, number)
-        plt.close()
-        if printout: print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
-
-def saveFig(fig, loc, name, zoom, number):
-    if number == -1:
-        fig.savefig(os.path.join(loc, 'png/'+name+'_zoom{0:01d}.png'.format(zoom)), dpi=300, bbox_inches="tight")
-        fig.savefig(os.path.join(loc, 'pdf/'+name+'_zoom{0:01d}.pdf'.format(zoom)), dpi=300, bbox_inches="tight")
-    else:
-        fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
-        fig.savefig(os.path.join(loc, 'animation/'+name+'_zoom{0:01d}_{1:04d}.png'.format(zoom,number)), dpi=200, bbox_inches="tight")
-    plt.close()
-    
-def findBounds(data, log = False, round = False):
-    filtered_data = data
-    result = np.zeros(2)
-
-    if (-np.inf in data) or (np.inf in data):
-        min = minInf
-        max = maxInf
-        if log == True:
-            min = minInfLog
-            max = maxInfLog
-
-        filtered_data = filtered_data[np.logical_and(min <= data, data <= max)]
-
-    if np.nan in data:
-        filtered_data = filtered_data[not np.isnan(data)]
-
-    if (0. in data) and (log == False) :
-        filtered_data = filtered_data[filtered_data != 0.]
-
-    mean = np.mean(filtered_data)
-    std  = np.std(filtered_data)
-
-    result[0] = mean - sigma_bounds_l * std
-    result[1] = mean + sigma_bounds_u * std
-
-    if round == True:
-        result = np.round(result)
-
-    return result

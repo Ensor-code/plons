@@ -45,15 +45,9 @@ Get the radial and tangential velocity
   x, y, and phi are lists
 '''
 def getRadTanVelocity(x,y,v_x,v_y):
-    phi = []
-    for i in range(len(y)):
-        phi.append(math.atan2(y[i],x[i]))
-    #phi = TransformToSpherical(x,z,y)[1]
-    v_rad = []
-    v_tan = []
-    for i in range(len(x)):
-        v_rad.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[0]))
-        v_tan.append(np.abs(coordTransf(v_x[i],v_y[i],phi[i])[1]))
+    phi = np.arctan2(y,x)
+    v_rad = (coordTransf(v_x,v_y,phi)[0])
+    v_tan = (coordTransf(v_x,v_y,phi)[1])
     return v_rad,v_tan
 
 '''
@@ -102,7 +96,7 @@ def calcTheta(x,y,z):
 Calculate azimuthal angle theta
       Returns np.array
 '''
-def calcPhi(x,y,z):
+def calcPhi(x,y):
     return np.arctan2(y, x)
 
 

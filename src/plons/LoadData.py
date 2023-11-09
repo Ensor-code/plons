@@ -123,21 +123,47 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
 
     return setup
 
-def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str, Any]:
+
+# reads the 1D data and computes derived quantities
+def read1D(runName, setup):
+    # Read the 1D data
+    f       = open(os.path.join(runName,'wind_1D.dat'),'r')
+    headers = f.readline()
+    headers = headers.split()[0:]
+    if (headers[0] == '#'):
+        headers.pop(0)
+    data_1D = dict()
+    m = np.loadtxt(f)
+    for i,column in enumerate(headers):
+      data_1D[column] = m[:,i]
+    #add new variables
+    try:
+      data_1D['Tgas']  = data_1D['T']
+      data_1D['cs']    = np.sqrt(data_1D['gamma']*cgs.kB*data_1D['T']/(data_1D['mu']*cgs.mH))
+    except:
+      pass
+    data_1D['v_esc'] = np.sqrt(2*cgs.G*setup['massAGB_ini']*cgs.Msun/(data_1D['r']))
+    if setup['isink_radiation'] > 1:
+        if setup['iget_tdust'] == 1:
+            data_1D['Tdust'] = setup['primary_Teff']*(setup['primary_Reff']/data_1D['r'])**setup['tdust_exp']
+        elif setup['iget_tdust'] == 0:
+            data_1D['Tdust'] = data_1D['Tgas']
+    del headers, m, i, column
+    return data_1D
+
+def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     """ Loads the dump of a phantom model, given the number
 
     Args:
         fileName (str): the filename of the dump file to load
         setup (Dict[str, Any]): the setup data
-        phantom_dir (str): hard path to phantom
 
     Returns:
         Dict[str, Any]: a dictionary containing the data from the dump (all units in cgs)
     """
 
     # Load read_dump script to read PHANTOM dump files
-    sys.path.append(phantom_dir+"/scripts")
-    from readPhantomDump import read_dump
+    from plons.readPhantomDump import read_dump
 
     # reading the dumpfile
     dump = read_dump(fileName)
@@ -210,7 +236,6 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     vy = dump["blocks"][0]["data"]["vy"]
     vz = dump["blocks"][0]["data"]["vz"]
     u = dump["blocks"][0]["data"]["u"]
-
     filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
     x     = x                     [filter] * unit_dist          # position coordinates          [cm]
@@ -231,8 +256,10 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
     if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
     else: temp = pq.getTemp(dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
-    if bowenDust:
+    if "Tdust" in dump["blocks"][0]["data"]:
         Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]
+    elif setup['isink_radiation'] == 0: Tdust = temp
+    else: Tdust = np.zeros_like(x)
     if setup['isink_radiation'] == 0: Gamma = 0.
     if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
     if bowenDust:
@@ -250,7 +277,7 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
 
     r     = np.linalg.norm(position, axis=1)
     theta = gf.calcTheta(x,y,z)
-    phi   = gf.calcPhi(x, y, z)
+    phi   = gf.calcPhi(x,y)
 
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
@@ -263,6 +290,7 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
             'Tgas'          : temp,                  # [K]
+            'Tdust'         : Tdust,
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,
             'r'             : r,                     # [cm]
@@ -301,8 +329,65 @@ def LoadDump(fileName: str, setup: Dict[str, Any], phantom_dir: str) -> Dict[str
 
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
-        data["Tdust"      ] = Tdust
 
+    return data
+
+def LoadDump(fileName: str) -> Dict[str, Any]:
+    """ Loads the dump of a phantom model, returns the position, velocity, density and internal energy
+
+    Args:
+        fileName (str): the filename of the dump file to load
+
+    Returns:
+        Dict[str, Any]: a dictionary containing the data from the dump (all units in cgs)
+    """
+
+    # Load read_dump script to read PHANTOM dump files
+    from plons.readPhantomDump import read_dump
+
+    # reading the dumpfile
+    dump = read_dump(fileName)
+
+    unit_dist = dump['units']['udist']
+    unit_mass = dump['units']['umass']
+    unit_time = dump['units']['utime']
+
+    unit_velocity = unit_dist/unit_time
+    unit_ergg     = unit_velocity**2
+
+    x = dump["blocks"][0]["data"]["x"]
+    y = dump["blocks"][0]["data"]["y"]
+    z = dump["blocks"][0]["data"]["z"]
+    h = dump["blocks"][0]["data"]["h"]
+    mass = np.ones(len(h))*dump["quantities"]["massoftype"][0]
+    vx = dump["blocks"][0]["data"]["vx"]
+    vy = dump["blocks"][0]["data"]["vy"]
+    vz = dump["blocks"][0]["data"]["vz"]
+    u = dump["blocks"][0]["data"]["u"]
+
+    filter = h > 0.0
+    # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
+    x     = x                     [filter] * unit_dist          # position coordinates          [cm]
+    y     = y                     [filter] * unit_dist
+    z     = z                     [filter] * unit_dist
+    mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
+    vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]  !!---> no, in km/s??
+    vy    = vy                    [filter] * unit_velocity / cgs.kms
+    vz    = vz                    [filter] * unit_velocity / cgs.kms
+    u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
+    h     = h                     [filter] * unit_dist          # smoothing length              [cm]
+    rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
+
+    position = np.array((x, y, z )).transpose()
+    velocity = np.array((vx,vy,vz)).transpose()
+
+    # output
+    data = {'position'      : position,              # [cm]
+            'velocity'      : velocity,              # [cm/s]
+            'u'             : u,                     # [erg/g]
+            'rho'           : rho,                   # [g/cm^3]
+            }
+    
     return data
 
 def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dict[str, Any]) -> Dict[str, Any]:

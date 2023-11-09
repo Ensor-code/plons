@@ -1,7 +1,7 @@
-.. _link-installation:
+.. _link-installation-plons:
 
-Installation
-############
+Installation Plons
+##################
 
 The easiest way to install plons is via a package installer like pip or conda. Use one of the following commands:
 

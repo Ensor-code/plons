@@ -39,23 +39,9 @@ def create(userSettingsFilePath):
         if (outputloc[-1] == '/' or outputloc[-1] == '\\'):
             outputloc = outputloc[:-1]
 
-        phantom = str(input("Enter the path where PHANTOM is installed: "))
-        while True:
-            if not os.path.isdir(phantom):
-                phantom = str(input("Path does not exist, please try again: "))
-                continue
-            if " " in phantom:
-                phantom = str(input("Path contains spaces, please remove them: "))
-                continue
-            break
-
-        if (phantom[-1] == '/' or phantom[-1] == '\\'):
-            phantom = phantom[:-1]
-
         file.write("prefix = " + prefix + "\n")
         file.write("data_location = " + loc + "/ \n")
         file.write("pipeline_output_location = " + outputloc + " \n")
-        file.write("hard_path_to_phantom = " + phantom + " \n")
         print("Settings saved at " + userSettingsFilePath)
         print("--------------------------------------------------------------")
         file.close()
@@ -82,7 +68,6 @@ def load(userSettingsFilePath,onlyPathToPhantom=False):
     if onlyPathToPhantom == False:
       loc = str(dictionary["data_location"])
       outputloc = str(dictionary["pipeline_output_location"])
-    phantom = str(dictionary["hard_path_to_phantom"])
 
     # If the user has changed the directory in userSettingsFile.txt, check if the path still exists
     if onlyPathToPhantom == False:
@@ -112,18 +97,5 @@ def load(userSettingsFilePath,onlyPathToPhantom=False):
               % userSettingsFilePath)
           print('------------------END:', dt.datetime.now(), '---------------------')
           sys.exit()
-
-    if not os.path.isdir(phantom):
-        print(
-            "ERROR: The specified directory 'hard_path_to_phantom' in %s does not exist anymore, shutting down the pipeline."
-            % userSettingsFilePath)
-        print('------------------END:', dt.datetime.now(), '---------------------')
-        sys.exit()
-
-    if " " in phantom:
-        print("ERROR: The specified directory 'hard_path_to_phantom' in %s contains spaces, shutting down the pipeline."
-              % userSettingsFilePath)
-        print('------------------END:', dt.datetime.now(), '---------------------')
-        sys.exit()
 
     return dictionary

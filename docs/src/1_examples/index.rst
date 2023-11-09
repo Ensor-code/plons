@@ -13,3 +13,4 @@ They can be run using jupyter-notebook/-lab.
 
    0_creating_figures_package/index
    1_creating_figures_pipeline/index
+   2_accretion_disk/index

@@ -4,6 +4,7 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 import argparse                     as ap
+import matplotlib.pyplot            as plt
 from typing import Dict, List
 
 # import plons scripts
@@ -11,12 +12,22 @@ import plons.RadialStructurePlots1D       as rs
 import plons.SlicePlots2D                 as sl
 import plons.CMF_meanRho                  as cmf
 import plons.OrbitalEvolution             as ov
+import plons.PhysicalQuantities           as pq
 import plons.LoadData                     as ld
 import plons.TerminalVelocity             as tmv
 import plons.Profiles1D                   as dp
 import userSettings                       as us
 import plons.ArchimedianSpiral            as ars
 import plons.AccrDisk                     as acd
+
+
+round_bounds    = False
+minInfLog       = -300
+minInf          = 10.**(-minInfLog)
+maxInfLog       = 300
+maxInf          = 10.**maxInfLog
+sigma_bounds_u  = 3.
+sigma_bounds_l  = 2.
 
 #print('------------------START:', dt.datetime.now(),'---------------------')
 print('')
@@ -88,9 +99,9 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('')
         print('(1)  Start calculations for slice plots...')
         if customRanges:
-            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, limits=limits, printout=True)
+            SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, limits=limits, printout=True)
         else:
-            sl.SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, printout=True)
+            SlicePlots(run, saveloc, dumpData, setup, zoomin=zoomin, observables=observables, printout=True)
 
     if part == '2':
         print('')
@@ -136,7 +147,7 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
     #     print('(7)  Archimedian spiral')
     #     ars.ArchimedianSpiral(run, saveloc, setup)
 
-def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1, runPart = 0):
+def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1, runPart = [0]):
     dir       = os.path.join(loc, run)
     setup     = ld.LoadSetup(dir, userSettings["prefix"])
 
@@ -144,7 +155,7 @@ def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1,
     if number == -1: index = ld.lastFullDumpIndex(dir, userSettings["prefix"], setup)
     else: index = number
     fileName       = dir+'/{0:s}_{1:05d}'.format(userSettings["prefix"], index)
-    dumpData  = ld.LoadDump(fileName, setup, userSettings["hard_path_to_phantom"])
+    dumpData  = ld.LoadFullDump(fileName, setup)
 
     if len(set(runPart)-set([1, 2, 4, 6, 7]))>0:
         sinkData  = ld.LoadSink(dir, userSettings['prefix'], setup["icompanion_star"])
@@ -170,30 +181,119 @@ def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1,
 
     return setup, dumpData, sinkData, outerData
 
-print('')
-print('-------------------------------------------------------')
-print('     Welcome to PLONS!'        )
-print('-------------------------------------------------------')
-print('')
-print('The PLOtting tool for Nice Simulations.')
-print('')
 
 
-# Initialise user settings or load them
-userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
-if not os.path.isfile(userSettingsFilePath) or os.stat(userSettingsFilePath).st_size == 0: us.create(userSettingsFilePath)
+# ***************************************
+# ************* Slice Plots *************
+# ***************************************
 
-userSettingsDictionary = us.load(userSettingsFilePath)
-prefix = userSettingsDictionary["prefix"]
-loc = userSettingsDictionary["data_location"]
-outputloc = userSettingsDictionary["pipeline_output_location"]
-phantom_dir = userSettingsDictionary["hard_path_to_phantom"]
-if "observables" in userSettingsDictionary:
-    observables = userSettingsDictionary["observables"]
-else: observables = ['rho', 'Tgas', 'speed']
+'''
+main definition
+'''
+def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10], 
+               observables = ['rho', 'Tgas', 'speed'], limits = False,
+               nneighb = 10, n_grid = 200, n_grid_vec = 25, printout=False):
+    if limits: customRanges = True
+    else:      customRanges = False
+    theta=0
+    if not setup["single_star"]:
+        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+    
+    if printout: print('     Calculating the smoothing kernels. This may take a while, please wait...')
+    smooth = {}
+    smooth_vec = {}
+    for zoom in zoomin:
+        smooth[zoom], smooth_vec[zoom] = sl.smoothData(dumpData, setup, observables, theta, zoom, nneighb, n_grid, n_grid_vec)
 
-customRanges = True
-if customRanges:
+        if not customRanges: 
+            limits = makeLimits(observables, smooth, zoom)    
+        if printout:
+            print("          Ranges of Parameters: zoom = "+str(zoom))
+            if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
+            if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
+            if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
+            if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
+            if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
+            if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
+
+        # Make plots
+        fig = sl.densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=True)
+        saveFig(fig, loc, '2Dplot_density_orbital', zoom, number)
+        fig = sl.densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=False)
+        saveFig(fig, loc, '2Dplot_density_meridional', zoom, number)
+        fig = sl.allPlots(smooth, smooth_vec, zoom, limits, dumpData, setup, observables)
+        struct = ""
+        for i in observables:
+            struct+=i
+        saveFig(fig, loc, '2Dplot_'+struct, zoom, number)
+        plt.close()
+        if printout: print('          Slice plots (zoom factor = ' + str(zoom) + ') model ' + str(run) + ' ready and saved!\n')
+
+def saveFig(fig, loc, name, zoom, number):
+    if number == -1:
+        fig.savefig(os.path.join(loc, 'png/'+name+'_zoom{0:01d}.png'.format(zoom)), dpi=300, bbox_inches="tight")
+        fig.savefig(os.path.join(loc, 'pdf/'+name+'_zoom{0:01d}.pdf'.format(zoom)), dpi=300, bbox_inches="tight")
+    else:
+        fig.text(0.5, 0.9, "Dumpfile {0:05d}".format(number), size=28)
+        fig.savefig(os.path.join(loc, 'animation/'+name+'_zoom{0:01d}_{1:04d}.png'.format(zoom,number)), dpi=200, bbox_inches="tight")
+    plt.close()
+
+
+
+def makeLimits(observables, smooth, zoom):
+    limits = {}
+    for observable in observables:
+        limits[observable] = {}
+        limits[observable][zoom] = [0.,0.]
+
+    if "rho" in observables:
+        limits["rho"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_y']["rho"]), log=True, round=round_bounds)
+    if "speed" in observables:
+        limits["speed"][zoom] = findBounds(smooth[zoom]['smooth_y']["speed"], log=False, round=round_bounds)
+        limits["speed"][zoom][0] = max(limits["speed"][zoom][0], 0.)
+    if "Tgas" in observables:
+        limits["Tgas"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["Tgas"]), log=True, round=round_bounds)
+    if "kappa" in observables:
+        limits["kappa"][zoom] = findBounds(smooth[zoom]['smooth_y']["kappa"], log=False, round=round_bounds)
+    if "Gamma" in observables:
+        limits["Gamma"][zoom] = findBounds(smooth[zoom]['smooth_y']["Gamma"], log=False, round=round_bounds)
+    if "tau" in observables:
+        limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
+        limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
+
+    return limits
+    
+def findBounds(data, log = False, round = False):
+    filtered_data = data
+    result = np.zeros(2)
+
+    if (-np.inf in data) or (np.inf in data):
+        min = minInf
+        max = maxInf
+        if log == True:
+            min = minInfLog
+            max = maxInfLog
+
+        filtered_data = filtered_data[np.logical_and(min <= data, data <= max)]
+
+    if np.nan in data:
+        filtered_data = filtered_data[not np.isnan(data)]
+
+    if (0. in data) and (log == False) :
+        filtered_data = filtered_data[filtered_data != 0.]
+
+    mean = np.mean(filtered_data)
+    std  = np.std(filtered_data)
+
+    result[0] = mean - sigma_bounds_l * std
+    result[1] = mean + sigma_bounds_u * std
+
+    if round == True:
+        result = np.round(result)
+
+    return result
+
+def customRanges(observables):
     limits: Dict[str, Dict[int, List]] = {}
     for observable in observables:
         limits[observable] = {}
@@ -256,6 +356,32 @@ if customRanges:
             limits["Gamma"][5]  = [0., 1.]
             limits["Gamma"][10] = [0., 1.]
             limits["Gamma"][20] = [0., 1.]
+    return limits
+
+
+
+
+print('')
+print('-------------------------------------------------------')
+print('     Welcome to PLONS!'        )
+print('-------------------------------------------------------')
+print('')
+print('The PLOtting tool for Nice Simulations.')
+print('')
+
+
+# Initialise user settings or load them
+userSettingsFilePath = os.path.join( os.getcwd(), "userSettings.txt")
+if not os.path.isfile(userSettingsFilePath) or os.stat(userSettingsFilePath).st_size == 0: us.create(userSettingsFilePath)
+
+userSettingsDictionary = us.load(userSettingsFilePath)
+prefix = userSettingsDictionary["prefix"]
+loc = userSettingsDictionary["data_location"]
+outputloc = userSettingsDictionary["pipeline_output_location"]
+if "observables" in userSettingsDictionary:
+    observables = userSettingsDictionary["observables"]
+else: observables = ['rho', 'Tgas', 'speed']
+limits = customRanges(observables)
 
 # Which parts do you want to run?
 factor      = 3   # the without inner, is without r< factor * sma
