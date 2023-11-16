@@ -716,13 +716,13 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
         data['v_orbComp_t' ] = orbitalVel_comp        # [cm/s]
         data['rHill_t'     ] = rHill                  # [cm]
         if icompanion_star == 2:
-            data['posComp_in'    ] = position3,
-            data['velComp_in'    ] = velocity3,
-            data['massComp_in'   ] = mass3,
-            data['maccrComp_in'  ] = maccr3,
-            data['rComp_in'      ] = r3,
-            data['rHill_in_t'    ] = rHill_in,
-            data['period_t_in'   ] = period_in,
+            data['posComp_in'    ] = position3
+            data['velComp_in'    ] = velocity3
+            data['massComp_in'   ] = mass3
+            data['maccrComp_in'  ] = maccr3
+            data['rComp_in'      ] = r3
+            data['rHill_in_t'    ] = rHill_in
+            data['period_t_in'   ] = period_in
             data['v_orbComp_in_t'] = orbitalVel_comp_in
 
     return data
