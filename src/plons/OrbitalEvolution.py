@@ -565,6 +565,9 @@ def plotMassAccrRate(setup, sinkData, run, loc):
         # MaccrBHL, MaccrEffBHL, MaccrBHL_av,MaccrEffBHL_av = BHLMassAccrRate(setup,sinkData,loc)  #Already calculated earlier
         plt.plot(sinkData['time'], MaccrBHL/cgs.Msun * cgs.year /Mdot,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
 
+    if setup['triple_star']==True:
+        plt.plot(t_yrs[:-1],accrRates_in/Mdot,color = 'lime', linestyle = 'solid')
+
     # '''
     # Plot vertical lines indicating where there are apastron and periastron passages
     period = setup['period'] / cgs.year
