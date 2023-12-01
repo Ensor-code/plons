@@ -1,3 +1,4 @@
+from selectors import EpollSelector
 import plons
 import os
 import math                     as math
@@ -365,14 +366,31 @@ def findScaleHeight(zH,rho_zH,xH):
         SHn     = zHn[SHn_ind][0]
         # estimate scale height as mean of positive and negative scale height h
         SHmean  = (np.abs(SHp)+np.abs(SHn))/2
+        if xH == '1H':
+            Sigma   = calculateSigma(rho_zH,zH)#rho_zHp,rho_zHn,SHp_ind,SHn_ind,zH)
+        else:
+            Sigma = 0
 
     # if the scale height density is not in the array of rho values, set to 0. This will not be added to the array that is used to calculate the median/mean
     else:
         print('!! At this theta direction, you are no longer in the disk or you set your maxH too small!!')
         SHmean  = 0
-    return SHmean,rhoSH
+        Sigma   = 0
+
+    return SHmean,rhoSH,Sigma
+
+# def calculateSigma(rho_zHp,rho_zHn,SHp_ind,SHn_ind,zH):
+#     rhoSum = np.sum(rho_zHp[:SHp_ind[0]])+ np.sum(rho_zHn[:SHn_ind[0]])
+#     dz    = zH[1]-zH[0]
+#     Sigma = rhoSum*dz
+#     return Sigma
 
 
+def calculateSigma(rho_zH,zH):
+    rhoSum = np.sum(rho_zH)
+    dz    = zH[1]-zH[0]
+    Sigma = rhoSum*dz
+    return Sigma
 
 '''
 calculate an array of scale heights for one r for various theta, and make rho-h plot
@@ -393,26 +411,37 @@ plot with density - z height for each theta (fixed r)
 def getSH_andPlot_one_r(r,thetaArray,dumpData,maxH,n_grid,run,xH):
     #parameter used for plotcolors
     ci = 0
+    #Empty arrays to store the scale heights and surface densities at different theta for this r
     SH_array_one_r = np.array([])
+    Sigma_array_one_r = np.array([])
+    SigmaTheor_array_one_r = np.array([])
     #comment if you dont want plots
     # plt.figure()
 
     #calculate scale height estimate for each theta in the array
     for theta in thetaArray:
         # Convert theta to degrees for text output and plotlabels
-        legendTh  = str(np.round(theta*180/np.pi,2))
+        # legendTh  = str(np.round(theta*180/np.pi,2))
         # print('theta',legendTh)
 
         # use smoothing kernel to calculate rhovalues on a line in the z-direction at location (r,theta) in orbital plane
         zH,rho_zH = getRhoOnZline(dumpData,r,theta,maxH,n_grid)
 
         # use rho profile to estimate the scale height at this location (mean of the + and - z scale height)
-        SHmean, rhoSH = findScaleHeight(zH,rho_zH,xH)
+        SHmean, rhoSH,Sigma = findScaleHeight(zH,rho_zH,xH)
+        if xH == '1H':
+            # Calculate surface density estimate using the scale height value and rhomax
+            SigmaTheor   = np.sqrt(2*np.pi) * SHmean * np.max(rho_zH)
+
+
 
         # if for this theta a scale height is calculated
         if SHmean >0:
             # add to array (later mean/median of this array will be taken as scale height estimate)
             SH_array_one_r   = np.append(SH_array_one_r, SHmean)
+            if xH == '1H':
+                Sigma_array_one_r = np.append(Sigma_array_one_r,Sigma)
+                SigmaTheor_array_one_r = np.append(SigmaTheor_array_one_r,SigmaTheor)
             #Comment if you dont want you dont want plots
             # plt.semilogy(zH/cgs.au,rho_zH,'-',label=r'$\theta$='+legendTh, c= 'C'+str(ci))  #semilogy
             # plt.axhline(y=rhoSH,  color='C'+str(ci), linestyle='--',linewidth = 0.7)
@@ -432,7 +461,7 @@ def getSH_andPlot_one_r(r,thetaArray,dumpData,maxH,n_grid,run,xH):
     # plt.title('r = '+str(r_au)+' au' )
     # plt.savefig(run+'plotsAnalysis/H_Rho_forDifferentTheta+'_wind_00'+str(dump)+'_'+xH+'.png')
     # plt.close()
-    return SH_array_one_r
+    return SH_array_one_r,SigmaTheor_array_one_r, Sigma_array_one_r
 
 '''
 Calculate for each r starting from lowerR, and increasing with r_step the scale height and disk mass
@@ -457,8 +486,10 @@ SH_array             array with scale height estimate for each r value
 '''
 
 def get_SH_diskMass_radius(lowerR,r_step,thetaArray,dumpData,maxH,n_grid,run,crit,xH,phiQuadr = False, printOut = False):
-    # Make array to store the SH estimate for each r (0 at r=0.01 au (racc))
+    # Make array to store the SH estimate and surface density estimate for each r (0 at r=0.01 au (racc))
     SH_array = np.array([lowerR-r_step])
+    Sigma_array = np.array([lowerR-r_step])
+    SigmaTheor_array = np.array([lowerR-r_step])
     # Make array to store the total mass of the disk at each r (0 at r=0)
     totalMassDisk  = np.array([0])
     # Make array to store the relative added mass of the disk at each r (1 at r=0)
@@ -475,14 +506,27 @@ def get_SH_diskMass_radius(lowerR,r_step,thetaArray,dumpData,maxH,n_grid,run,cri
             print('r',np.round(r/cgs.au,3),' au')
 
         # Calculate for every theta in thetaArray the scale height for this r value
-        SH_array_one_r = getSH_andPlot_one_r(r,thetaArray,dumpData,maxH,n_grid,run,xH)
+        SH_array_one_r,SigmaTheor_array_one_r,Sigma_array_one_r = getSH_andPlot_one_r(r,thetaArray,dumpData,maxH,n_grid,run,xH)
 
         # Calculate the median of the scale heights for different theta values
         medianSH_one_r = np.median(SH_array_one_r)
         if printOut: print('scale height is ',medianSH_one_r/cgs.au)
         # add the median scale height to an array containing the scale height estimate for each r value
         SH_array = np.append(SH_array,medianSH_one_r)
+        # Calculate the median surface density Sigma
+        medianSigma_one_r = np.median(Sigma_array_one_r)
+        medianSigmaTheor_one_r = np.median(SigmaTheor_array_one_r)
 
+        # Add the median surface density to array containing the surface density estimates for each r value
+        Sigma_array       = np.append(Sigma_array,medianSigma_one_r)
+        SigmaTheor_array       = np.append(SigmaTheor_array,medianSigmaTheor_one_r)
+        # Calculate optical depth
+        Chi = 3
+        Tau_array   = Sigma_array*Chi
+        TauTheor_array = SigmaTheor_array*Chi
+
+
+        # Calculate the added mass using a filter
         if phiQuadr == True:
             maxTheta = thetaArray[-1]
             minTheta = thetaArray[0]
@@ -522,7 +566,7 @@ def get_SH_diskMass_radius(lowerR,r_step,thetaArray,dumpData,maxH,n_grid,run,cri
     if printOut:
         print('-------------------------------------------------------------')
         print('estimate of r of the accretion disk is ',r_array[i]/cgs.au,' au')
-    return (r_array,totalMassDisk,rel_mass_added,SH_array)
+    return (r_array,totalMassDisk,rel_mass_added,SH_array,Sigma_array,SigmaTheor_array,Tau_array,TauTheor_array)
 
 # Definition to plot rho ifo h for each theta, with varying radius
 '''
@@ -552,7 +596,7 @@ def plotRhoVert_fixedTheta(rArray,thetaArray,dumpData,maxH,n_grid,run,xH):
             # Use smoothing kernel to calculate density on a z-line (at position (r,theta) in orbital plane)
             zH,rho_zH = getRhoOnZline(dumpData,r,theta,maxH,n_grid)
             # calculate scale height at this position
-            SHmean, rhoSH = findScaleHeight(zH,rho_zH,xH)
+            SHmean, rhoSH,Sigma = findScaleHeight(zH,rho_zH,xH)
             # if scale height is calculated, add density profile, scale height, and density at scale height to plot
             if SHmean!= 0:
                 plt.semilogy(zH/cgs.au,rho_zH,'-',label='r= '+str(r_au)+' au')
@@ -643,6 +687,25 @@ def plot_scaleHeights(ax, r_array,SH_array):
     ax.set_xlabel('r [au]')
     ax.set_ylabel('scale height [au]')
 
+'''
+Plot of surface density ifo r
+'''
+def plot_surfDensity(ax, r_array,Sigma_array,SigmaTheor_array):
+    ax.plot(r_array[1:-1]/cgs.au,Sigma_array[1:],label='surface density')
+    ax.plot(r_array[1:-1]/cgs.au,SigmaTheor_array[1:],label='Theor surface density')
+    ax.legend()
+    ax.set_xlabel('r [au]')
+    ax.set_ylabel('surface density [g/cm^2]')
+
+'''
+Plot of optical depth ifo r
+'''
+def plot_opticalDepth(ax, r_array,Tau_array,TauTheor_array):
+    ax.plot(r_array[1:-1]/cgs.au,Tau_array[1:],label='Optical Depth')
+    ax.plot(r_array[1:-1]/cgs.au,TauTheor_array[1:],label='Theor Optical Depth')
+    ax.legend()
+    ax.set_xlabel('r [au]')
+    ax.set_ylabel('Optical depth []')
 
 ### For 4 theta regions
 
@@ -691,7 +754,37 @@ def plot_scaleHeights_4theta(ax, r_array1,r_array2,r_array3,r_array4,SH_array1,S
     ax.set_xlabel('r [au]')
     ax.set_ylabel('scale height [au]')
 
-def writeFile(title,r_step,testLimit,r_array,rel_mass_added,totalMassDisk,SH_array):
+'''
+Plot of surface density ifo r for different theta regimes
+'''
+def plot_surfDensity_4theta(ax, r_array1,r_array2,r_array3,r_array4,Sigma_array1,Sigma_array2,Sigma_array3,Sigma_array4):
+
+    ax.plot(r_array1[1:-1]/cgs.au,Sigma_array1[1:],label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array2[1:-1]/cgs.au,Sigma_array2[1:],label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
+    ax.plot(r_array3[1:-1]/cgs.au,Sigma_array3[1:],label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
+    ax.plot(r_array4[1:-1]/cgs.au,Sigma_array4[1:],label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
+
+    ax.legend()
+    ax.set_xlabel('r [au]')
+    ax.set_ylabel('surface density [g/cm^2]')
+
+'''
+Plot of surface density ifo r for different theta regimes
+'''
+def plot_opticalDepth_4theta(ax, r_array1,r_array2,r_array3,r_array4,Tau_array1,Tau_array2,Tau_array3,Tau_array4):
+
+    ax.plot(r_array1[1:-1]/cgs.au,Tau_array1[1:],label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array2[1:-1]/cgs.au,Tau_array2[1:],label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
+    ax.plot(r_array3[1:-1]/cgs.au,Tau_array3[1:],label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
+    ax.plot(r_array4[1:-1]/cgs.au,Tau_array4[1:],label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
+
+    ax.legend()
+    ax.set_xlabel('r [au]')
+    ax.set_ylabel('optical depth []')
+
+
+
+def writeFile(title,r_step,testLimit,r_array,rel_mass_added,totalMassDisk,SH_array,Sigma_array,SigmaTheor_array,Tau_array,TauTheor_array):
     with open (title,'w') as f:
         # f.write('Model '+str(run)+'\n')
         f.write('Data analysis accretion disks')
@@ -704,15 +797,15 @@ def writeFile(title,r_step,testLimit,r_array,rel_mass_added,totalMassDisk,SH_arr
         f.write('\n')
         f.write('\n')
         f.write('for rstep 0.01 au (=racc):'+'\n')
-        names = ['r [au]', 'SH [au]', 'Mtot [Msun]', 'Mrel/rstep []', 'Mrel []']
-        f.write("{: <30} {: <30} {: <30}  {: <30} {: <30} ".format(*names))
-        col_format = "{:<31}" * 5 + "\n"   # 5 left-justfied columns with 15 character width
+        names = ['r [au]', 'SH [au]', 'Mtot [Msun]', 'Mrel/rstep []', 'Sigma []','Sigma Theor []','OptDepth []','OptDepthTheor []']
+        f.write("{: <30} {: <30} {: <30}  {: <30} {: <30} {: <30} {: <30} {: <30}".format(*names))
+        col_format = "{:<31}" * 8 + "\n"   # 5 left-justfied columns with 15 character width
         f.write('\n')
-        for i in zip(np.round(r_array/cgs.au,2),np.round(SH_array/cgs.au,4),np.round(totalMassDisk/cgs.Msun,13),np.round(rel_mass_added/r_step,3),np.round(rel_mass_added,3)):
+        for i in zip(np.round(r_array/cgs.au,2),np.round(SH_array/cgs.au,4),np.round(totalMassDisk/cgs.Msun,13),np.round(rel_mass_added/r_step,3),np.round(Sigma_array,4),np.round(SigmaTheor_array,4),np.round(Tau_array,3),np.round(TauTheor_array,3)):
             f.write(col_format.format(*i))
 
 def readInfoAccrDisk(run,dump,xH):
     # return r, SH, Mtot, MrelRstep,Mrel
     file = os.path.join(run,'plotsAnalysis/infoAccrDisk_wind_00'+str(dump)+'_'+xH+'.txt')
-    (r, SH, Mtot,MrelRstep) = np.loadtxt(file, skiprows=11, usecols=(0,1,2,3), unpack=True)
-    return r, SH, Mtot,MrelRstep
+    (r, SH, Mtot,MrelRstep,Sigma,SigmaT,tau,tauT) = np.loadtxt(file, skiprows=11, usecols=(0,1,2,3,4,5,6,7), unpack=True)
+    return r, SH, Mtot,MrelRstep,Sigma,SigmaT,tau,tauT
