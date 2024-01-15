@@ -54,6 +54,11 @@ def plot_orbit(data, setup,loc):
         ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'navy', label = 'CoM_outer', markersize = 5)
         ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'lime', label = 'inner comp')
         ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'crimson', label = 'outer comp')
+        # for figure intro PhD thesis
+        # ax.plot(xCOM_out/cgs.au,yCOM_out/cgs.au,'*', color = 'green', label = 'CoM_*', markersize = 5)
+        # ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'darkred',linestyle=(0,(5,10)), label = 'B')
+        # ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'green', label = 'CoM_A')
+        # ax.plot(xc_in[1:]/cgs.au,yc_in[1:]/cgs.au, c = 'darkred',linestyle='dotted', label = 'Ab')
         #  #FOR SCIENTIST@SCHOOL
         #ax.set_facecolor('navy')
         #ax.plot(xCOM_in/cgs.au,yCOM_in/cgs.au, color = 'white')#, label = 'MM')
@@ -69,6 +74,7 @@ def plot_orbit(data, setup,loc):
         ax.plot(xc[1:]/cgs.au,yc[1:]/cgs.au, c = 'crimson', label = 'companion')
 
     ax.plot(xa[1:]/cgs.au,ya[1:]/cgs.au, c = 'gold', label = 'AGB'      )
+    # ax.plot(xa[1:]/cgs.au,ya[1:]/cgs.au, c = 'darkred',linestyle='-', label = 'Aa'      )
     ax.set_ylabel('$y$ [au]',fontsize = 15)
     ax.set_xlabel('$x$ [au]',fontsize = 15)
     ax.set_title('$e = $'+str(setup['ecc'])+', $a = $'+ str(setup['sma_ini'])+' AU, $q = $'+ str(setup['massAGB_ini']/setup['massComp_ini']), fontsize = 15)
@@ -350,7 +356,7 @@ def plotMassAccr(setup, sinkData, run, loc):
 
     plt.title('Total accreted mass by the companion', fontsize = 18)
     if setup['triple_star']==True:
-        plt.legend(handles = handles_ap)
+        plt.legend(handles = handles_ap,loc='upper right')
     fig.tight_layout()
 
     plt.savefig(os.path.join(loc, 'png/evolution_Maccr_companion.png'))
@@ -821,6 +827,9 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         return
 
     else:
+        # Visualise the orbit of the system
+        plot_orbit(sinkData,setup,loc)
+
         '''
         #test:
         plotEccentricity(sinkData,setup,loc)

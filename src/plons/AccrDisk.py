@@ -729,7 +729,7 @@ def plot_opticalDepth(ax, r_array,Tau_array,TauTheor_array):
 Plot of relative mass added / rstep for different theta regimes
 '''
 def plot_relAddedMass_4theta(ax, r_array1,r_array2,r_array3,r_array4,rel_mass_added1,rel_mass_added2,rel_mass_added3,rel_mass_added4,r_step1,r_step3,crit):
-    ax.plot(r_array1[1:-1]/cgs.au,rel_mass_added1[1:]/r_step1,label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array1[1:-1]/cgs.au,rel_mass_added1[1:]/r_step1,label=r'th1: $-\pi$/4 - $\pi$/4', c='C1')
     ax.plot(r_array2[1:-1]/cgs.au,rel_mass_added2[1:]/r_step1,label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
     ax.plot(r_array3[1:-1]/cgs.au,rel_mass_added3[1:]/r_step3,label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
     ax.plot(r_array4[1:-1]/cgs.au,rel_mass_added4[1:]/r_step1,label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
@@ -748,7 +748,7 @@ def plot_relAddedMass_4theta(ax, r_array1,r_array2,r_array3,r_array4,rel_mass_ad
 Plot of total disk mass added ifo r for different theta regimes
 '''
 def plot_totalDiskMass_4theta(ax, r_array1,r_array2,r_array3,r_array4,totalMassDisk1,totalMassDisk2,totalMassDisk3,totalMassDisk4):
-    ax.plot(r_array1[1:-1]/cgs.au,totalMassDisk1[1:]/cgs.Msun,label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array1[1:-1]/cgs.au,totalMassDisk1[1:]/cgs.Msun,label=r'th1: $-\pi$/4 - $\pi$/4', c='C1')
     ax.plot(r_array2[1:-1]/cgs.au,totalMassDisk2[1:]/cgs.Msun,label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
     ax.plot(r_array3[1:-1]/cgs.au,totalMassDisk3[1:]/cgs.Msun,label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
     ax.plot(r_array4[1:-1]/cgs.au,totalMassDisk4[1:]/cgs.Msun,label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
@@ -761,10 +761,10 @@ def plot_totalDiskMass_4theta(ax, r_array1,r_array2,r_array3,r_array4,totalMassD
 Plot of midplane density estimate ifo r
 '''
 def plot_rhoMax_4theta(ax, r_array1,r_array2,r_array3,r_array4,RhoMax_array1,RhoMax_array2,RhoMax_array3,RhoMax_array4):
-    ax.plot(r_array1[1:-1]/cgs.au,RhoMax_array1[1:],r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
-    ax.plot(r_array2[1:-1]/cgs.au,RhoMax_array2[1:],r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
-    ax.plot(r_array3[1:-1]/cgs.au,RhoMax_array3[1:],r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
-    ax.plot(r_array4[1:-1]/cgs.au,RhoMax_array4[1:],r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
+    ax.plot(r_array1[1:-1]/cgs.au,RhoMax_array1[1:],label = r'th1: $-\pi$/4 - $\pi$/4', c='C1')
+    ax.plot(r_array2[1:-1]/cgs.au,RhoMax_array2[1:],label = r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
+    ax.plot(r_array3[1:-1]/cgs.au,RhoMax_array3[1:],label = r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
+    ax.plot(r_array4[1:-1]/cgs.au,RhoMax_array4[1:],label = r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
     ax.legend()
     ax.set_xlabel('r [au]')
     ax.set_ylabel('Midplane density [g/cm^3]')
@@ -774,7 +774,7 @@ Plot of scale heights ifo r for different theta regimes
 '''
 def plot_scaleHeights_4theta(ax, r_array1,r_array2,r_array3,r_array4,SH_array1,SH_array2,SH_array3,SH_array4):
 
-    ax.plot(r_array1[1:-1]/cgs.au,SH_array1[1:]/cgs.au,label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array1[1:-1]/cgs.au,SH_array1[1:]/cgs.au,label=r'th1: $-\pi$/4 - $\pi$/4', c='C1')
     ax.plot(r_array2[1:-1]/cgs.au,SH_array2[1:]/cgs.au,label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
     ax.plot(r_array3[1:-1]/cgs.au,SH_array3[1:]/cgs.au,label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
     ax.plot(r_array4[1:-1]/cgs.au,SH_array4[1:]/cgs.au,label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
@@ -788,7 +788,7 @@ Plot of surface density ifo r for different theta regimes
 '''
 def plot_surfDensity_4theta(ax, r_array1,r_array2,r_array3,r_array4,Sigma_array1,Sigma_array2,Sigma_array3,Sigma_array4):
 
-    ax.plot(r_array1[1:-1]/cgs.au,Sigma_array1[1:],label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array1[1:-1]/cgs.au,Sigma_array1[1:],label=r'th1: $-\pi$/4 - $\pi$/4', c='C1')
     ax.plot(r_array2[1:-1]/cgs.au,Sigma_array2[1:],label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
     ax.plot(r_array3[1:-1]/cgs.au,Sigma_array3[1:],label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
     ax.plot(r_array4[1:-1]/cgs.au,Sigma_array4[1:],label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
@@ -802,7 +802,7 @@ Plot of surface density ifo r for different theta regimes
 '''
 def plot_opticalDepth_4theta(ax, r_array1,r_array2,r_array3,r_array4,Tau_array1,Tau_array2,Tau_array3,Tau_array4):
 
-    ax.plot(r_array1[1:-1]/cgs.au,Tau_array1[1:],label=r'th1: -$\pi$/4 - +$\pi$/4', c='C1')
+    ax.plot(r_array1[1:-1]/cgs.au,Tau_array1[1:],label=r'th1: $-\pi$/4 - $\pi$/4', c='C1')
     ax.plot(r_array2[1:-1]/cgs.au,Tau_array2[1:],label=r'th2: $\pi$/4 - 3$\pi$/4', c='C2')
     ax.plot(r_array3[1:-1]/cgs.au,Tau_array3[1:],label=r'th3: 3$\pi$/4 - 5$\pi$/4', c='C3')
     ax.plot(r_array4[1:-1]/cgs.au,Tau_array4[1:],label=r'th4: 5$\pi$/4 - 7$\pi$/4', c='C4')
