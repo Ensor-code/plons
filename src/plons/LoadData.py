@@ -281,6 +281,8 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
+    
+    iorig = dump["blocks"][0]["data"]['iorig'][filter]
 
     # output
     data = {'position'      : position,              # [cm]
@@ -305,7 +307,8 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'vx'            : vx,                    # [cm/s]
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz,                    # [cm/s]
-            'Gamma'         : Gamma
+            'Gamma'         : Gamma,
+            'iorig'         : iorig
             }
 
     if not setup["single_star"]:
