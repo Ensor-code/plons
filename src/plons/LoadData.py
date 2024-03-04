@@ -93,7 +93,7 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
 
     except FileNotFoundError:
         print('')
-        print(" ERROR: No %s.setup file found!"%prefix)
+        print(" ERROR: No %s.in file found!"%prefix)
         print('')
         exit()
 
