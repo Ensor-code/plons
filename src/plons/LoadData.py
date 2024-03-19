@@ -248,7 +248,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
-    p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
+    p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba]
     if containsTau:
         tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth
     if containsTauL:
@@ -291,6 +291,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'mass'          : mass,                  # [g]
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
+            'p'             : p,                     # [Ba]
             'Tgas'          : temp,                  # [K]
             'Tdust'         : Tdust,
             'speed'         : speed,                 # [cm/s]
