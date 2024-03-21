@@ -93,7 +93,7 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
 
     except FileNotFoundError:
         print('')
-        print(" ERROR: No %s.setup file found!"%prefix)
+        print(" ERROR: No %s.in file found!"%prefix)
         print('')
         exit()
 
@@ -248,7 +248,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
-    p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba = 1e-1 Pa]
+    p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba]
     if containsTau:
         tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth
     if containsTauL:
@@ -281,6 +281,8 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
+    
+    iorig = dump["blocks"][0]["data"]['iorig'][filter]
 
     # output
     data = {'position'      : position,              # [cm]
@@ -289,6 +291,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'mass'          : mass,                  # [g]
             'rho'           : rho,                   # [g/cm^3]
             'u'             : u,                     # [erg/g]
+            'p'             : p,                     # [Ba]
             'Tgas'          : temp,                  # [K]
             'Tdust'         : Tdust,
             'speed'         : speed,                 # [cm/s]
@@ -305,7 +308,8 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'vx'            : vx,                    # [cm/s]
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz,                    # [cm/s]
-            'Gamma'         : Gamma
+            'Gamma'         : Gamma,
+            'iorig'         : iorig
             }
 
     if not setup["single_star"]:
