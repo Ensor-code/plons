@@ -468,6 +468,7 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
             'u'             : u,             # [erg/g]
             'Tgas'          : temp,          # [K]
             'speed'         : speed,         # [cm/s]
+            # 'press'         : p,             # ?
             'mach'          : mach,
             'r'             : r,             # [cm]
             'phi'           : phi,

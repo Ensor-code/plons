@@ -22,6 +22,8 @@ def calc_new_position(x,y,dumpData):
     # rotation
     theta   = - (gf.calcPhi([dumpData['posAGB'][0]],[dumpData['posAGB'][1]])-np.pi)
     # print('theta rotation is ',theta)
+    # print('Orbital phase is ',np.round(2*np.pi-theta,3))
+    print('Orbital phase is ', np.round((2*np.pi-theta)/np.pi,3), ' pi')
     final_x = tr_x * np.cos(theta) - tr_y * np.sin(theta)
     final_y = tr_x * np.sin(theta) + tr_y * np.cos(theta)
 
@@ -121,10 +123,12 @@ def plot_vrvtRho(axs, smooth,zoom,r):
     ax2 = axs[1]
     ax3 = axs[2]
 
+
     # rho
     data = np.log10(smooth['smooth_z']['rho'])
     if zoom == 20:
-        limits = [-16,-10.5]
+        # limits = [-16,-10.5]
+        limits = [-15,-11]
     else:
         limits = [-17,-11]
     cm  = plt.cm.get_cmap('gist_heat')
@@ -238,6 +242,59 @@ def plot_vrvt(axs,smooth,zoom,r):
     ax3.add_patch(circle3)
 
 
+# vr and vt plot w.r.t. companion sink particle
+def plot_vrRho(axs,smooth,zoom,r):
+    ax2 = axs[0]
+    ax3 = axs[1]
+
+    #vr
+    data = (smooth['smooth_z']['new_vr'])
+    limits = [-40,40]
+    # lim = np.abs(np.min(data))
+    # limits = [-lim,lim]
+    cm  = plt.cm.get_cmap('seismic')
+    ax2.set_xlabel('x [au]',fontsize = 20)
+    ax2.set_ylabel('y [au]',fontsize = 20)
+    ax2.set_aspect('equal')
+    ax2.set_facecolor('k')
+    ax2.plot(0,0,'o',c = 'k')
+    axPlot2 = ax2.pcolormesh(smooth['x_z'] / cgs.au, smooth['y_z'] / cgs.au,
+                                    data, cmap=cm, vmin=limits[0], vmax=limits[1])
+                       # rasterized=True)
+    ax2.tick_params(axis='x', labelsize=20)
+    ax2.tick_params(axis='y', labelsize=20)
+    cbar2 = plt.colorbar(axPlot2)#, cax=cax)
+    cbar2.ax.tick_params(labelsize=20)
+    cbar2.set_label(r'$v_r \, \rm{[km/s]}$',fontsize = 20)#,rotation = 0)
+
+    # rho
+    data = np.log10(smooth['smooth_z']['rho'])
+    if zoom == 20:
+        # limits = [-16,-10.5]
+        limits = [-15,-11]
+    else:
+        # limits = [-17,-11]
+        limets = [-16,-11]
+    cm  = plt.cm.get_cmap('gist_heat')
+
+    ax3.set_xlabel('x [au]',fontsize = 20)
+    ax3.set_aspect('equal')
+    ax3.set_facecolor('k')
+    ax3.plot(0,0,'o',c = 'k')
+    axPlot3 = ax3.pcolormesh(smooth['x_z'] / cgs.au, smooth['y_z'] / cgs.au,
+                                    data, cmap=cm,label='vt', vmin=limits[0], vmax=limits[1])
+                       # rasterized=True)
+    ax3.tick_params(axis='x', labelsize=20)
+    ax3.tick_params(axis='y', labelsize=20)
+    cbar3 = plt.colorbar(axPlot3)#, cax=cax)
+    cbar3.ax.tick_params(labelsize=20)
+    cbar3.set_label(r'$\rho \, \rm{/(g \cdot cm^{-3})}$',fontsize = 20)#,rotation = 0)
+
+    # plot circle with estimate of disk radius
+    circle2 = plt.Circle((0, 0), r, color = 'k',linestyle = ':',linewidth = 1.5,fill = False)
+    circle3 = plt.Circle((0, 0), r, color = 'w',linestyle = ':',linewidth = 1.5,fill = False)
+    ax2.add_patch(circle2)
+    ax3.add_patch(circle3)
 
 # Plot of tangential velocity divided by keplerian velocity; in function of radius
 def plot_vt_divided_vtKepl(ax,rmax,rmin,rstep,dumpData,model,colors,i):
@@ -281,16 +338,20 @@ def plot_vt_vKepl(ax,rmax,rmin,rstep,dumpData,model,k_vt,r_vt_max,colors,lineSty
 '''
  Plot of mean of radial velocity (not absolute value!); in function of radius
 '''
-def plot_vrmean(ax,rmax,rmin,rstep,dumpData,model,colors,i):
+def plot_vrmean(ax1,ax2,rmax,rmin,rstep,dumpData,model,colors,i):
     # set number of rvalues for which we will plot velocities
     rnum = int(rmax /rstep)
     # make rr array
     rr = np.linspace(rmin,rmax,rnum)
     r_vr = np.array([])
+    r_abs_vr = np.array([])
     for r in rr:
-        filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
+        # filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
+        filter = (dumpData['new_r']/cgs.au<(r+(rmin))) & (dumpData['new_r']/cgs.au>(r-(rmin)))
         r_vr = np.append(r_vr, np.mean(dumpData['new_vr'] [filter]))
-    ax.plot(rr,r_vr,c=colors[i],linestyle = '-',linewidth = 1.2,label = str(model))
+        r_abs_vr = np.append(r_abs_vr,np.mean(np.abs(dumpData['new_vr'] [filter])))
+    ax1.plot(rr,r_vr,c=colors[i],linestyle = '-',linewidth = 1.2,label = str(model))
+    ax2.plot(rr,r_abs_vr,c=colors[i],linestyle = '-',linewidth = 1.2,label = str(model))
 
 
 

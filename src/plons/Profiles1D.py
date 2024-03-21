@@ -28,6 +28,11 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
         else:
             ax1.plot(data[references['x_axis']]/references['x_ref'], data['v']/references['vel_ref'],    color='black', linestyle='--')
         ax1.set_ylabel(r'$v$ [km s$^{-1}$]')
+        # ax1.vlines(6,4,15)
+        # ax1.vlines(6,9,17)
+        ax1.vlines(6,19,25)
+
+
 
     if whichPlot == 'temp':
         ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
@@ -37,7 +42,10 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
 
     if whichPlot == 'rho':
         ax1.plot(data[references['x_axis']]/references['x_ref'], data['rho'], color='black',  linestyle='-',  label=r'$\rho$  analytic')
-          
+    
+    if whichPlot == 'u':
+        ax1.plot(data[references['x_axis']]/references['x_ref'], data['u'], color='black',  linestyle='-',  label=r'$u$  analytic')
+    
     if whichPlot == 'dustcool':
         lns11 = ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
         ax1.set_ylabel('Temperature [K]')
@@ -114,7 +122,9 @@ def referenceX(axis, r_ref = 0, temp_ref = 0, Tinj = 0):
             'x_label'  : r'$r$ [au]',
             'x_in'     : 0.*r_ref,
             'x_out'    : 12.*r_ref,
+            # 'x_out'    : 20.*r_ref,
             'x_limits' : [0.,12.]
+            # 'x_limits' : [0.,20.]
         }
     elif axis == 'Tgas':
         references = {
@@ -401,7 +411,7 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
         runName = os.path.join(loc,run)
         data1D = load.read1D(runName, setup)
 
-        whichPlots = ['vel', 'temp', 'rho', 'v&T']
+        whichPlots = ['vel', 'temp', 'rho', 'v&T','u']
         if setup['idust_opacity'] > 0: whichPlots.append('dust')
         if setup['isink_radiation'] > 1 and setup['iray_resolution'] >=0: 
             if setup['iget_tdust'] == 4: whichPlots.append('tau_lucy')
