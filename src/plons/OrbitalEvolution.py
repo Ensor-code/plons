@@ -93,7 +93,7 @@ def plotVerticalApaPerLines(setup,sinkData,mini,maxi):
         i = 0         # Simulation starts at apastron
         mini = 0
         if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
-            for orbit in range(0, int(data['time'][-1]/period)+1):
+            for orbit in range(0, int(sinkData['time'][-1]/period)+1):
                 plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
                 i = i+period
             plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
@@ -337,9 +337,11 @@ def plotMassAccr(setup, sinkData, run, loc):
 
 
 
-def reduceToNPeriods(setup,time,n):
-    # tmax = 93 #yrs
-    tmax = n * setup['period'] / cgs.year
+def reduceToNPeriods(setup,time):
+    finalTime = time[-1]
+    period = setup['period'] / cgs.year
+    fullOrbits = int(finalTime/period)
+    tmax = fullOrbits * setup['period'] / cgs.year
     ind_tmax = np.where(time > tmax)[0]
     index_tmax = ind_tmax[0]+1
     time_new = time[:index_tmax]
@@ -351,7 +353,13 @@ def reduceToNPeriods(setup,time,n):
 Calculate theoretical BHL mass accretion rate
 '''
 def BHLMassAccrRate(setup,data):
-    time, index_tmax = reduceToNPeriods(setup,data['time'],10)
+    # If you want to reduce calculations to N full periods
+    # if setup['ecc']>0:
+    time, index_tmax = reduceToNPeriods(setup,data['time'])
+
+    # else
+    # time = data['time'][:-1]
+    # index_tmax = -1
 
     alphaBHL = 0.75
     Mdot     = setup['Mdot'] * cgs.Msun / cgs.year                               # [g/s]
@@ -416,9 +424,12 @@ def calculateAccretedMassRate_lastNorbits(timeArray,maccrComp,period,n):
     return accretedMassRate
 
 def calc_accrRates(setup,sinkData):
-    n = 10
-    time, index_tmax = reduceToNPeriods(setup,sinkData['time'],n)
+    # If you want to reduce to N periods:
+    time, index_tmax = reduceToNPeriods(setup,sinkData['time'])
+    # Else
     # time = sinkData['time']
+    # index_tmax = -1
+
     # Make empty array to store accretion rates
     accrRates    = np.array([]) 
     if setup['triple_star']==True:
@@ -536,6 +547,11 @@ def plotMassAccrEff(setup, sinkData, loc):
         handles_ap    = [periodLine,comp_in,comp_out]
         maxi = max(np.max(accrRates),np.max(accrRates_in))/Mdot
 
+        period = setup['period'] / cgs.year
+        meanAccrEff = calculateAverageAccrRate_lastNorbits(timeArray,accrRates,period,2)/Mdot
+        print('mean accretion eff of outer companion over last 2 orbits is ', meanAccrEff)
+        meanAccrEff = calculateAverageAccrRate_lastNorbits(timeArray,accrRates_in,period,2)/Mdot
+        print('mean accretion eff of inner companion over last 2 orbits is ', meanAccrEff)
     else:
         timeArray,accrRates = calc_accrRates(setup,sinkData)
         plt.plot(timeArray, accrRates/Mdot,color = 'crimson', linestyle = 'solid')    
@@ -546,12 +562,11 @@ def plotMassAccrEff(setup, sinkData, loc):
         plt.plot(time, MaccrBHL/cgs.Msun * cgs.year /Mdot,color = 'royalblue', linestyle = 'dotted',linewidth=0.8)    
         maxi = 1.1* max(np.max(accrRates),np.max(MaccrBHL/cgs.Msun * cgs.year))/Mdot
     
-    
-    period = setup['period'] / cgs.year
-    meanAccrEff = calculateAverageAccrRate_lastNorbits(timeArray,accrRates,period,2)/Mdot
-    meanAccrEffBHL = calculateAverageAccrRate_lastNorbits(time,MaccrBHL/cgs.Msun * cgs.year,period,2)/Mdot
-    print('mean accretion eff over last 2 orbits is ', meanAccrEff)
-    print('mean BHL accretion eff over last 2 orbits is ', meanAccrEffBHL)
+        period = setup['period'] / cgs.year
+        meanAccrEff = calculateAverageAccrRate_lastNorbits(timeArray,accrRates,period,2)/Mdot
+        meanAccrEffBHL = calculateAverageAccrRate_lastNorbits(time,MaccrBHL/cgs.Msun * cgs.year,period,2)/Mdot
+        print('mean accretion eff over last 2 orbits is ', meanAccrEff)
+        print('mean BHL accretion eff over last 2 orbits is ', meanAccrEffBHL)
 
 
     mini = 0
@@ -642,7 +657,7 @@ def plotOrbVel(setup,sinkData, run, loc):
     i = 0
     mini = 0
     if setup['triple_star']==True: #(not at apastron at t=0, so difficult)
-        maxi = max(np.max(sinkData['v_orbComp_t'][1:]),np.max(sinkData['v_orbComp_in_t'][1:]),np.max(v_rel))/cgs.kms
+        maxi = max(np.max(sinkData['v_orbComp_t'][1:]),np.max(sinkData['v_orbComp_in_t'][1:]))/cgs.kms
         for orbit in range(0, int(sinkData['time'][-1]/period)+1):
             plt.vlines(i,mini, maxi,  linestyle = 'dotted' , linewidth = 0.5)
             i = i+period
@@ -650,7 +665,7 @@ def plotOrbVel(setup,sinkData, run, loc):
         #handles_ap    = [periodLine,comp_in,comp_out]
 
     else:
-        maxi = np.max(v_rel/cgs.kms)
+        maxi = np.max(sinkData['v_orbComp_t'][1:]/cgs.kms)
         j = period/2  # First periastron
         for orbit in range(0, int(sinkData['time'][-1]/period)+1):
             plt.vlines(i,mini, maxi,  linestyle = 'solid' , linewidth = 0.5)
@@ -795,14 +810,14 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             plotApaPerChange(sinkData,setup,loc)
         '''
         # Plot evolution of the mass accreted by the companion
-        # plotMassAccr(setup,sinkData, run, loc)
+        plotMassAccr(setup,sinkData, run, loc)
         # Plot evolution of the mass accretion rate by the companion
         # plotMassAccrRate(setup,sinkData, loc)
         plotMassAccrEff(setup,sinkData,loc)
         # Plot evolution of orbital velocities
-        # plotOrbVel(setup,sinkData, run, loc)
+        plotOrbVel(setup,sinkData, run, loc)
         #Plot vw vs vorb
-        # plot_vw_vorb(setup,sinkData,loc)
+        plot_vw_vorb(setup,sinkData,loc)
         '''
         # Plot evolution of orbital radii and orbital separation
         #if setup['ecc'] == 0:
