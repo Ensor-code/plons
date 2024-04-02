@@ -899,3 +899,15 @@ def readInfoAccrDisk(run,dump,xH):
     file = os.path.join(run,'plotsAnalysis/infoAccrDisk_wind_00'+str(dump)+'_'+xH+'.txt')
     (r, SH,RhoMax, Mtot,MrelRstep,Sigma,SigmaT,tau,tauT) = np.loadtxt(file, skiprows=11, usecols=(0,1,2,3,4,5,6,7,8), unpack=True)
     return r, SH, RhoMax, Mtot,MrelRstep,Sigma,SigmaT,tau,tauT
+
+
+'''
+Calculate the accretion line impact parameter, as defined by Huarte-Espinosa 2013
+Material is accreted to companion around this radius; because the companion is moving, 
+material does not fall on the companion, but around a distance b behind it, creating an accretion disk
+'''
+def calc_b(mp,ms,a,vinf):
+    M = mp + ms
+    rw = (G * mp**2) /( vinf**2 * M)
+    b = 2 * (ms**2 / mp**5) * (M)**3 * a**(-5./2.) * (1/a + 1/rw)**(-7./2.)
+    print('b = ',b/cgs.au, ' au')

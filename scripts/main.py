@@ -119,7 +119,11 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         if setup['single_star'] == True:
             cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
         else:
-            cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
+            if factor>0:
+                cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
+            else:
+                cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
+
 
     if part == '5':
         print('')
@@ -155,6 +159,7 @@ def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1,
     if number == -1: index = ld.lastFullDumpIndex(dir, userSettings["prefix"], setup)
     else: index = number
     fileName       = dir+'/{0:s}_{1:05d}'.format(userSettings["prefix"], index)
+    print(fileName)
     dumpData  = ld.LoadFullDump(fileName, setup)
 
     if len(set(runPart)-set([1, 2, 4, 6, 7]))>0:
@@ -384,7 +389,7 @@ else: observables = ['rho', 'Tgas', 'speed']
 limits = customRanges(observables)
 
 # Which parts do you want to run?
-factor      = 3   # the without inner, is without r< factor * sma
+factor      = 0 #3   # the without inner, is without r< factor * sma
 bound       = None
 foundModels = searchModels(loc, prefix)
 if runModels == '':

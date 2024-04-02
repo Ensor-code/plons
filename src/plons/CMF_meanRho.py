@@ -324,6 +324,14 @@ def CMF_meanRho(run,outloc, data, setup, factor):
     meanAllRho     = np.mean(infoForPlot['meanRho'])
     ratioAll       = infoForPlot['meanRho'][0]/meanAllRho
 
+
+    # indices and single star values to be compared to are same, independent of system modelled
+    MassratioOrbPl      = (infoForPlot['massFraction'][39])/ 0.3887 # normalised to single star model, index 39 is 1/4 of total length, so 1/4 of pi/2 is pi/8
+    MassratioMiddle     = (infoForPlot['massFraction'][117] - infoForPlot['massFraction'][39]  ) / 0.5355  # Same for everything between pi/8 and 3pi/8
+    MassratioPoles      = (infoForPlot['massFraction'][-1]  - infoForPlot['massFraction'][117] ) / 0.0758
+
+
+
     # Makes text file with all usefull data
     title = os.path.join(outloc,'txt/data_CummulativeMassFraction_meanDensity_without_'+str(factor)+'a.txt')
     with open (title,'w') as f:
@@ -347,6 +355,10 @@ def CMF_meanRho(run,outloc, data, setup, factor):
         f.write('\n')
         f.write('The ratio of the mean density on the polar axis to the orbital plane  is: '+ str(round(1/ratioPolAx,5))+'\n')
         f.write('The ratio of the mean density over all angles   to the orbital plane  is: '+ str(round(1/ratioAll  ,5))+'\n')
+        f.write('The ratio of the mass  within angle $pi/8$ to the orbital plane to the single star model mass is: '+ str(round(MassratioOrbPl,5))+'\n')
+        f.write('The ratio of the mass between angle $pi/8$ and $3\pi/8$         to the single star model mass is: '+ str(round(MassratioMiddle,5))+'\n')
+        f.write('The ratio of the mass  above angle $3pi/8$                      to the single star model mass is: '+ str(round(MassratioPoles,5))+'\n')
+
         f.write('These are usefull ratios to measure the EDE!'+'\n')
         f.write('\n')
         f.write('Polar to orbital mean density ratio:\n')
