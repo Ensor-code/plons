@@ -565,12 +565,12 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
 
     try:
     # to calculate period, we need masses and sma, so coordinates
-        (t1, x1,y1,z1, mass1, vx1,vy1,vz1, maccr1) = np.loadtxt(fileName_sink1, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+        (t1, x1,y1,z1, mass1, vx1,vy1,vz1,Jx1,Jy1,Jz1, maccr1) = np.loadtxt(fileName_sink1, skiprows=1, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
         if icompanion_star > 0:
             n_file = len(t1)
-            (t2, x2,y2,z2, mass2, vx2,vy2,vz2, maccr2) = np.loadtxt(fileName_sink2, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
+            (t2, x2,y2,z2, mass2, vx2,vy2,vz2, Jx2,Jy2,Jz2, maccr2) = np.loadtxt(fileName_sink2, skiprows=1, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)[:, :n_file]
             if icompanion_star == 2:
-                (t3, x3, y3, z3, mass3, vx3, vy3, vz3, maccr3) = np.loadtxt(fileName_sink3, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
+                (t3, x3, y3, z3, mass3, vx3, vy3, vz3,Jx3,Jy3,Jz3, maccr3) = np.loadtxt(fileName_sink3, skiprows=1, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)[:, :n_file]
     except OSError:
         print(' ERROR: No sink files found for this model in the current directory!')
 
@@ -585,12 +585,12 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
 
         try:
         # to calculate period, we need masses and sma, so coordinates
-            (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e, maccr1e) = np.loadtxt(fileName_sink1, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)
+            (t1e, x1e,y1e,z1e, mass1e, vx1e,vy1e,vz1e,Jx1e,Jy1e,Jz1e, maccr1e) = np.loadtxt(fileName_sink1, skiprows=1, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)
             if icompanion_star > 0:
                 n_file = len(t1e)
-                (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e, maccr2e) = np.loadtxt(fileName_sink2, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
+                (t2e, x2e,y2e,z2e, mass2e, vx2e,vy2e,vz2e,Jx2e,Jy2e,Jz2e, maccr2e) = np.loadtxt(fileName_sink2, skiprows=1, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)[:, :n_file]
                 if icompanion_star == 2:
-                    (t3e, x3e,y3e,z3e, mass3e, vx3e,vy3e,vz3e, maccr3e) = np.loadtxt(fileName_sink3, skiprows=1, usecols=(0,1,2,3,4,5,6,7,11), unpack=True)[:, :n_file]
+                    (t3e, x3e,y3e,z3e, mass3e, vx3e,vy3e,vz3e,Jx3e,Jy3e,Jz3e, maccr3e) = np.loadtxt(fileName_sink3, skiprows=1, usecols=(0,1,2,3,4,5,6,7,8,9,10,11), unpack=True)[:, :n_file]
         except OSError:
             print(' ERROR: No sink files found for this model in the current directory!')
 
@@ -602,6 +602,9 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
         vx1    = np.append(vx1, vx1e)
         vy1    = np.append(vy1, vy1e)
         vz1    = np.append(vz1, vz1e)
+        Jx1    = np.append(Jx1, Jx1e)
+        Jy1    = np.append(Jy1, Jy1e)
+        Jz1    = np.append(Jz1, Jz1e)
         maccr1 = np.append(maccr1, maccr1e)
 
         if icompanion_star > 0:
@@ -613,6 +616,9 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
             vx2    = np.append(vx2, vx2e)
             vy2    = np.append(vy2, vy2e)
             vz2    = np.append(vz2, vz2e)
+            Jx2    = np.append(Jx2, Jx2e)
+            Jy2    = np.append(Jy2, Jy2e)
+            Jz2    = np.append(Jz2, Jz2e)
             maccr2 = np.append(maccr2, maccr2e)
 
             if icompanion_star == 2:
@@ -624,6 +630,9 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
                 vx3    = np.append(vx3, vx3e)
                 vy3    = np.append(vy3, vy3e)
                 vz3    = np.append(vz3, vz3e)
+                Jx3    = np.append(Jx3, Jx3e)
+                Jy3    = np.append(Jy3, Jy3e)
+                Jz3    = np.append(Jz3, Jz3e)
                 maccr3 = np.append(maccr3, maccr3e)
 
 
@@ -638,13 +647,16 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
     vx1    = vx1    *  cgs.cu_vel()                    # velocity components        [cm/s]
     vy1    = vy1    *  cgs.cu_vel()
     vz1    = vz1    *  cgs.cu_vel()
+    Jx1    = Jx1    *  cgs.cu_J()                    
+    Jy1    = Jy1    *  cgs.cu_J() 
+    Jz1    = Jz1    *  cgs.cu_J() 
     maccr1 = maccr1 *  cgs.Msun                        # accreted mass              [g]
 
     r1 = gf.calc_r(x1, y1, z1)                         # [cm]
 
     position1 = np.array((x1, y1, z1 )).transpose()
     velocity1 = np.array((vx1,vy1,vz1)).transpose()
-
+    J1 = np.array((Jx1, Jy1, Jz1 )).transpose()
     # companion
     if icompanion_star > 0:
         t2     = t2     *  cgs.cu_time()                   # evolution time             [yrs]
@@ -655,12 +667,16 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
         vx2    = vx2    *  cgs.cu_vel()                    # velocity components        [cm/s]
         vy2    = vy2    *  cgs.cu_vel()
         vz2    = vz2    *  cgs.cu_vel()
+        Jx2    = Jx2    *  cgs.cu_J()                      # spin angular momentum      [g cm**2 /s]      
+        Jy2    = Jy2    *  cgs.cu_J() 
+        Jz2    = Jz2    *  cgs.cu_J() 
         maccr2 = maccr2 *  cgs.Msun                        # accreted mass              [g]
 
         r2 = gf.calc_r(x2, y2, z2)                         # [cm]
 
         position2 = np.array((x2, y2, z2 )).transpose()
         velocity2 = np.array((vx2,vy2,vz2)).transpose()
+        J2 = np.array((Jx2, Jy2, Jz2 )).transpose()
 
         rHill           = pq.getRHill( abs(r1 + r2), mass2, mass1           )         # [cm]
 
@@ -674,12 +690,16 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
             vx3    = vx3    *  cgs.cu_vel()                    # velocity components        [cm/s]
             vy3    = vy3    *  cgs.cu_vel()
             vz3    = vz3    *  cgs.cu_vel()
+            Jx3    = Jx3    *  cgs.cu_J()                      
+            Jy3    = Jy3    *  cgs.cu_J()   
+            Jz3    = Jz3    *  cgs.cu_J() 
             maccr3 = maccr3 *  cgs.Msun                        # accreted mass              [g]
 
             r3 = gf.calc_r(x3, y3, z3)                         # [cm]
 
             position3 = np.array((x3, y3, z3 )).transpose()
             velocity3 = np.array((vx3,vy3,vz3)).transpose()
+            J3 = np.array((Jx3, Jy3, Jz3 )).transpose()
 
             period_in       = pq.getPeriod(mass1, mass3, (r1 + r3) /cgs.au )
             rHill_in        = pq.getRHill( abs(r1 + r3), mass3, mass1      )              # [cm]
@@ -706,6 +726,7 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
     #    "_t" stands for the fact that these values are function of the evolution time, not from the last dump as a function of location
     data = {'posAGB'      : position1,              # [cm]
             'velAGB'      : velocity1,              # [cm/s]
+            'J_AGB'       : J1,
             'massAGB'     : mass1,                  # [gram]
             'maccrAGB'    : maccr1,                 # [gram]
             'rAGB'        : r1,                     # [cm]
@@ -713,6 +734,7 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
     if icompanion_star > 0:
         data['posComp'     ] = position2
         data['velComp'     ] = velocity2
+        data['J_comp'      ] = J2
         data['massComp'    ] = mass2
         data['maccrComp'   ] = maccr2
         data['rComp'       ] = r2
@@ -723,6 +745,7 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
         if icompanion_star == 2:
             data['posComp_in'    ] = position3
             data['velComp_in'    ] = velocity3
+            data['J_comp_in'     ] = J3
             data['massComp_in'   ] = mass3
             data['maccrComp_in'  ] = maccr3
             data['rComp_in'      ] = r3

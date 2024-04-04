@@ -9,6 +9,7 @@ import plons.PhysicalQuantities       as pq
 
 # import certain things from packages
 from matplotlib.ticker          import MultipleLocator
+from scipy.signal import argrelextrema
 
 # ignore warnings
 import warnings
@@ -41,12 +42,21 @@ def getParamsLine(results_line, vec1, minT, gamma, vec2 = [], dumpData = None):
 definition used in plotParR, plots radial structure of given parameter (log(rho)/|v|/T) on the x- and y-axis
 '''
 def oneRadialStructurePlot(parX,parZ, X, Z, parName, axis, parMin, parMax, rcomp, bound, limX):
-
+    # print('bound is ',bound)
     axis.set_xlim(limX, bound)
     axis.vlines(rcomp, parMin, parMax, 'black', linestyle='--', linewidth=1., label=r"$x_\mathrm{comp}$", zorder = 10)
     
     axis.plot(X/cgs.au, parX, color = 'C0', label = '$x$-axis', lw = 1)
     axis.plot(Z/cgs.au, parZ, color = 'C1', label = '$z$-axis', lw = 1)
+
+
+    # ind_maxima = argrelextrema(parX,np.greater)
+    # Xmax = X[ind_maxima]
+    # RhoMax = parX[ind_maxima]
+    # ind_maxima = argrelextrema(RhoMax,np.greater)
+    # Xmax = Xmax[ind_maxima]
+    # RhoMax = RhoMax[ind_maxima]
+    # axis.plot(Xmax/cgs.au,RhoMax,'*','r')
 
     axis.set_ylim(parMin,parMax)
 
@@ -123,6 +133,7 @@ def radialStructPlots(run,loc, dumpData, setup):
 
 
         bound = setup['bound']
+        # bound = 500
 
         oneRadialStructurePlot(parX[0],parZ[0], X, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax,
                                posComp, bound, limX)
@@ -223,6 +234,7 @@ def radialStructPlots(run,loc, dumpData, setup):
                 posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.au]
             print('radial position 2 companions: ', posComp)
         bound = setup['bound']
+        # bound = 500
 
         oneRadialStructurePlot(parX[0], parZ[0], X, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, rhoMin, rhoMax, posComp,  bound, limX)
         oneRadialStructurePlot(parX[1], parZ[1], X, Z, r'$v$ [km/s]', ax2, vMin  , vMax  , posComp, bound, limX)
@@ -271,3 +283,71 @@ def lineCoordinates(n, x, y, x_comp, y_comp):
     r[dot_product >= 0] = np.hypot(x[dot_product >= 0], y[dot_product >= 0])
 
     return r
+
+
+def plotRho_r2(run,loc, dumpData, setup):
+
+    fig = plt.figure(figsize=(10, 4.5))
+    ax1 = plt.subplot(111)
+
+    #Remove data of AGB and companion
+    dataToUse = {}
+    dataToUse['rho'     ] = dumpData['rho'     ][:-2]
+    dataToUse['position'] = dumpData['position'][:-2]
+
+    #calculate smoothed data around one axis
+    theta = 0.
+    if setup['single_star'] == False:
+        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+
+    pixCoordX      = sk.getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+    results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
+    pixCoordZ      = sk.getPixels('line_z', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
+    results_line_Z = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], pixCoordZ)
+
+    gamma = setup["gamma"]
+    parX = getParamsLine(results_line_X, pixCoordX.transpose()[0], 1., gamma, pixCoordX.transpose()[1], dumpData)
+    parZ = getParamsLine(results_line_Z, pixCoordZ.transpose()[2], 1., gamma)
+
+    X = parX[3]
+    Z = parZ[3]
+
+
+    #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
+    # Plots
+    limX = setup['wind_inject_radius']
+    posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
+    X += posAGB
+    posComp = posAGB
+    if setup['single_star'] == False:
+        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])+posAGB) / cgs.au
+        if setup['triple_star']==True:
+            posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.au]
+        print('radial position 2 companions: ', posComp)
+    bound = setup['bound']
+    # bound = 500
+
+    parX = parX[0]*X**2
+    parZ = parZ[0]*Z**2
+    # Bounds
+    MinX, MaxX = np.min(parX), np.max(parX)
+    MinZ, MaxZ = np.min(parZ), np.max(parZ)
+    parMin     = min(MinX[MinX>0], MinZ[MinZ>0])
+    parMax     = 10 * max(MaxX, MaxZ)
+
+    oneRadialStructurePlot(parX, parZ, X, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, parMin, parMax, posComp,  bound, limX)
+
+    # Plot make up
+    ax1.xaxis.set_major_locator(MultipleLocator(bound / 5.))
+    ax1.xaxis.set_minor_locator(MultipleLocator(bound / 30.))
+
+    ax1.legend(loc = 'upper center', ncol=5, bbox_to_anchor=[0., 0.3, 1., 1.], prop={'size': 20}, labelspacing=2)
+    ax1.set_yscale('log')
+    ax1.set_xlabel('$r$ [AU]', fontsize=22)
+
+
+    print('     Radial structure plot model '+str(run)+' ready and saved!')
+
+    fig.subplots_adjust(wspace=0.1, hspace=0.1)
+    fig.savefig(os.path.join(loc, 'png/1Dplot_rho_r2.png'), bbox_inches="tight")
+    fig.savefig(os.path.join(loc, 'pdf/1Dplot_rho_r2.pdf'), bbox_inches="tight")

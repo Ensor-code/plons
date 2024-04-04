@@ -787,6 +787,87 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
     plt.savefig(os.path.join(loc, 'pdf/evolution_rComp_rAGB_orbSep_seperate.pdf'))
 
 
+
+'''
+Plot angular momentum, time derivative of angular momentum, and specific angular momentum
+'''
+def calcJ(setup,sinkData):
+    Jcomp = np.sqrt((sinkData['J_comp'].transpose()[0])**2 + sinkData['J_comp'].transpose()[1]**2 + sinkData['J_comp'].transpose()[2]**2)
+
+    #To get derivative:
+        # If you want to reduce to N periods:
+    time, index_tmax = reduceToNPeriods(setup,sinkData['time'])
+    # Else
+    # time = sinkData['time']
+    # index_tmax = -1
+
+    # Make empty array to store accretion rates
+    derivJ    = np.array([]) 
+    # if setup['triple_star']==True:
+    #     accrRates_in = np.array([]) 
+    #     factor   = 0.5
+    # else:
+    if setup["sma_ini"] > 20: #wide binary
+        factor = 0.5
+    else: #close binary
+        factor   = 5.0   #1 datapoint every 1/5 years --> 5 datapoints per year
+
+    # Make array of timesteps on which you calculate mass accretion rate
+    timeArray    = np.arange(0,int(time[-1]),1./factor)   # 1 datapoint per year/factor
+    # Make array with the indices of selected times in original dataset sinkData['time']
+    indices_time  = np.array([0])
+    J_t_previous = 0
+    #For each time in timeArray, calculate the added J wrt previous time, and add it to the derivJ array
+    for t in timeArray:
+        i            = tl.find_nearest(sinkData['time'], t)  #find the time datapoint in the original data array
+        indices_time = np.append(indices_time,i) 
+        J_t = Jcomp[indices_time[-1]]
+        #calculate difference in accreted mass between this and the previous timestep, to find accretion rate
+        Jder  = factor*(J_t-J_t_previous)/cgs.year  #added J * factor to get J rate per year /cgs.yr to get it per s
+        derivJ = np.append(derivJ,Jder)
+        J_t_previous = J_t
+
+        # if setup['triple_star']==True:
+        #     accrRate_in = factor*(sinkData['maccrComp_in'][indices_time[-1]]-sinkData['maccrComp_in'][indices_time[-2]])/cgs.Msun
+        #     accrRates_in = np.append(accrRates_in,accrRate_in)
+
+    Mdot     = setup['Mdot']    *cgs.Msun    / cgs.year     # [Msun/yr] -> g/s
+    j        = derivJ/Mdot                                  # g cm**2 /s**2    /(g/s) --> cm**2/s
+
+    return derivJ,j,timeArray
+
+def plot_angMom(setup,sinkData,loc):
+    derivJ,j,timeArray = calcJ(setup,sinkData)
+
+    Jcomp_z = sinkData['J_comp'].transpose()[2] # *1e-3 *(1e-2)**2         #g cm**2 /s --> kg m**2 /s
+    fig1 = plt.figure(figsize=(8, 5))
+    plt.plot(sinkData['time'],Jcomp_z)
+    plt.xlabel('Time[yrs]', fontsize = 16)
+    plt.ylabel(r'J_z [g cm$^2$ / s]', fontsize = 16)
+    fig1.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/evolution_Jz.png'))
+
+
+    fig2 = plt.figure(figsize=(8,5))
+    plt.plot(timeArray,derivJ)
+    plt.xlabel('Time[yrs]', fontsize = 16)
+    plt.ylabel(r'dJ/dt [g cm$^2$ / s$^2$]', fontsize = 16)
+    mini = 0
+    maxi = np.max(derivJ)
+    plotVerticalApaPerLines(setup,sinkData,mini,maxi)
+    fig2.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/evolution_dJdt.png'))
+
+    fig3 = plt.figure(figsize=(8,5))
+    plt.plot(timeArray,j)
+    plt.xlabel('Time[yrs]', fontsize = 16)
+    plt.ylabel(r'j [cm$^2$/s]', fontsize = 16)
+    mini = 0
+    maxi = np.max(j)
+    plotVerticalApaPerLines(setup,sinkData,mini,maxi)
+    fig3.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/evolution_j.png'))
+
 '''
 Main function executing calculations about orbital evolution
 '''
@@ -809,15 +890,16 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             # Make plot of change in orbital separation at apastron and periastron passages
             plotApaPerChange(sinkData,setup,loc)
         '''
-        # Plot evolution of the mass accreted by the companion
-        plotMassAccr(setup,sinkData, run, loc)
-        # Plot evolution of the mass accretion rate by the companion
-        # plotMassAccrRate(setup,sinkData, loc)
-        plotMassAccrEff(setup,sinkData,loc)
-        # Plot evolution of orbital velocities
-        plotOrbVel(setup,sinkData, run, loc)
-        #Plot vw vs vorb
-        plot_vw_vorb(setup,sinkData,loc)
+        plot_angMom(setup,sinkData,loc)
+        # # Plot evolution of the mass accreted by the companion
+        # plotMassAccr(setup,sinkData, run, loc)
+        # # Plot evolution of the mass accretion rate by the companion
+        # # plotMassAccrRate(setup,sinkData, loc)
+        # plotMassAccrEff(setup,sinkData,loc)
+        # # Plot evolution of orbital velocities
+        # plotOrbVel(setup,sinkData, run, loc)
+        # #Plot vw vs vorb
+        # plot_vw_vorb(setup,sinkData,loc)
         '''
         # Plot evolution of orbital radii and orbital separation
         #if setup['ecc'] == 0:

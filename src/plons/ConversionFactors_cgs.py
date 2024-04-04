@@ -50,5 +50,8 @@ def cu_dens():
     #return factor_density
     return 1.
 
+def cu_J():
+    factorJ = Msun* au**2 / (5.023E6)  #g cm**2 /s
+    return factorJ
 
 

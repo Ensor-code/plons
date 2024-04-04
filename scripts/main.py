@@ -107,6 +107,7 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         print('')
         print('(2)  Start calculations for the radial structure plots.')
         rs.radialStructPlots(run, saveloc, dumpData, setup)
+        rs.plotRho_r2(run,saveloc, dumpData, setup)
 
     if part == '3':
         print('')
