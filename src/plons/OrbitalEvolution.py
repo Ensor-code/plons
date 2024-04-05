@@ -831,13 +831,17 @@ def calcJ(setup,sinkData):
         #     accrRate_in = factor*(sinkData['maccrComp_in'][indices_time[-1]]-sinkData['maccrComp_in'][indices_time[-2]])/cgs.Msun
         #     accrRates_in = np.append(accrRates_in,accrRate_in)
 
-    Mdot     = setup['Mdot']    *cgs.Msun    / cgs.year     # [Msun/yr] -> g/s
-    j        = derivJ/Mdot                                  # g cm**2 /s**2    /(g/s) --> cm**2/s
+    # Mdot     = setup['Mdot']    *cgs.Msun    / cgs.year     # [Msun/yr] -> g/s
 
-    return derivJ,j,timeArray
+    timeArray2,accrRates = calc_accrRates(setup,sinkData)
+    j = derivJ/accrRates
+
+    # j        = derivJ/Mdot                                  # g cm**2 /s**2    /(g/s) --> cm**2/s
+
+    return Jcomp,derivJ,j,timeArray
 
 def plot_angMom(setup,sinkData,loc):
-    derivJ,j,timeArray = calcJ(setup,sinkData)
+    Jcomp,derivJ,j,timeArray = calcJ(setup,sinkData)
 
     Jcomp_z = sinkData['J_comp'].transpose()[2] # *1e-3 *(1e-2)**2         #g cm**2 /s --> kg m**2 /s
     fig1 = plt.figure(figsize=(8, 5))
@@ -847,6 +851,19 @@ def plot_angMom(setup,sinkData,loc):
     fig1.tight_layout()
     plt.savefig(os.path.join(loc, 'png/evolution_Jz.png'))
 
+    fig4 = plt.figure(figsize=(8,5))
+    plt.plot(sinkData['time'],Jcomp)
+    plt.xlabel('Time[yrs]', fontsize = 16)
+    plt.ylabel(r'J [g cm$^2$ / s]', fontsize = 16)
+    fig4.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/evolution_J.png'))
+
+    fig5 = plt.figure(figsize=(8,5))
+    plt.plot(sinkData['massComp']/cgs.Msun,Jcomp)
+    plt.xlabel('M_c [Msun]', fontsize = 16)
+    plt.ylabel(r'J [g cm$^2$ / s]', fontsize = 16)
+    fig5.tight_layout()
+    plt.savefig(os.path.join(loc, 'png/evolution_J_Mc.png'))
 
     fig2 = plt.figure(figsize=(8,5))
     plt.plot(timeArray,derivJ)
@@ -867,6 +884,9 @@ def plot_angMom(setup,sinkData,loc):
     plotVerticalApaPerLines(setup,sinkData,mini,maxi)
     fig3.tight_layout()
     plt.savefig(os.path.join(loc, 'png/evolution_j.png'))
+
+
+
 
 '''
 Main function executing calculations about orbital evolution

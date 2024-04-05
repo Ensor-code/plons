@@ -335,7 +335,7 @@ def plotRho_r2(run,loc, dumpData, setup):
     parMin     = min(MinX[MinX>0], MinZ[MinZ>0])
     parMax     = 10 * max(MaxX, MaxZ)
 
-    oneRadialStructurePlot(parX, parZ, X, Z, r'$\rho$ [g$\,$cm$^{-3}$]', ax1, parMin, parMax, posComp,  bound, limX)
+    oneRadialStructurePlot(parX, parZ, X, Z, r'$\rho * r^2$ [g$\,$cm$^{-1}$]', ax1, parMin, parMax, posComp,  bound, limX)
 
     # Plot make up
     ax1.xaxis.set_major_locator(MultipleLocator(bound / 5.))
