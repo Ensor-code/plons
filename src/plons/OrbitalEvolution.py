@@ -1,5 +1,5 @@
 # Import packages
-from cProfile import run
+from cProfile import label, run
 from re import T
 import numpy                    as np
 import matplotlib.pyplot        as plt
@@ -822,8 +822,10 @@ def calcJ(setup,sinkData):
         i            = tl.find_nearest(sinkData['time'], t)  #find the time datapoint in the original data array
         indices_time = np.append(indices_time,i) 
         J_t = Jcomp[indices_time[-1]]
+        # print((J_t-J_t_previous)*factor, ' J accreted per year')
         #calculate difference in accreted mass between this and the previous timestep, to find accretion rate
-        Jder  = factor*(J_t-J_t_previous)/cgs.year  #added J * factor to get J rate per year /cgs.yr to get it per s
+        Jder  = factor*(J_t-J_t_previous)/cgs.year  #added J * factor to get J rate per year # /cgs.yr to get it per s
+        # print(Jder,'J accreted per second' )
         derivJ = np.append(derivJ,Jder)
         J_t_previous = J_t
 
@@ -831,17 +833,16 @@ def calcJ(setup,sinkData):
         #     accrRate_in = factor*(sinkData['maccrComp_in'][indices_time[-1]]-sinkData['maccrComp_in'][indices_time[-2]])/cgs.Msun
         #     accrRates_in = np.append(accrRates_in,accrRate_in)
 
-    # Mdot     = setup['Mdot']    *cgs.Msun    / cgs.year     # [Msun/yr] -> g/s
+    timeArray2,accrRates = calc_accrRates(setup,sinkData)  
+    accrRates_gs = accrRates*cgs.Msun / (cgs.year)                                     # Msun/yr --> g/s 
+    # print(np.mean(accrRates), '?')
+    j = derivJ/accrRates_gs                                                            # g cm**2 /s**2    /(g/s) --> cm**2/s
+    jKepl = np.sqrt(cgs.G * setup['rAccrComp']*cgs.au * sinkData['massComp'])       # cm^3 g^-1 s^-2 *  cm  * g   --> sqrt(cm^4/s^2) --> cm^2 / s
 
-    timeArray2,accrRates = calc_accrRates(setup,sinkData)
-    j = derivJ/accrRates
-
-    # j        = derivJ/Mdot                                  # g cm**2 /s**2    /(g/s) --> cm**2/s
-
-    return Jcomp,derivJ,j,timeArray
+    return Jcomp,derivJ,j,jKepl,timeArray
 
 def plot_angMom(setup,sinkData,loc):
-    Jcomp,derivJ,j,timeArray = calcJ(setup,sinkData)
+    Jcomp,derivJ,j,jKepl,timeArray = calcJ(setup,sinkData)
 
     Jcomp_z = sinkData['J_comp'].transpose()[2] # *1e-3 *(1e-2)**2         #g cm**2 /s --> kg m**2 /s
     fig1 = plt.figure(figsize=(8, 5))
@@ -876,9 +877,11 @@ def plot_angMom(setup,sinkData,loc):
     plt.savefig(os.path.join(loc, 'png/evolution_dJdt.png'))
 
     fig3 = plt.figure(figsize=(8,5))
-    plt.plot(timeArray,j)
+    plt.plot(timeArray,j,label='j')
+    plt.plot(sinkData['time'],jKepl,,c='k',label=r'j_K')
     plt.xlabel('Time[yrs]', fontsize = 16)
     plt.ylabel(r'j [cm$^2$/s]', fontsize = 16)
+    plt.legend()
     mini = 0
     maxi = np.max(j)
     plotVerticalApaPerLines(setup,sinkData,mini,maxi)
