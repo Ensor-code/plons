@@ -652,6 +652,7 @@ def plotOrbVel(setup,sinkData, run, loc):
     
     if setup['triple_star']==True:
         ax.plot(t, sinkData['v_orbComp_in_t'][1:]/cgs.kms, label ='inner companion', c='lime')
+        print('mean orb vel comp_in',np.mean(sinkData['v_orbComp_in_t'][1:]/cgs.kms))
 
     period = setup['period'] / cgs.year
     i = 0
@@ -838,6 +839,19 @@ def calcJ(setup,sinkData):
     # print(np.mean(accrRates), '?')
     j = derivJ/accrRates_gs                                                            # g cm**2 /s**2    /(g/s) --> cm**2/s
     jKepl = np.sqrt(cgs.G * setup['rAccrComp']*cgs.au * sinkData['massComp'])       # cm^3 g^-1 s^-2 *  cm  * g   --> sqrt(cm^4/s^2) --> cm^2 / s
+    jKepl2 = np.sqrt(cgs.G * 0.8*setup['rAccrComp']*cgs.au * sinkData['massComp'])
+    # est_Rstar = np.mean(j[-100:-1])**2/(cgs.G * np.mean(sinkData['massComp'][-100:-1])) /cgs.au  # in au
+    # print('R_*:',est_Rstar)
+    # print('R_*/Racc = ',est_Rstar/setup['rAccrComp'])
+    # print('test')
+    # jKepl_Rstar = np.sqrt(cgs.G * est_Rstar*cgs.au * sinkData['massComp']) 
+    # print(np.mean(jKepl_Rstar[-100:-1]),np.mean(j[-100:-1]))
+    jK1mean = np.mean(jKepl[-100:-1])
+    jK2mean = np.mean(jKepl2[-100:-1])
+    jSimMean = np.mean(j[-100:-1])
+    print('jKepl: ',jK1mean,' - ',jK2mean)
+    print('jsim/jK: ',jSimMean/jK1mean,' - ',jSimMean/jK2mean)
+
 
     return Jcomp,derivJ,j,jKepl,timeArray
 
@@ -878,7 +892,7 @@ def plot_angMom(setup,sinkData,loc):
 
     fig3 = plt.figure(figsize=(8,5))
     plt.plot(timeArray,j,label='j')
-    plt.plot(sinkData['time'],jKepl,,c='k',label=r'j_K')
+    plt.plot(sinkData['time'],jKepl,c='k',label=r'j_K')
     plt.xlabel('Time[yrs]', fontsize = 16)
     plt.ylabel(r'j [cm$^2$/s]', fontsize = 16)
     plt.legend()
@@ -900,7 +914,6 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         return
 
     else:
-        '''
         # Visualise the orbit of the system
         plot_orbit(sinkData,setup,loc)
         plotEccentricity(sinkData,setup,loc)
@@ -912,17 +925,18 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             plotEstimate_a_Per(sinkData,setup,loc)
             # Make plot of change in orbital separation at apastron and periastron passages
             plotApaPerChange(sinkData,setup,loc)
-        '''
-        plot_angMom(setup,sinkData,loc)
-        # # Plot evolution of the mass accreted by the companion
-        # plotMassAccr(setup,sinkData, run, loc)
-        # # Plot evolution of the mass accretion rate by the companion
-        # # plotMassAccrRate(setup,sinkData, loc)
-        # plotMassAccrEff(setup,sinkData,loc)
-        # # Plot evolution of orbital velocities
-        # plotOrbVel(setup,sinkData, run, loc)
-        # #Plot vw vs vorb
-        # plot_vw_vorb(setup,sinkData,loc)
+        
+        if setup['triple_star']==False and setup['single_star']==False:
+            plot_angMom(setup,sinkData,loc)
+        # Plot evolution of the mass accreted by the companion
+        plotMassAccr(setup,sinkData, run, loc)
+        # Plot evolution of the mass accretion rate by the companion
+        # plotMassAccrRate(setup,sinkData, loc)
+        plotMassAccrEff(setup,sinkData,loc)
+        # Plot evolution of orbital velocities
+        plotOrbVel(setup,sinkData, run, loc)
+        #Plot vw vs vorb
+        plot_vw_vorb(setup,sinkData,loc)
         '''
         # Plot evolution of orbital radii and orbital separation
         #if setup['ecc'] == 0:

@@ -348,8 +348,8 @@ The epsilon parameter gives an indication of morphological classification:
     ~  1 : regular spiral
     << 1 : complex
 It is defined as the ratio of enery densities:
-    epsilon = kin_energy / grav_energy
-            = (v_wind**2 * sma) / ((24 * G**3 * M_comp**2 * M_AGB)^(1/3))
+    epsilon = grav_energy / kin_energy
+            = ((24 * G**3 * M_comp**2 * M_AGB)^(1/3)) / (v_wind**2 * sma *(1-e)) 
 
 INPUT:
     - wind speed
@@ -361,8 +361,8 @@ def getEpsilon(v, setup):
     sma   = setup['sma_ini'     ] * cgs.au         # [cm]
     mComp = setup['massComp_ini'] * cgs.Msun       # [Msun]
     mAGB  = setup['massAGB_ini' ] * cgs.Msun       # [Msun]
-
-    epsilon = (v**2 * sma)/(cgs.G * (24 * (mComp)**2 * mAGB)**(1/3))
+    ecc   = setup['ecc']
+    epsilon = (cgs.G * (24 * (mComp)**2 * mAGB)**(1/3))/(v**2 * sma*(1-ecc))
 
     return epsilon
 
