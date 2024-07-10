@@ -26,9 +26,9 @@ def read_binary(f, count, type):
 # Read a fortran record (size, data, size)
 def read_fortran_record(f, type, memorymap=False):
   try:
-    size1 = int(read_binary(f, 1, 'i4'))
+    size1 = int(read_binary(f, 1, 'i4')[0])
   except IOError:
-    size1 = int(read_binary(f, 1, 'i4'))
+    size1 = int(read_binary(f, 1, 'i4')[0])
   #print (size1)
   itemsize = dtype(type).itemsize
   n = int(size1/itemsize)
@@ -43,7 +43,7 @@ def read_fortran_record(f, type, memorymap=False):
         print('Warning: unable to mmap (overflow) (chunk of size %d from offset %d to %d)' % (size1, pstart, pstart+size1))
   else:
       data = read_binary(f, n, type)
-  size2 = int(read_binary(f, 1, 'i4'))
+  size2 = int(read_binary(f, 1, 'i4')[0])
   if size1 != size2:
     print('Warning: inconsistent record sizes: ', size1, size2)
   return data
@@ -126,7 +126,7 @@ def read_dump(filename, memorymap=False):
   dump['units'] = read_fortran_record_with_names(f, 'f8')
 
   # Number of blocks
-  nblocks = int(read_fortran_record(f, 'i4'))
+  nblocks = int(read_fortran_record(f, 'i4')[0])
 
   # Read block sizes
   blocks = []
