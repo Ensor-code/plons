@@ -25,7 +25,7 @@ def getTemp(gamma, mu, u):
 Returns the density, given smoothing length, hfact (proportionality factor specifying the smoothing length) and the particle mass [g] in g/cm^3
 '''
 def getRho(hi, hfact, pmassi):
-    rhoh = pmassi*(hfact/abs(hi))**3
+    rhoh = pmassi*hfact**3/hi/hi/hi
     return rhoh
 
 '''
@@ -46,7 +46,7 @@ def getGamma(kappa, lumAGB, massAGB, tau = 0):
 Returns the speed of sound [km/s] of the local medium: c_s = sqrt(gamma*P/rho), with gamma = cst, P in [Ba] and rho in [g/cm^3]
 '''
 def getSoundSpeed(pressure, density, gamma):
-    soundSpeed = np.sqrt((gamma*pressure)/(density))      
+    soundSpeed = np.sqrt((gamma*pressure)/(density))
     return soundSpeed                                   # cm/s
 
 '''

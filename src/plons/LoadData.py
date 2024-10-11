@@ -3,7 +3,6 @@ from typing import Dict, Any
 import math            as math
 import numpy           as np
 import numpy.typing    as npt
-import sys
 
 #import plons scripts
 import plons.PhysicalQuantities       as pq
@@ -248,14 +247,20 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
-    p     = pq.getPressure(rho, u, dump['quantities']['gamma']) # pressureure                   [Ba]
+
+    if "gamma" in dump["blocks"][0]["data"]: gamma = dump["blocks"][0]["data"]["gamma"][filter]
+    else: gamma = np.ones_like(x)*dump['quantities']['gamma']
+    if "mu" in dump["blocks"][0]["data"]: mu = dump["blocks"][0]["data"]['mu'][filter]
+    else:  mu = np.ones_like(x)*setup['mu']
+
+    p     = pq.getPressure(rho, u, gamma) # pressureure                   [Ba]
     if containsTau:
         tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth
     if containsTauL:
         tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth
     if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
     elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
-    else: temp = pq.getTemp(dump['quantities']['gamma'], setup['mu'], u) # temperature                [K]
+    else: temp = pq.getTemp(gamma, mu, u) # temperature                [K]
     if "Tdust" in dump["blocks"][0]["data"]:
         Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]
     elif setup['isink_radiation'] == 0: Tdust = temp
@@ -270,7 +275,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB)
         if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
 
-    cs    = pq.getSoundSpeed(p, rho, dump['quantities']['gamma'])            # speed of sound                [cm/s]
+    cs    = pq.getSoundSpeed(p, rho, gamma)            # speed of sound                [cm/s]
 
     position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
@@ -294,6 +299,8 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'p'             : p,                     # [Ba]
             'Tgas'          : temp,                  # [K]
             'Tdust'         : Tdust,
+            'gamma'         : gamma,
+            'mu'            : mu,
             'speed'         : speed,                 # [cm/s]
             'mach'          : mach,
             'r'             : r,                     # [cm]
@@ -420,11 +427,13 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     vz    = velocity[2]
     u     = dump['u']
     rho   = dump['rho']
+    gamma = dump['gamma']
+    mu    = dump['mu']
     temp  = dump['Tgas']
     if "tau"   in dump: tau   = dump['tau']
     if "tauL"  in dump: tauL   = dump['tauL']
     if "kappa" in dump: kappa = dump['kappa']
-    if "Gamma" in dump: Gamma = dump['Gamma']
+    if "Gamma_E" in dump: Gamma = dump['Gamma_E']
     if "Tdust" in dump: Tdust = dump['Tdust']
     h     = dump['h']
     r     = dump['r']
@@ -432,25 +441,27 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     phi   = dump['phi']
 
     filter = (r > factor * setup['sma_ini'] * cgs.au) & (r < bound * cgs.au)
-    x     = x                         [filter]             # cm
-    y     = y                         [filter]
-    z     = z                         [filter]
-    mass  = mass                      [filter]             # g
-    vx    = vx                        [filter]             # cm/s
-    vy    = vy                        [filter]
-    vz    = vz                        [filter]
-    u     = u                         [filter]             # erg/g
-    rho   = rho                       [filter]             # g/cm^3
-    temp  = temp                      [filter]             # K
-    if "tau"   in dump: tau   = tau   [filter]
-    if "tauL"  in dump: tauL  = tauL  [filter]
-    if "kappa" in dump: kappa = kappa [filter]             # cm^2/g
-    if "Gamma" in dump: Gamma = Gamma [filter]
-    if "Tdust" in dump: Tdust = Tdust [filter]
-    h     = h                         [filter]             # cm
-    r     = r                         [filter]
-    theta = theta                     [filter]
-    phi   = phi                       [filter]
+    x     = x                           [filter]             # cm
+    y     = y                           [filter]
+    z     = z                           [filter]
+    mass  = mass                        [filter]             # g
+    vx    = vx                          [filter]             # cm/s
+    vy    = vy                          [filter]
+    vz    = vz                          [filter]
+    u     = u                           [filter]             # erg/g
+    rho   = rho                         [filter]             # g/cm^3
+    gamma = gamma                       [filter]
+    mu    = mu                          [filter]
+    temp  = temp                        [filter]             # K
+    if "tau"   in dump: tau   = tau     [filter]
+    if "tauL"  in dump: tauL  = tauL    [filter]
+    if "kappa" in dump: kappa = kappa   [filter]             # cm^2/g
+    if "Gamma_E" in dump: Gamma = Gamma [filter]
+    if "Tdust" in dump: Tdust = Tdust   [filter]
+    h     = h                           [filter]             # cm
+    r     = r                           [filter]
+    theta = theta                       [filter]
+    phi   = phi                         [filter]
 
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
@@ -471,6 +482,8 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
             'rho'           : rho,           # [g/cm^3]
             'u'             : u,             # [erg/g]
             'Tgas'          : temp,          # [K]
+            'gamma'         : gamma,
+            'mu'            : mu,
             'speed'         : speed,         # [cm/s]
             # 'press'         : p,             # ?
             'mach'          : mach,
@@ -479,11 +492,11 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
             'theta'         : theta,
             'cs'            : cs             # [cm]
             }
-    if "tau"   in dump: data["tau"]   = tau
-    if "tauL"  in dump: data["tauL"]  = tauL
-    if "kappa" in dump: data["kappa"] = kappa
-    if "Gamma" in dump: data["Gamma"] = Gamma
-    if "Tdust" in dump: data["Tdust"] = Tdust
+    if "tau"     in dump: data["tau"]     = tau
+    if "tauL"    in dump: data["tauL"]    = tauL
+    if "kappa"   in dump: data["kappa"]   = kappa
+    if "Gamma_E" in dump: data["Gamma_E"] = Gamma
+    if "Tdust"   in dump: data["Tdust"]   = Tdust
 
     return data
 

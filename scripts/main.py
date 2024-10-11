@@ -215,12 +215,12 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10],
             limits = makeLimits(observables, smooth, zoom)    
         if printout:
             print("          Ranges of Parameters: zoom = "+str(zoom))
-            if "rho"   in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
-            if "speed" in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
-            if "Tgas"  in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
-            if "kappa" in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
-            if "Gamma" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma"][zoom][0], limits["Gamma"][zoom][1]))
-            if "tau"   in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
+            if "rho"     in observables: print("          rhoMin,   rhoMax   = {0:10.5f}, {1:10.5f}".format(limits["rho"][zoom][0], limits["rho"][zoom][1]))
+            if "speed"   in observables: print("          vMin,     vMax     = {0:10.5f}, {1:10.5f}".format(limits["speed"][zoom][0], limits["speed"][zoom][1]))
+            if "Tgas"    in observables: print("          TMin,     TMax     = {0:10.5f}, {1:10.5f}".format(limits["Tgas"][zoom][0], limits["Tgas"][zoom][1]))
+            if "kappa"   in observables: print("          kappaMin, kappaMax = {0:10.5f}, {1:10.5f}".format(limits["kappa"][zoom][0], limits["kappa"][zoom][1]))
+            if "Gamma_E" in observables: print("          GammaMin, GammaMax = {0:10.5f}, {1:10.5f}".format(limits["Gamma_E"][zoom][0], limits["Gamma_E"][zoom][1]))
+            if "tau"     in observables: print("          tauMin,   tauMax   = {0:10.5f}, {1:10.5f}".format(limits["tau"][zoom][0], limits["tau"][zoom][1]))
 
         # Make plots
         fig = sl.densityPlot(smooth, zoom, limits["rho"][zoom], dumpData, setup, orbital=True)
@@ -261,8 +261,8 @@ def makeLimits(observables, smooth, zoom):
         limits["Tgas"][zoom] = findBounds(np.log10(smooth[zoom]['smooth_z']["Tgas"]), log=True, round=round_bounds)
     if "kappa" in observables:
         limits["kappa"][zoom] = findBounds(smooth[zoom]['smooth_y']["kappa"], log=False, round=round_bounds)
-    if "Gamma" in observables:
-        limits["Gamma"][zoom] = findBounds(smooth[zoom]['smooth_y']["Gamma"], log=False, round=round_bounds)
+    if "Gamma_E" in observables:
+        limits["Gamma_E"][zoom] = findBounds(smooth[zoom]['smooth_y']["Gamma_E"], log=False, round=round_bounds)
     if "tau" in observables:
         limits["tau"][zoom] = findBounds(smooth[zoom]['smooth_y']["tau"], log=True, round=round_bounds)
         limits["tau"][zoom][0] = max(limits["tau"][zoom][0], 0.)
@@ -356,12 +356,12 @@ def customRanges(observables):
             limits["kappa"][10] = [0., 3.]
             limits["kappa"][20] = [0., 3.]
 
-        if "Gamma" in observables:
-            limits["Gamma"][1]  = [0., 1.]
-            limits["Gamma"][2]  = [0., 1.]
-            limits["Gamma"][5]  = [0., 1.]
-            limits["Gamma"][10] = [0., 1.]
-            limits["Gamma"][20] = [0., 1.]
+        if "Gamma_E" in observables:
+            limits["Gamma_E"][1]  = [0., 1.]
+            limits["Gamma_E"][2]  = [0., 1.]
+            limits["Gamma_E"][5]  = [0., 1.]
+            limits["Gamma_E"][10] = [0., 1.]
+            limits["Gamma_E"][20] = [0., 1.]
     return limits
 
 
