@@ -920,7 +920,7 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
 
 
         #For eccentric binaries
-        if setup['ecc']>0 and setup['triple_star']==False and setup['single_star']==False:
+        if setup['ecc']>0.09 and setup['triple_star']==False and setup['single_star']==False:
             # Make plot of estimates of orbital period, a and e, using apastron and periastron passages
             plotEstimate_a_Per(sinkData,setup,loc)
             # Make plot of change in orbital separation at apastron and periastron passages

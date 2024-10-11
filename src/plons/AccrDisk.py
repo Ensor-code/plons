@@ -118,7 +118,7 @@ def calcSmoothVtVrRho(zoom, dumpData,setup):
     return smooth
 
 # vr vt and rho plot w.r.t. companion sink particle
-def plot_vrvtRho(axs, smooth,zoom,r):
+def plot_vrvtRho(axs, smooth,zoom,r,limitsRho=False):
     ax1 = axs[0]
     ax2 = axs[1]
     ax3 = axs[2]
@@ -126,11 +126,14 @@ def plot_vrvtRho(axs, smooth,zoom,r):
 
     # rho
     data = np.log10(smooth['smooth_z']['rho'])
-    if zoom == 20:
-        # limits = [-16,-10.5]
-        limits = [-15,-11]
+    if limitsRho==False:
+        if zoom == 20:
+            # limits = [-16,-10.5]
+            limits = [-15,-11]
+        else:
+            limits = [-17,-11]
     else:
-        limits = [-17,-11]
+        limits = limitsRho
     cm  = plt.cm.get_cmap('gist_heat')
 
     ax1.set_xlabel('x [au]',fontsize = 20)
@@ -274,7 +277,7 @@ def plot_vrRho(axs,smooth,zoom,r):
         limits = [-15,-11]
     else:
         # limits = [-17,-11]
-        limets = [-16,-11]
+        limits = [-16,-11]
     cm  = plt.cm.get_cmap('gist_heat')
 
     ax3.set_xlabel('x [au]',fontsize = 20)
