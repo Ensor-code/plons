@@ -188,7 +188,7 @@ def orbSep_apa_per(data, setup):
     #find relative maxima and minima
     #indicesApa, _ = find_peaks(orbSep,200*cgs.au)
     # indicesApa   = argrelextrema(orbSep, np.greater, order=1500)  #order indicates how many neighbouring datapoints are considered when checking maxima/minima
-    print('5000')
+
     indicesApa   = argrelextrema(orbSep, np.greater, order=5000)  #order indicates how many neighbouring datapoints are considered when checking maxima/minima
     indicesPer   = argrelextrema(orbSep, np.less, order=5000)
 
