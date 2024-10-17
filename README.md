@@ -37,7 +37,7 @@ To select a certain model and option, you can execute this script as python main
 Source file functions and example notebooks
 ----------
 Next to the functionalities included in the pipeline, you can use Plons for more detailed analysises using the functions defined in the source files (in plons/src/plons/). 
-Examples of how to use these functions can be found in some example notebooks (in docs/src/1_examples/), describing a more thorough analysis that makes use of line slices and sliceplots (~/0_creating_figures_package), and an analysis of accretion disks around the companion (~/2_accretion_disk).
+Examples of how to use these functions can be found in some example notebooks (in docs/src/1_examples/), describing a more thorough analysis that makes use of line slices and sliceplots (/0_creating_figures_package), and an analysis of accretion disks around the companion (/2_accretion_disk).
 
 
 Reading in PHANTOM data
