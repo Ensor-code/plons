@@ -9,31 +9,33 @@
 ![Build status](https://readthedocs.org/projects/plons/badge/?version=latest)
 
 
-This is the README for the PLONS PLOtting tool for Nice Simulations. It can be used to
-read in and analyse data of hydrodynamical simulations with the SPH code [PHANTOM](https://phantomsph.bitbucket.io/)
+This is the README for the PLONS PLOtting tool for Nice Simulations. It can be used to read in and analyse
+data of hydrodynamical simulations with the SPH code [PHANTOM](https://phantomsph.bitbucket.io/)
 ([Price et al. 2018](https://ui.adsabs.harvard.edu/abs/2018PASA...35...31P/abstract)). PHANTOM returns
-(different types of useful data files: 'wind_xxxxx'-files and '.ev'-files. The former can
-also be visualised by the SPH visualisation tool [SPLASH](https://users.monash.edu.au/~dprice/splash/) ([Price 2007](https://adsabs.harvard.edu/abs/2007PASA...24..159P)), and can be analysed more toroughly with PLONS.
+different types of useful data files: dump files, typically named e.g. as 'wind_xxxxx', that contain info
+about all particles at a specific time in the simulation, and evolutionary '.ev'-files that contain 
+different information over the full time of the run. The information within these files can also be 
+visualised by the SPH visualisation tool [SPLASH](https://users.monash.edu.au/~dprice/splash/) ([Price 2007](https://adsabs.harvard.edu/abs/2007PASA...24..159P)), but can be analysed more toroughly with PLONS.
 
 
 PHANTOM
 -------
 
 PHANTOM returns (full) dump files every certain timestep during the evolution of the
-model. These are the wind_xxxxx-files and contain the relevant data (position, velocity,
+model. These are the 'wind_xxxxx'-files and contain the relevant data (such as position, velocity,
 mass, density, energy, temperature) of the SPH particles in the model. The last x rows of
 the output are the x sink particles in the model. More detailed information of the sink
 particles (position, velocity, mass, accreted mass, spin, angular momentum) as a function of
-evolution time of the model, can be retrieved in the .ev files.
+evolution time of the model, can be retrieved in the evolutionary '.ev'-files.
 
 PLONS - General
 ------------------
 
-This pipeline is suited for single, binary and triple AGB wind models.
+This pipeline is currently designed to analyse single, binary and triple AGB wind models.
 
 The following info can be attained:
 
-1. 2D slice plots of the global structure of the last dump full of the model.
+1. 2D slice plots of the global structure of the last full dump of the model.
 
 2. 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.
 
