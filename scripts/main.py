@@ -23,11 +23,11 @@ print('')
 
 options = { '1': '(1) 2D slice plots',
             '2': '(2) 1D line plots & tube plots',
-            '3': '(3) velocity related quantities and Morphological parameters',
-            '4': '(4) Cummulative mass fraction',
-            '5': '(5) Orbital evolution',
-            '6': '(6) 1D spherical model',
-            '7': '(7) Accretion disk'
+            # '3': '(3) velocity related quantities and Morphological parameters',
+            # '4': '(4) Cummulative mass fraction',
+            '3': '(3) Orbital evolution',
+            '4': '(4) 1D spherical model'
+            # '7': '(7) Accretion disk'
             # '7': '(7) ArchimedianSpiral'
             }
 
@@ -94,42 +94,45 @@ def runPart(part, run, saveloc, dumpData, setup, sinkData, outerData):
         rs.radialStructPlots(run, saveloc, dumpData, setup)
         rs.plotRho_r2(run,saveloc, dumpData, setup)
 
+    # if part == '3':
+    #     print('')
+    #     print('(3) Start calculations for terminal velocity...')
+    #     tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
+
+    # if part == '4':
+    #     print('')
+    #     print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
+    #     if setup['single_star'] == True:
+    #         cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
+    #     else:
+    #         if factor>0:
+    #             cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
+    #         else:
+    #             cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
+
     if part == '3':
         print('')
-        print('(3) Start calculations for terminal velocity...')
-        tmv.main_terminalVelocity(setup, dumpData, sinkData, saveloc, run)
-
-    if part == '4':
-        print('')
-        print('(4)  Start calculations for the cummulative mass fraction and mean density plots...')
-        if setup['single_star'] == True:
-            cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
-        else:
-            if factor>0:
-                cmf.CMF_meanRho(run, saveloc, outerData, setup, factor)
-            else:
-                cmf.CMF_meanRho(run, saveloc, dumpData, setup, factor)
-
-    if part == '5':
-        print('')
         if setup['single_star']:
-            print('(5)  A single model has no orbit, and thereby no orbital evolution.')
+            print('(3)  A single model has no orbit, and thereby no orbital evolution.')
             print('     The orbital evolution part is therefore skipped.')
         else:
-            print('(5)  Start calculations for orbital evolution...')
+            print('(3)  Start calculations for orbital evolution...')
 
             # ov.orbEv_main(run, saveloc, sinkData, setup)
             ov.orbEv_main(run, saveloc, sinkData, setup, dumpData)
             
-    if part == '6':
+    if part == '4':
         print('')
-        print('(6)  Start calculating for the 1D spherical plots')
+        
+        print('(4)  Start calculating for the 1D spherical plots')
         dp.profiles_main(run, loc, saveloc, dumpData, setup)
 
-    if part == '7':
-        print('')
-        print('(7) Start calculations for accretion disk analysis')
-        acd.accrDiskAnalysis(run, saveloc, dumpData, setup)
+
+
+    # if part == '7':
+    #     print('')
+    #     print('(7) Start calculations for accretion disk analysis')
+    #     acd.accrDiskAnalysis(run, saveloc, dumpData, setup)
 
     # if part == '7':
     #     print('')
@@ -228,13 +231,13 @@ else:
         print()
         print('     (1) 2D slice plots of the global structure of the last dump full of the model.')
         print('     (2) 1D line plots (radial structure) of the global structure of the last dump of the model along the x-, y- and z-axes.')
-        print('     (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
-        print('     (4) Cummulative mass fraction as a function of the polar coordinate theta.')
-        print('     (5) Information of the orbital evolution.')
-        print('     (6) 1D spherical profiles for single star models.')
-        print('     (7) Analysis of accretion disk')
+        # print('     (3) Information about the velocity related quantities of the model + Quantitative measurement of the degree of aspherical morphology: morphological parameters eta, Qp and epsilon.')
+        # print('     (4) Cummulative mass fraction as a function of the polar coordinate theta.')
+        print('     (3) Information of the orbital evolution.')
+        print('     (4) 1D spherical profiles for single star models.')
+        # print('     (7) Analysis of accretion disk')
         print()
-        print('Choose from 0 to 7, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
+        print('Choose from 0 to 4, where 0 means \'all\', split multiple components by a space (q or exit to quit):')
         runParts = input('  >>>   ')
         runParts = runParts.split()
     if any(part in ('q', 'exit') for part in runParts):
