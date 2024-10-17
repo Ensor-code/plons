@@ -1,7 +1,7 @@
-Making figures for the accretion disk
+Calculations and creation of figures to analyse accretion disk
 #####################################
 
-The following examples show how to create figures for accretion disks using plons.
+The following examples show how you can use PLONS to calculate estimates of the disk radius, scale height and mass, and to create graphs and figures for accretion disks around a companion sink particle.
 
 .. toctree::
    :maxdepth: 1
