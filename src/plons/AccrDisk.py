@@ -118,7 +118,7 @@ def calcSmoothVtVrRho(zoom, dumpData,setup):
     return smooth
 
 # vr vt and rho plot w.r.t. companion sink particle
-def plot_vrvtRho(axs, smooth,zoom,r,limitsRho=False):
+def plot_vrvtRho(axs, smooth,zoom,r=0,limitsRho=False):
     ax1 = axs[0]
     ax2 = axs[1]
     ax3 = axs[2]
@@ -187,13 +187,14 @@ def plot_vrvtRho(axs, smooth,zoom,r,limitsRho=False):
     cbar3.ax.tick_params(labelsize=20)
     cbar3.set_label(r'$v_t \, \rm{[km/s]}$',fontsize = 20)#,rotation = 0)
 
-    # plot circle with estimate of disk radius
-    circle1 = plt.Circle((0, 0), r, color = 'w',linestyle = ':',linewidth = 1.5,fill = False)
-    circle2 = plt.Circle((0, 0), r, color = 'k',linestyle = ':',linewidth = 1.5,fill = False)
-    circle3 = plt.Circle((0, 0), r, color = 'w',linestyle = ':',linewidth = 1.5,fill = False)
-    ax1.add_patch(circle1)
-    ax2.add_patch(circle2)
-    ax3.add_patch(circle3)
+    # plot circle with estimate of disk radius if given
+    if r>0:
+        circle1 = plt.Circle((0, 0), r, color = 'w',linestyle = ':',linewidth = 1.5,fill = False)
+        circle2 = plt.Circle((0, 0), r, color = 'k',linestyle = ':',linewidth = 1.5,fill = False)
+        circle3 = plt.Circle((0, 0), r, color = 'w',linestyle = ':',linewidth = 1.5,fill = False)
+        ax1.add_patch(circle1)
+        ax2.add_patch(circle2)
+        ax3.add_patch(circle3)
 
 # vr and vt plot w.r.t. companion sink particle
 def plot_vrvt(axs,smooth,zoom,r):

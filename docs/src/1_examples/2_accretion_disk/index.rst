@@ -9,4 +9,5 @@ The following examples show how you can use PLONS to calculate estimates of the 
 
    accrDisks_calcHRM_Plons.ipynb
    accrDisks_plotsHRM_Plons.ipynb
-   accrDisks_vrvrPlots_Plons.ipynb
+   accrDisks_vrvtPlots_Plons.ipynb
+   accrDisks_vtKepl_Plons.ipynb
