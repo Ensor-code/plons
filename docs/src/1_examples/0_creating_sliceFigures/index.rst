@@ -1,5 +1,5 @@
-Creating figures using the package
-##################################
+Creating 2D slice figures and animations, and 1D slice plots using the package
+#############################################################
 
 The following examples show how to create figures using plons.
 

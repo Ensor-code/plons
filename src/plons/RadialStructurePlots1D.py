@@ -42,13 +42,13 @@ def getParamsLine(results_line, vec1, minT, gamma, vec2 = [], dumpData = None):
 definition used in plotParR, plots radial structure of given parameter (log(rho)/|v|/T) on the x- and y-axis
 '''
 def oneRadialStructurePlot(parX,parZ, X, Z, parName, axis, parMin, parMax, rcomp, bound, limX):
-    # print('bound is ',bound)
     axis.set_xlim(limX, bound)
+    # Uncomment if you want both sides
+    # axis.set_xlim(-bound,bound)
     axis.vlines(rcomp, parMin, parMax, 'black', linestyle='--', linewidth=1., label=r"$x_\mathrm{comp}$", zorder = 10)
     
     axis.plot(X/cgs.au, parX, color = 'C0', label = '$x$-axis', lw = 1)
     axis.plot(Z/cgs.au, parZ, color = 'C1', label = '$z$-axis', lw = 1)
-
 
     # ind_maxima = argrelextrema(parX,np.greater)
     # Xmax = X[ind_maxima]
@@ -208,7 +208,6 @@ def radialStructPlots(run,loc, dumpData, setup):
         rhoMin           = 0.1 * min(rhoMinX[rhoMinX>0], rhoMinZ[rhoMinZ>0])
         rhoMax           = 10 * max(rhoMaxX, rhoMaxZ)
         #print('rhomin en max zijn: ',rhoMin,rhoMax)
-
 
         vMinX, vMaxX = np.min(parX[1]), np.max(parX[1])
         vMinZ, vMaxZ = np.min(parZ[1]), np.max(parZ[1])
