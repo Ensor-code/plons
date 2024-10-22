@@ -38,8 +38,8 @@ def makeMovie(prefix, loc, outputloc, model, firstframe,lastframe):
     smooth_rot = sk.smoothMesh(X_rot, Y_rot, Z_rot, dumpData, ['rho'])
 
     #Filmpjes Mats: inferno; -17 -- -12
-    # mesh = ax.pcolormesh(X/cgs.au, Y/cgs.au, np.log10(smooth_rot["rho"]+1e-99), cmap=plt.cm.get_cmap('gist_heat'), vmin=-19, vmax = -14)
-    mesh = ax.pcolormesh(X/cgs.au, Y/cgs.au, np.log10(smooth_rot["rho"]+1e-99), cmap=plt.cm.get_cmap('gist_heat'), vmin=-18, vmax = -11.5)
+    # mesh = ax.pcolormesh(X/cgs.au, Y/cgs.au, np.log10(smooth_rot["rho"]+1e-99), cmap=plt.colormaps['gist_heat'], vmin=-19, vmax = -14)
+    mesh = ax.pcolormesh(X/cgs.au, Y/cgs.au, np.log10(smooth_rot["rho"]+1e-99), cmap=plt.colormaps['gist_heat'], vmin=-18, vmax = -11.5)
     ax.set_xlim(x[0]/cgs.au, x[-1]/cgs.au)
     ax.set_ylim(y[0]/cgs.au, y[-1]/cgs.au)
     ax.set_xlabel('x [au]')

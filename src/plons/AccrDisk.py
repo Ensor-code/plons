@@ -134,7 +134,7 @@ def plot_vrvtRho(axs, smooth,zoom,r=0,limitsRho=False):
             limits = [-17,-11]
     else:
         limits = limitsRho
-    cm  = plt.cm.get_cmap('gist_heat')
+    cm  = plt.colormaps['gist_heat']
 
     ax1.set_xlabel('x [au]',fontsize = 20)
     ax1.set_ylabel('y [au]',fontsize = 20)
@@ -155,7 +155,7 @@ def plot_vrvtRho(axs, smooth,zoom,r=0,limitsRho=False):
     limits = [-40,40]
     # lim = np.abs(np.min(data))
     # limits = [-lim,lim]
-    cm  = plt.cm.get_cmap('seismic')
+    cm  = plt.colormaps['seismic']
     ax2.set_xlabel('x [au]',fontsize = 20)
     ax2.set_aspect('equal')
     ax2.set_facecolor('k')
@@ -172,7 +172,7 @@ def plot_vrvtRho(axs, smooth,zoom,r=0,limitsRho=False):
     # vt
     data = (smooth['smooth_z']['new_vt'])
     limits = [0,200]
-    cm  = plt.cm.get_cmap('nipy_spectral')
+    cm  = plt.colormaps['nipy_spectral']
 
     ax3.set_xlabel('x [au]',fontsize = 20)
     ax3.set_aspect('equal')
@@ -206,7 +206,7 @@ def plot_vrvt(axs,smooth,zoom,r):
     limits = [-40,40]
     # lim = np.abs(np.min(data))
     # limits = [-lim,lim]
-    cm  = plt.cm.get_cmap('seismic')
+    cm  = plt.colormaps['seismic']
     ax2.set_xlabel('x [au]',fontsize = 20)
     ax2.set_ylabel('y [au]',fontsize = 20)
     ax2.set_aspect('equal')
@@ -224,7 +224,7 @@ def plot_vrvt(axs,smooth,zoom,r):
     # vt
     data = (smooth['smooth_z']['new_vt'])
     limits = [0,200]
-    cm  = plt.cm.get_cmap('nipy_spectral')
+    cm  = plt.colormaps['nipy_spectral']
 
     ax3.set_xlabel('x [au]',fontsize = 20)
     ax3.set_aspect('equal')
@@ -256,7 +256,7 @@ def plot_vrRho(axs,smooth,zoom,r):
     limits = [-40,40]
     # lim = np.abs(np.min(data))
     # limits = [-lim,lim]
-    cm  = plt.cm.get_cmap('seismic')
+    cm  = plt.colormaps['seismic']
     ax2.set_xlabel('x [au]',fontsize = 20)
     ax2.set_ylabel('y [au]',fontsize = 20)
     ax2.set_aspect('equal')
@@ -279,7 +279,7 @@ def plot_vrRho(axs,smooth,zoom,r):
     else:
         # limits = [-17,-11]
         limits = [-16,-11]
-    cm  = plt.cm.get_cmap('gist_heat')
+    cm  = plt.colormaps['gist_heat']
 
     ax3.set_xlabel('x [au]',fontsize = 20)
     ax3.set_aspect('equal')

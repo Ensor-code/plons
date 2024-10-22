@@ -22,15 +22,15 @@ velocity_vec    = True
 
 
 # colormap per parameter
-cm =   {'rho':   plt.cm.get_cmap('inferno'),
-        'speed': plt.cm.get_cmap('CMRmap'),
-        #'Tgas': plt.cm.get_cmap('RdYlGn'),
-        'Tgas':  plt.cm.get_cmap('hot'), #nipy_spectral
-        'tau':   plt.cm.get_cmap('viridis_r'),
-        'tauL':  plt.cm.get_cmap('viridis'),
-        'kappa': plt.cm.get_cmap('Spectral_r'),
-        'Tdust': plt.cm.get_cmap('Spectral_r'),
-        'Gamma': plt.cm.get_cmap('Spectral_r')
+cm =   {'rho':   plt.colormaps['inferno'],
+        'speed': plt.colormaps['CMRmap'],
+        #'Tgas': plt.colormaps['RdYlGn'],
+        'Tgas':  plt.colormaps['hot'], #nipy_spectral
+        'tau':   plt.colormaps['viridis_r'],
+        'tauL':  plt.colormaps['viridis'],
+        'kappa': plt.colormaps['Spectral_r'],
+        'Tdust': plt.colormaps['Spectral_r'],
+        'Gamma': plt.colormaps['Spectral_r']
         }
 
 # label name per parameter
@@ -105,7 +105,7 @@ Make figure with the xy(orbital plane) slice plot of log density [g/cm^3].
     - setup         setup data
     - rAccComp      accretion radius of the companion
 '''
-def densityPlot(smooth, zoom, limits, dumpData, setup, orbital=True, cmap=plt.cm.get_cmap('inferno')):
+def densityPlot(smooth, zoom, limits, dumpData, setup, orbital=True, cmap=plt.colormaps['inferno']):
     
     fig, ax = plt.subplots(1, figsize=(7, 7))
 

@@ -15,7 +15,7 @@ def plotSlice(ax: plt.Axes,
               smooth: Dict[str, npt.NDArray[np.single]],
               observable: str,
               logplot: bool = False,
-              cmap: matplotlib.colors.Colormap = plt.cm.get_cmap('inferno'),
+              cmap: matplotlib.colors.Colormap = plt.colormaps['inferno'],
               clim: Tuple[Optional[float], Optional[float]] = (None, None)) -> matplotlib.colorbar.Colorbar:
     """Plot a property given a grid and smoothed data ontop of the grid
 
@@ -26,7 +26,7 @@ def plotSlice(ax: plt.Axes,
         smooth (Dict[str, npt.NDArray[np.single]]): Dictionary pointing at smoothed values in meshgrid which you want to plot
         observable (str): Name of the observable you want to plot, corresponding to the name in the smooth directory
         logplot (bool, optional): plot in log scale?. Defaults to False.
-        cmap (matplotlib.colors.Colormap, optional): Colormap to use. Defaults to cm.get_cmap('inferno').
+        cmap (matplotlib.colors.Colormap, optional): Colormap to use. Defaults to plt.colormaps['inferno'].
         clim (Tuple[Optional[float], Optional[float]], optional): limits for the colorbar. Defaults to (None, None).
 
     Returns:
@@ -90,7 +90,7 @@ def SlicePlot2D(ax: plt.Axes,
                 rotate: bool = False,
                 observable: str = "rho",
                 logplot: bool = True,
-                cmap: matplotlib.colors.Colormap = plt.cm.get_cmap('inferno'),
+                cmap: matplotlib.colors.Colormap = plt.colormaps['inferno'],
                 clim: tuple[float, float] = (-17, -14)) -> matplotlib.colorbar.Colorbar:
     """Plot a property given xlims and ylims
 
@@ -104,7 +104,7 @@ def SlicePlot2D(ax: plt.Axes,
         rotate (bool, optional): should the binary be rotated to lay on the x-axis. Defaults to False.
         observable (str, optional): property to plot. Defaults to "rho".
         logplot (bool, optional): plot in log scale?. Defaults to True.
-        cmap (matplotlib.colors.Colormap, optional): colormap to use. Defaults to plt.cm.get_cmap('inferno').
+        cmap (matplotlib.colors.Colormap, optional): colormap to use. Defaults to plt.colormaps['inferno'].
         clim (tuple[float, float], optional): limits of the colormap. Defaults to (-17, -14).
 
     Returns:
