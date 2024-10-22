@@ -11,6 +11,7 @@ They can be run using jupyter-notebook/-lab.
    :maxdepth: 1
    :caption: Contents:
 
-   0_creating_figures_package/index
-   1_creating_figures_pipeline/index
+   0_creating_figures/index
+   1_pipeline/index
    2_accretion_disk/index
+   3_3Dplots/index
