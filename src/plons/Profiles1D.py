@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 22 09:26:15 2021
-
-@author: Ward Homan, Lionel Siess
-
-Make sure that the path in the sys.append points to the scripts directory of phantom
+@author: Ward Homan, Lionel Siess, Jolien Malfait, Mats Esseldeurs
 """
 import matplotlib.pyplot as plt
 from numpy import *
@@ -30,9 +26,7 @@ def plot1D (data, setup, references, whichPlot, ax1, ax2=None, second=False):
         ax1.set_ylabel(r'$v$ [km s$^{-1}$]')
         # ax1.vlines(6,4,15)
         # ax1.vlines(6,9,17)
-        ax1.vlines(6,19,25)
-
-
+        # ax1.vlines(6,19,25)
 
     if whichPlot == 'temp':
         ax1.plot(data[references['x_axis']]/references['x_ref'], data['T']/references['temp_ref'], color='black',  linestyle='-',  label=r'T$_{gas}$  analytic')
@@ -121,10 +115,12 @@ def referenceX(axis, r_ref = 0, temp_ref = 0, Tinj = 0):
             'x_ref'    : r_ref,
             'x_label'  : r'$r$ [au]',
             'x_in'     : 0.*r_ref,
-            'x_out'    : 12.*r_ref,
+            # 'x_out'    : 12.*r_ref,
             # 'x_out'    : 20.*r_ref,
-            'x_limits' : [0.,12.]
+            'x_out'    : 40.*r_ref,
+            # 'x_limits' : [0.,12.]
             # 'x_limits' : [0.,20.]
+            'x_limits' : [0.,40.]
         }
     elif axis == 'Tgas':
         references = {
