@@ -192,7 +192,6 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     vzAGB    = dump["blocks"][1]["data"]["vz"][0] * unit_velocity
     velAGB   = np.array([vxAGB, vyAGB, vzAGB])
 
-
     # companion
     if not setup["single_star"]:
         xComp    = dump["blocks"][1]["data"]["x"][1] * unit_dist
@@ -234,6 +233,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     vx = dump["blocks"][0]["data"]["vx"]
     vy = dump["blocks"][0]["data"]["vy"]
     vz = dump["blocks"][0]["data"]["vz"]
+    divv = dump["blocks"][0]["data"]["divv"]
     u = dump["blocks"][0]["data"]["u"]
     filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
@@ -244,6 +244,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]  !!---> no, in km/s??
     vy    = vy                    [filter] * unit_velocity / cgs.kms
     vz    = vz                    [filter] * unit_velocity / cgs.kms
+    divv  = divv                  [filter] / unit_time
     u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
@@ -315,6 +316,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'vx'            : vx,                    # [cm/s]
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz,                    # [cm/s]
+            'divv'          : divv,                  # [1/s]
             'Gamma'         : Gamma,
             'iorig'         : iorig
             }
