@@ -287,8 +287,8 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     speed = np.linalg.norm(velocity, axis=1)
     mach  = speed/cs
-    
-    iorig = dump["blocks"][0]["data"]['iorig'][filter]
+
+    if "iorig" in dump["blocks"][0]["data"]: iorig = dump["blocks"][0]["data"]['iorig'][filter]
 
     # output
     data = {'position'      : position,              # [cm]
@@ -317,8 +317,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'vy'            : vy,                    # [cm/s]
             'vz'            : vz,                    # [cm/s]
             'divv'          : divv,                  # [1/s]
-            'Gamma'         : Gamma,
-            'iorig'         : iorig
+            'Gamma'         : Gamma
             }
 
     if not setup["single_star"]:
@@ -342,6 +341,9 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
+
+    if "iorig" in dump["blocks"][0]["data"]:
+        data["iorig"      ] = iorig
 
     return data
 
