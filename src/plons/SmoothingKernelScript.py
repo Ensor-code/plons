@@ -152,7 +152,7 @@ Smooth a plane described in the XYZ mesh
 def smoothMesh(X, Y, Z, dumpData, observables, neighbours = 100):
     pixCoord = convertFromMesh(X, Y, Z)
     smooth = getSmoothingKernelledPix(neighbours, dumpData, observables, pixCoord)
-    X, Y, Z, smooth = convertToMesh(pixCoord, smooth, observables)
+    X, Y, Z, smooth = convertToMesh(pixCoord, smooth, observables, X.shape)
     return smooth
 
 
@@ -192,18 +192,18 @@ def getSmoothingKernelledPix(neighbours, data, params, pixCoord):
     return results
 
 def convertFromMesh(X, Y, Z):
-    n = len(X)
+    nx, ny = X.shape  # Get dimensions of the mesh
 
-    r = np.zeros((n**2, 3))
+    r = np.zeros((nx * ny, 3))
 
     i0 = 0
-    i1 = n
-    for i in range(n):
-        r[:,0][i0: i1] = np.transpose(X[:n, i])
-        r[:,1][i0: i1] = np.transpose(Y[:n, i])
-        r[:,2][i0: i1] = np.transpose(Z[:n, i])
-        i0 += n
-        i1 += n
+    i1 = ny
+    for i in range(nx):
+        r[:, 0][i0: i1] = np.transpose(X[i, :])
+        r[:, 1][i0: i1] = np.transpose(Y[i, :])
+        r[:, 2][i0: i1] = np.transpose(Z[i, :])
+        i0 += ny
+        i1 += ny
 
     return r
             
@@ -214,30 +214,33 @@ Transform one dimensional arrays to a 2D mesh.
     params is a list of strings for the parameters of interest
     data_params is a dictionary for the data of params
 '''
-def convertToMesh(r, data_params, params):
-    n = int(np.sqrt(len(r[:,0])))
+def convertToMesh(r, data_params, params, n=None):
+    if n is None:
+        n = int(np.sqrt(len(r[:, 0])))
+        n = (n, n)
+    nx, ny = n
 
-    X = np.zeros(shape=(n, n))
-    Y = np.zeros(shape=(n, n))
-    Z = np.zeros(shape=(n, n))
+    X = np.zeros(shape=(nx, ny))
+    Y = np.zeros(shape=(nx, ny))
+    Z = np.zeros(shape=(nx, ny))
 
     i0 = 0
-    i1 = n
-    for i in range(n):
-        X[:n, i] = np.transpose(r[:,0][i0: i1])
-        Y[:n, i] = np.transpose(r[:,1][i0: i1])
-        Z[:n, i] = np.transpose(r[:,2][i0: i1])
-        i0 += n
-        i1 += n
+    i1 = ny
+    for i in range(nx):
+        X[i, :] = np.transpose(r[:, 0][i0: i1])
+        Y[i, :] = np.transpose(r[:, 1][i0: i1])
+        Z[i, :] = np.transpose(r[:, 2][i0: i1])
+        i0 += ny
+        i1 += ny
 
     for param in params:
-        temp_mesh = np.zeros(shape=(n, n))
+        temp_mesh = np.zeros(shape=(nx, ny))
         i0 = 0
-        i1 = n
-        for i in range(n):
-            temp_mesh[:n, i] = np.transpose(data_params[param][i0:i1])
-            i0 += n
-            i1 += n
+        i1 = ny
+        for i in range(nx):
+            temp_mesh[i, :] = np.transpose(data_params[param][i0:i1])
+            i0 += ny
+            i1 += ny
         data_params[param] = temp_mesh
 
     return X, Y, Z, data_params

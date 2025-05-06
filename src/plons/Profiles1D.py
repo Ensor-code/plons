@@ -388,6 +388,8 @@ def profiles_main(run, loc, saveloc, dumpData, setup):
                 plot1D(data1D, setup, references, whichPlot, ax1)
                 ax1.legend(           bbox_to_anchor=(1, 0.2), loc='lower right', fontsize=16)
             ax1.set_xlabel(references['x_label'])
+            if whichPlot == 'rho':
+                ax1.set_yscale('log')
                 
             #---------- Font size ----------
             for item in (  [ax1.title, ax1.xaxis.label, ax1.yaxis.label]

@@ -16,7 +16,8 @@ def plotSlice(ax: plt.Axes,
               observable: str,
               logplot: bool = False,
               cmap: matplotlib.colors.Colormap = plt.colormaps['inferno'],
-              clim: Tuple[Optional[float], Optional[float]] = (None, None)) -> matplotlib.colorbar.Colorbar:
+              clim: Tuple[Optional[float], Optional[float]] = (None, None),
+              cbar = True) -> matplotlib.colorbar.Colorbar:
     """Plot a property given a grid and smoothed data ontop of the grid
 
     Args:
@@ -28,6 +29,7 @@ def plotSlice(ax: plt.Axes,
         logplot (bool, optional): plot in log scale?. Defaults to False.
         cmap (matplotlib.colors.Colormap, optional): Colormap to use. Defaults to plt.colormaps['inferno'].
         clim (Tuple[Optional[float], Optional[float]], optional): limits for the colorbar. Defaults to (None, None).
+        cbar (bool, optional): Should a colorbar be plotted? Defaults to True.
 
     Returns:
         colorbar.Colorbar: Colorbar
@@ -42,12 +44,15 @@ def plotSlice(ax: plt.Axes,
         obs = smooth[observable]
     axPlot = ax.pcolormesh(X/cgs.au, Y/cgs.au, obs, cmap=cmap, vmin=clim[0], vmax = clim[1])
 
-    cbar = plt.colorbar(axPlot, ax = ax, location='right', fraction=0.0471, pad=0.01)
-    if logplot:
-        cbar.set_label("log("+observable+")")
+    if cbar == True:
+        cbar = plt.colorbar(axPlot, ax = ax, location='right', fraction=0.0471, pad=0.01)
+        if logplot:
+            cbar.set_label("log("+observable+")")
+        else:
+            cbar.set_label(observable)
+        return cbar
     else:
-        cbar.set_label(observable)
-    return cbar
+        return axPlot
 
 def plotSink(ax: plt.Axes,
              dumpData: Dict[str, Any],
@@ -91,7 +96,8 @@ def SlicePlot2D(ax: plt.Axes,
                 observable: str = "rho",
                 logplot: bool = True,
                 cmap: matplotlib.colors.Colormap = plt.colormaps['inferno'],
-                clim: tuple[float, float] = (-17, -14)) -> matplotlib.colorbar.Colorbar:
+                clim: tuple[float, float] = (-17, -14),
+                cbar = True) -> matplotlib.colorbar.Colorbar:
     """Plot a property given xlims and ylims
 
     Args:
@@ -106,6 +112,7 @@ def SlicePlot2D(ax: plt.Axes,
         logplot (bool, optional): plot in log scale?. Defaults to True.
         cmap (matplotlib.colors.Colormap, optional): colormap to use. Defaults to plt.colormaps['inferno'].
         clim (tuple[float, float], optional): limits of the colormap. Defaults to (-17, -14).
+        cbar (bool, optional): Should a colorbar be plotted? Defaults to True.
 
     Returns:
         matplotlib.colorbar.Colorbar: the colorbar in the plot
@@ -121,8 +128,8 @@ def SlicePlot2D(ax: plt.Axes,
         smooth = sk.smoothMesh(X_rot, Y_rot, Z_rot, dumpData, [observable])               # Smooth the data with the rotated mesh
     else:
         smooth = sk.smoothMesh(X, Y, Z, dumpData, [observable])
-
-    cbar = plotSlice(ax, X, Y, smooth, observable, logplot=logplot, cmap=cmap, clim = clim)
+    
+    cbaraxPlot = plotSlice(ax, X, Y, smooth, observable, logplot=logplot, cmap=cmap, clim = clim, cbar=cbar)
     plotSink(ax, dumpData, setup, rotate)
 
-    return cbar
+    return cbaraxPlot
