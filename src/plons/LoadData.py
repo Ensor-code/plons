@@ -270,7 +270,9 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
     if bowenDust:
         kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
-        if containsTau:
+        if containsTau and containsTauL:
+            Gamma = dump["blocks"][0]["data"]["alpha_rad"][filter] 
+        elif containsTau:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB, tau)
         else:
             Gamma = pq.getGamma(kappa, lumAGB, massAGB)
