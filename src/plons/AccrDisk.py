@@ -14,7 +14,7 @@ import plons.GeometricalFunctions         as gf
 calculate new radii after change coordinate center to position second sink particle, and rotation such that AGB is on -x axis
 '''
 
-def calc_new_position(x,y,dumpData):
+def calc_position(x,y,dumpData):
     # translation with rcomp:
     tr_x = x - dumpData['posComp'][0]
     tr_y = y - dumpData['posComp'][1]
@@ -34,17 +34,17 @@ def calc_new_position(x,y,dumpData):
 '''
 Calculate velocities with velocity of companion as (0,0,0)
 '''
-def calc_new_velocities(vx,vy,vz,dumpData):
+def calc_velocities(vx,vy,vz,dumpData):
     #Translatie
     tr_vx = vx - dumpData['velComp'][0]/cgs.kms
     tr_vy = vy - dumpData['velComp'][1]/cgs.kms
-    new_vz = vz - dumpData['velComp'][2]/cgs.kms
+    vz = vz - dumpData['velComp'][2]/cgs.kms
 
     # rotation
     theta   = - (gf.calcPhi([dumpData['posAGB'][0]],[dumpData['posAGB'][1]])-np.pi)
-    new_vx = tr_vx * np.cos(theta) - tr_vy * np.sin(theta)
-    new_vy = tr_vx * np.sin(theta) + tr_vy * np.cos(theta)
-    return (new_vx,new_vy,new_vz)
+    vx = tr_vx * np.cos(theta) - tr_vy * np.sin(theta)
+    vy = tr_vx * np.sin(theta) + tr_vy * np.cos(theta)
+    return (vx,vy,vz)
 
 '''
 Perform a coordinate transformation (just a rotation) of two dimensions (x,y) with a given angle alpha. ---> input is array OR floats
@@ -82,17 +82,16 @@ def loadDataForSmoothing(run,dump):
     setup = plons.LoadSetup(run, "wind")
     dumpData = plons.LoadFullDump(os.path.join(run, f"wind_%05d" % dump), setup)
     # Coordinate transformation: translation to rcomp + rotation such that AGB is on positive x-axis
-    dumpData['new_x'],dumpData['new_y'],dumpData['new_r'] = calc_new_position(dumpData['position'][:,0],dumpData['position'][:,1],dumpData)
-    dumpData['position'] = np.array((dumpData['new_x'],dumpData['new_y'],dumpData['position'][:,2])).transpose()
-    dumpData['new_Phi'] = gf.calcPhi(dumpData['new_x'],dumpData['new_y'])
+    dumpData['x'],dumpData['y'],dumpData['r'] = calc_position(dumpData['x'],dumpData['y'],dumpData)
+    dumpData['Phi'] = gf.calcPhi(dumpData['x'],dumpData['y'])
 
     # Calculate new velocities such that companion is zero-velocity
-    dumpData['new_vx'], dumpData['new_vy'],dumpData['new_vz'] = calc_new_velocities(dumpData['vx'],dumpData['vy'],dumpData['vz'],dumpData)
+    dumpData['vx'], dumpData['vy'],dumpData['vz'] = calc_velocities(dumpData['vx'],dumpData['vy'],dumpData['vz'],dumpData)
     #calculate vr and vt
-    vr_new, vt_new = getRadTanVelocity(dumpData['new_x'],dumpData['new_y'], dumpData['new_vx'],dumpData['new_vy'])
+    vr_new, vt_new = getRadTanVelocity(dumpData['x'],dumpData['y'], dumpData['vx'],dumpData['vy'])
     ### ADD HERE gf. WHEN IT IS SUCCEFULLY UPLOADED ON CONDA
-    dumpData['new_vr'] = np.array(vr_new)
-    dumpData['new_vt'] = np.array(vt_new)
+    dumpData['vr'] = np.array(vr_new)
+    dumpData['vt'] = np.array(vt_new)
 
     return dumpData,setup
 
@@ -101,7 +100,7 @@ def calcSmoothVtVrRho(zoom, dumpData,setup):
     nneighb = 150
     n_grid  = 600           #determines resolution
 
-    observables = {'new_vr','new_vt','rho'}
+    observables = {'vr','vt','rho'}
 
     bound = (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom
     x = np.linspace(-bound, bound, n_grid)
@@ -151,7 +150,7 @@ def plot_vrvtRho(axs, smooth,zoom,r=0,limitsRho=False):
     cbar1.set_label(r'$\rho \, \rm{/(g \cdot cm^{-3})}$',fontsize = 20)#,rotation = 0)
 
     #vr
-    data = (smooth['smooth_z']['new_vr'])
+    data = (smooth['smooth_z']['vr'])
     limits = [-40,40]
     # lim = np.abs(np.min(data))
     # limits = [-lim,lim]
@@ -170,7 +169,7 @@ def plot_vrvtRho(axs, smooth,zoom,r=0,limitsRho=False):
     cbar2.set_label(r'$v_r \, \rm{[km/s]}$',fontsize = 20)#,rotation = 0)
 
     # vt
-    data = (smooth['smooth_z']['new_vt'])
+    data = (smooth['smooth_z']['vt'])
     limits = [0,200]
     cm  = plt.colormaps['nipy_spectral']
 
@@ -202,7 +201,7 @@ def plot_vrvt(axs,smooth,zoom,r):
     ax3 = axs[1]
 
     #vr
-    data = (smooth['smooth_z']['new_vr'])
+    data = (smooth['smooth_z']['vr'])
     limits = [-40,40]
     # lim = np.abs(np.min(data))
     # limits = [-lim,lim]
@@ -222,7 +221,7 @@ def plot_vrvt(axs,smooth,zoom,r):
     cbar2.set_label(r'$v_r \, \rm{[km/s]}$',fontsize = 20)#,rotation = 0)
 
     # vt
-    data = (smooth['smooth_z']['new_vt'])
+    data = (smooth['smooth_z']['vt'])
     limits = [0,200]
     cm  = plt.colormaps['nipy_spectral']
 
@@ -252,7 +251,7 @@ def plot_vrRho(axs,smooth,zoom,r):
     ax3 = axs[1]
 
     #vr
-    data = (smooth['smooth_z']['new_vr'])
+    data = (smooth['smooth_z']['vr'])
     limits = [-40,40]
     # lim = np.abs(np.min(data))
     # limits = [-lim,lim]
@@ -314,8 +313,8 @@ def plot_vt_divided_vtKepl(ax,rmax,rmin,rstep,dumpData,model,colors,i):
     for r in rr:
         k_vt = np.append(k_vt,kepler_vt(r,dumpData))
         # Calculate the mean tangential velocity of all data in r-step
-        filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
-        r_vt = np.append(r_vt, np.mean(dumpData['new_vt'] [filter]))
+        filter = (dumpData['r']/cgs.au<(r+(rmin/2))) & (dumpData['r']/cgs.au>(r-(rmin/2)))
+        r_vt = np.append(r_vt, np.mean(dumpData['vt'] [filter]))
     ax.plot(rr,r_vt/k_vt,c=colors[i],linewidth = 1.2,label = str(model))
 
 # Plot of tangential velocity and keplerian velocity, in function of radius
@@ -330,8 +329,8 @@ def plot_vt_vKepl(ax,rmax,rmin,rstep,dumpData,model,k_vt,r_vt_max,colors,lineSty
     for r in rr:
         if i == 0:
             k_vt = np.append(k_vt,kepler_vt(r,dumpData))
-        filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
-        r_vt = np.append(r_vt, np.mean(dumpData['new_vt'] [filter]))
+        filter = (dumpData['r']/cgs.au<(r+(rmin/2))) & (dumpData['r']/cgs.au>(r-(rmin/2)))
+        r_vt = np.append(r_vt, np.mean(dumpData['vt'] [filter]))
     if i ==0:
         ax.plot(rr,k_vt,c='k',linestyle = '--',linewidth = 1,label = 'Keplerian')
         ax.plot(rr,k_vt*0.9,c='k',linestyle = ':',linewidth = 1,label = '90% (sub)Keplerian')
@@ -350,10 +349,10 @@ def plot_vrmean(ax1,ax2,rmax,rmin,rstep,dumpData,model,colors,i):
     r_vr = np.array([])
     r_abs_vr = np.array([])
     for r in rr:
-        # filter = (dumpData['new_r']/cgs.au<(r+(rmin/2))) & (dumpData['new_r']/cgs.au>(r-(rmin/2)))
-        filter = (dumpData['new_r']/cgs.au<(r+(rmin))) & (dumpData['new_r']/cgs.au>(r-(rmin)))
-        r_vr = np.append(r_vr, np.mean(dumpData['new_vr'] [filter]))
-        r_abs_vr = np.append(r_abs_vr,np.mean(np.abs(dumpData['new_vr'] [filter])))
+        # filter = (dumpData['r']/cgs.au<(r+(rmin/2))) & (dumpData['r']/cgs.au>(r-(rmin/2)))
+        filter = (dumpData['r']/cgs.au<(r+(rmin))) & (dumpData['r']/cgs.au>(r-(rmin)))
+        r_vr = np.append(r_vr, np.mean(dumpData['vr'] [filter]))
+        r_abs_vr = np.append(r_abs_vr,np.mean(np.abs(dumpData['vr'] [filter])))
     ax1.plot(rr,r_vr,c=colors[i],linestyle = '-',linewidth = 1.2,label = str(model))
     ax2.plot(rr,r_abs_vr,c=colors[i],linestyle = '-',linewidth = 1.2,label = str(model))
 
@@ -603,18 +602,18 @@ def get_SH_diskMass_radius(lowerR,r_step,thetaArray,dumpData,maxH,n_grid,run,cri
             minTheta = thetaArray[0]
             # print(maxTheta-minTheta)
             if np.abs(maxTheta-minTheta)<np.pi: #normal theta array:
-                filter = (r_array[i] < dumpData['new_r']) & (dumpData['new_r'] < r_array[i+1]) & (np.abs(dumpData['position'][:,2]) < SH_array[i+1]) & (dumpData['new_Phi']<maxTheta) & (dumpData['new_Phi']>minTheta)
+                filter = (r_array[i] < dumpData['r']) & (dumpData['r'] < r_array[i+1]) & (np.abs(dumpData['z']) < SH_array[i+1]) & (dumpData['Phi']<maxTheta) & (dumpData['Phi']>minTheta)
                 mass_added = np.sum(dumpData['mass'][filter])
             else: #theta array around 0:
                 # add everything with theta between 0 and thetamax
-                filter = (r_array[i] < dumpData['new_r']) & (dumpData['new_r'] < r_array[i+1]) & (np.abs(dumpData['position'][:,2]) < SH_array[i+1]) & (dumpData['new_Phi']<maxTheta)
+                filter = (r_array[i] < dumpData['r']) & (dumpData['r'] < r_array[i+1]) & (np.abs(dumpData['z']) < SH_array[i+1]) & (dumpData['Phi']<maxTheta)
                 mass_added_1 = np.sum(dumpData['mass'][filter])
                 # add everything with theta between thetamin and 2pi
-                filter = (r_array[i] < dumpData['new_r']) & (dumpData['new_r'] < r_array[i+1]) & (np.abs(dumpData['position'][:,2]) < SH_array[i+1]) & (dumpData['new_Phi']>minTheta)
+                filter = (r_array[i] < dumpData['r']) & (dumpData['r'] < r_array[i+1]) & (np.abs(dumpData['z']) < SH_array[i+1]) & (dumpData['Phi']>minTheta)
                 mass_added_2 = np.sum(dumpData['mass'][filter])
                 mass_added = mass_added_1+mass_added_2
         else:
-            filter = (r_array[i] < dumpData['new_r']) & (dumpData['new_r'] < r_array[i+1]) & (np.abs(dumpData['position'][:,2]) < SH_array[i+1])
+            filter = (r_array[i] < dumpData['r']) & (dumpData['r'] < r_array[i+1]) & (np.abs(dumpData['z']) < SH_array[i+1])
             mass_added = np.sum(dumpData['mass'][filter])
 
 
@@ -695,17 +694,17 @@ dump                 dumpNumber, used to save under correct name
 '''
 def testPositionAndTheta(dumpData,run,dump):
     print('test if coordinate transformation is correct')
-    new_x_AGB, new_y_AGB, new_r_AGB = calc_new_position([dumpData['posAGB'][0]],[dumpData['posAGB'][1]],dumpData)
-    if new_x_AGB>0 or np.abs(new_y_AGB/cgs.au)>0.1:
+    x_AGB, y_AGB, r_AGB = calc_position([dumpData['posAGB'][0]],[dumpData['posAGB'][1]],dumpData)
+    if x_AGB>0 or np.abs(y_AGB/cgs.au)>0.1:
         print('!INCORRECT COORDINATE TRANSFORMATION!')
-        print(new_x_AGB/cgs.au,new_y_AGB/cgs.au)
+        print(x_AGB/cgs.au,y_AGB/cgs.au)
     else:
         print('AGB is on negative x-axis, companion is at (0,0)')
 
     ## Make plots to test if theta angle makes sense
     plt.figure()
-    plt.plot(dumpData['new_x'][::100]/cgs.au,dumpData['new_Phi'][::100],'*')
-    plt.axvline(x=new_x_AGB/cgs.au)
+    plt.plot(dumpData['x'][::100]/cgs.au,dumpData['Phi'][::100],'*')
+    plt.axvline(x=x_AGB/cgs.au)
     plt.xlabel(r'x[au]')
     plt.ylabel(r'$\theta$')
     plt.axhline(y = [np.pi/4])
@@ -716,7 +715,7 @@ def testPositionAndTheta(dumpData,run,dump):
     plt.close()
 
     plt.figure()
-    plt.plot(dumpData['new_y'][::100]/cgs.au,dumpData['new_Phi'][::100],'*')
+    plt.plot(dumpData['y'][::100]/cgs.au,dumpData['Phi'][::100],'*')
     plt.axvline(0)
     plt.xlabel(r'y[au]')
     plt.ylabel(r'$\theta$')

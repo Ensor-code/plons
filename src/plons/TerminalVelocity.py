@@ -33,7 +33,8 @@ def getTerminalVelocity(setup, dump):
     if single_star == False:
         sma     = setup['sma_ini']
     outerBound  = int(round( setup['bound']  ))
-    r           = gf.getRadiusCoordinate(dump['position'],dump['posAGB'])/cgs.au  # radius [AU] from AGB, not barycentre!
+    position = np.array((dump['x'], dump['y'], dump['z'])).transpose()
+    r           = gf.getRadiusCoordinate(position,dump['posAGB'])/cgs.au  # radius [AU] from AGB, not barycentre!
 
     # Prepare for binning.
     rmin = min( r )     # minimum radius in the data set [AU]
@@ -249,7 +250,7 @@ def getMassHillTorus(setup, dump):
                 sma   = key1 * cgs.au               # [cm]
                 rHill = Hill[key1][key2][0]              # [cm]
 
-                z       = dump['position'].transpose()[2]
+                z       = dump['z']
                 mass    = dump['mass'    ]                          # [g]
 
 
@@ -276,7 +277,7 @@ def getMassHillTorus(setup, dump):
         rHill   = dump['rHill'   ]                     # [cm]
         sma     = setup['sma_ini'     ] * cgs.au       # [cm]
         mComp   = setup['massComp_ini'] * cgs.Msun     # [g]
-        z       = dump['position'].transpose()[2]
+        z       = dump['z']
         mass    = dump['mass'    ]                     # [g]
         mAGB    = setup['massAGB_ini' ] * cgs.Msun     # [g]
 

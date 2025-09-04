@@ -241,7 +241,7 @@ def CMF_meanRho(run,outloc, data, setup, factor):
 
     # Select apastron and periastron side data in case of binary
     if not setup['single_star']:
-        x = data['position'].transpose()[0]
+        x = data['x']
         thetaR = data['theta'] [x>0]
         massR  = data['mass']  [x>0]
         rhoR   = data['rho']   [x>0]

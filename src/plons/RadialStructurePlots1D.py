@@ -76,15 +76,6 @@ def radialStructPlots(run,loc, dumpData, setup):
         ax1 = plt.subplot(311)
         ax2 = plt.subplot(312)
 
-        # Remove data of AGB and companion
-        dataToUse = {}
-        dataToUse['rho'] = dumpData['rho'][:-2]
-        dataToUse['Tgas'] = dumpData['Tgas'][:-2]
-        dataToUse['speed'] = dumpData['speed'][:-2]
-        dataToUse['mass'] = dumpData['mass'][:-2]
-        dataToUse['position'] = dumpData['position'][:-2]
-        dataToUse['h'] = dumpData['h'][:-2]
-
         # calculate smoothed data around one axis
         theta = 0.
         if setup['single_star'] == False:
@@ -175,15 +166,6 @@ def radialStructPlots(run,loc, dumpData, setup):
         ax1 = plt.subplot(311)
         ax2 = plt.subplot(312)
         ax3 = plt.subplot(313)
-
-        #Remove data of AGB and companion
-        dataToUse = {}
-        dataToUse['rho'     ] = dumpData['rho'     ][:-2]
-        dataToUse['Tgas'    ] = dumpData['Tgas'    ][:-2]
-        dataToUse['speed'   ] = dumpData['speed'   ][:-2]
-        dataToUse['mass'    ] = dumpData['mass'    ][:-2]
-        dataToUse['position'] = dumpData['position'][:-2]
-        dataToUse['h'       ] = dumpData['h'       ][:-2]
 
         #calculate smoothed data around one axis
         theta = 0.
@@ -288,11 +270,6 @@ def plotRho_r2(run,loc, dumpData, setup):
 
     fig = plt.figure(figsize=(10, 4.5))
     ax1 = plt.subplot(111)
-
-    #Remove data of AGB and companion
-    dataToUse = {}
-    dataToUse['rho'     ] = dumpData['rho'     ][:-2]
-    dataToUse['position'] = dumpData['position'][:-2]
 
     #calculate smoothed data around one axis
     theta = 0.

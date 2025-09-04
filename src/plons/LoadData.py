@@ -4,6 +4,8 @@ import math            as math
 import numpy           as np
 import numpy.typing    as npt
 
+import sarracen        as sa
+
 #import plons scripts
 import plons.PhysicalQuantities       as pq
 import plons.ConversionFactors_cgs    as cgs
@@ -160,16 +162,13 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: a dictionary containing the data from the dump (all units in cgs)
     """
-
-    # Load read_dump script to read PHANTOM dump files
-    from plons.readPhantomDump import read_dump
-
     # reading the dumpfile
-    dump = read_dump(fileName)
-
-    unit_dist = dump['units']['udist']
-    unit_mass = dump['units']['umass']
-    unit_time = dump['units']['utime']
+    part, sinks = sa.read_phantom(fileName)
+    part.calc_density()
+    # for key in part._params: print(key, part._params[key])
+    unit_dist = part._params["udist"]
+    unit_mass = part._params["umass"]
+    unit_time = part._params["utime"]
 
     unit_velocity = unit_dist/unit_time
     unit_density  = unit_mass/unit_dist**3
@@ -180,146 +179,114 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     # Data of the two stars
     # AGB star
-    xAGB     = dump["blocks"][1]["data"]["x"][0] * unit_dist
-    yAGB     = dump["blocks"][1]["data"]["y"][0] * unit_dist
-    zAGB     = dump["blocks"][1]["data"]["z"][0] * unit_dist
+    xAGB     = sinks["x"][0] * unit_dist
+    yAGB     = sinks["y"][0] * unit_dist
+    zAGB     = sinks["z"][0] * unit_dist
     posAGB   = np.array([xAGB, yAGB, zAGB])
     rAGB     = gf.calc_r(xAGB, yAGB, zAGB)
-    massAGB  = dump["blocks"][1]["data"]["m"][0] * unit_mass
-    lumAGB   = dump["blocks"][1]["data"]["lum"][0] * unit_energ/unit_time
-    vxAGB    = dump["blocks"][1]["data"]["vx"][0] * unit_velocity
-    vyAGB    = dump["blocks"][1]["data"]["vy"][0] * unit_velocity
-    vzAGB    = dump["blocks"][1]["data"]["vz"][0] * unit_velocity
+    massAGB  = sinks["m"][0] * unit_mass
+    lumAGB   = sinks["lum"][0] * unit_energ/unit_time
+    vxAGB    = sinks["vx"][0] * unit_velocity
+    vyAGB    = sinks["vy"][0] * unit_velocity
+    vzAGB    = sinks["vz"][0] * unit_velocity
     velAGB   = np.array([vxAGB, vyAGB, vzAGB])
 
     # companion
-    if not setup["single_star"]:
-        xComp    = dump["blocks"][1]["data"]["x"][1] * unit_dist
-        yComp    = dump["blocks"][1]["data"]["y"][1] * unit_dist
-        zComp    = dump["blocks"][1]["data"]["z"][1] * unit_dist
+    if len(sinks) > 1:
+        xComp    = sinks["x"][1] * unit_dist
+        yComp    = sinks["y"][1] * unit_dist
+        zComp    = sinks["z"][1] * unit_dist
         posComp  = np.array([xComp, yComp, zComp])
         rComp    = gf.calc_r(xComp, yComp, zComp)
-        massComp = dump["blocks"][1]["data"]["m"][1] * unit_mass
+        massComp = sinks["m"][1] * unit_mass
         rHill = pq.getRHill(abs(rComp+rAGB),massComp,massAGB)
-        vxComp   = dump["blocks"][1]["data"]["vx"][1] * unit_velocity
-        vyComp   = dump["blocks"][1]["data"]["vy"][1] * unit_velocity
-        vzComp   = dump["blocks"][1]["data"]["vz"][1] * unit_velocity
+        vxComp   = sinks["vx"][1] * unit_velocity
+        vyComp   = sinks["vy"][1] * unit_velocity
+        vzComp   = sinks["vz"][1] * unit_velocity
         velComp  = np.array([vxComp,vyComp,vzComp])
 
-
-        if setup['triple_star']:
+        if len(sinks) > 2:
             # inner companion
-            xComp_in    = dump["blocks"][1]["data"]["x"][2] * unit_dist
-            yComp_in    = dump["blocks"][1]["data"]["y"][2] * unit_dist
-            zComp_in    = dump["blocks"][1]["data"]["z"][2] * unit_dist
+            xComp_in    = sinks["x"][2] * unit_dist
+            yComp_in    = sinks["y"][2] * unit_dist
+            zComp_in    = sinks["z"][2] * unit_dist
             posComp_in  = np.array([xComp_in, yComp_in, zComp_in])
             rComp_in    = gf.calc_r(xComp_in, yComp_in, zComp_in)
-            massComp_in = dump["blocks"][1]["data"]["m"][2] * unit_mass
-            vxComp_in   = dump["blocks"][1]["data"]["vx"][2] * unit_velocity
-            vyComp_in   = dump["blocks"][1]["data"]["vy"][2] * unit_velocity
-            vzComp_in   = dump["blocks"][1]["data"]["vz"][2] * unit_velocity
+            massComp_in = sinks["m"][2] * unit_mass
+            vxComp_in   = sinks["vx"][2] * unit_velocity
+            vyComp_in   = sinks["vy"][2] * unit_velocity
+            vzComp_in   = sinks["vz"][2] * unit_velocity
             velComp_in  = np.array([vxComp_in,vyComp_in,vzComp_in])
 
-
-    containsTau  = "tau" in dump["blocks"][0]["data"]
-    containsTauL = "tau_lucy" in dump["blocks"][0]["data"]
-    bowenDust    = "bowen_kmax" in setup
-
-    x = dump["blocks"][0]["data"]["x"]
-    y = dump["blocks"][0]["data"]["y"]
-    z = dump["blocks"][0]["data"]["z"]
-    h = dump["blocks"][0]["data"]["h"]
-    mass = np.ones(len(h))*dump["quantities"]["massoftype"][0]
-    vx = dump["blocks"][0]["data"]["vx"]
-    vy = dump["blocks"][0]["data"]["vy"]
-    vz = dump["blocks"][0]["data"]["vz"]
-    divv = dump["blocks"][0]["data"]["divv"]
-    u = dump["blocks"][0]["data"]["u"]
-    filter = h > 0.0
     # Format the data (select only data with positive smoothing length (h) and convert it to cgs-units
-    x     = x                     [filter] * unit_dist          # position coordinates          [cm]
-    y     = y                     [filter] * unit_dist
-    z     = z                     [filter] * unit_dist
-    mass  = mass                  [filter] * unit_mass          # mass of sph particles         [g]
-    vx    = vx                    [filter] * unit_velocity / cgs.kms                   # velocity components           [cm/s]  !!---> no, in km/s??
-    vy    = vy                    [filter] * unit_velocity / cgs.kms
-    vz    = vz                    [filter] * unit_velocity / cgs.kms
-    divv  = divv                  [filter] / unit_time
-    u     = u                     [filter] * unit_ergg          # specific internal density     [erg/g]
-    h     = h                     [filter] * unit_dist          # smoothing length              [cm]
-    rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
+    part.x       = part.x    * unit_dist          # position coordinates          [cm]
+    part.y       = part.y    * unit_dist
+    part.z       = part.z    * unit_dist
+    part["mass"] = part._params["massoftype"] * unit_mass          # mass of sph particles         [g]
+    part.vx      = part.vx   * unit_velocity / cgs.kms # velocity components      [km/s]
+    part.vy      = part.vy   * unit_velocity / cgs.kms
+    part.vz      = part.vz   * unit_velocity / cgs.kms
+    part.divv    = part.divv / unit_time
+    part.u       = part.u    * unit_ergg          # specific internal density     [erg/g]
+    part.h       = part.h    * unit_dist          # smoothing length              [cm]
+    part.rho     = part.rho  * unit_density       # density                       [g/cm^3]
 
-    if "gamma" in dump["blocks"][0]["data"]: gamma = dump["blocks"][0]["data"]["gamma"][filter]
-    else: gamma = np.ones_like(x)*dump['quantities']['gamma']
-    if "mu" in dump["blocks"][0]["data"]: mu = dump["blocks"][0]["data"]['mu'][filter]
-    else:  mu = np.ones_like(x)*setup['mu']
+    if "gamma" not in part: part["gamma"] = part._params['gamma']
+    if "mu"    not in part: part["mu"]    = setup['mu']
+    part["p"]    = pq.getPressure(part.rho, part.u, part.gamma) # pressure                   [Ba]
+    part["cs"]    = pq.getSoundSpeed(part.p, part.rho, part.gamma)            # speed of sound                [cm/s]
+    part["temp"] = pq.getTemp(part.gamma, part.mu, part.u)      # temperature                [K]
 
-    p     = pq.getPressure(rho, u, gamma) # pressureure                   [Ba]
-    if containsTau:
-        tau  = dump["blocks"][0]["data"]["tau"][filter]         # optical depth
-    if containsTauL:
-        tauL  = dump["blocks"][0]["data"]["tau_lucy"][filter]   # Lucy optical depth
-    if setup['isink_radiation'] > 1 and setup['iget_tdust'] == 0: temp = dump["blocks"][0]["data"]["Tdust"][filter]
-    elif "temperature" in dump["blocks"][0]["data"]: temp = dump["blocks"][0]["data"]["temperature"][filter]
-    else: temp = pq.getTemp(gamma, mu, u) # temperature                [K]
-    if "Tdust" in dump["blocks"][0]["data"]:
-        Tdust = dump["blocks"][0]["data"]["Tdust"][filter]     # temperature                   [K]
-    elif setup['isink_radiation'] == 0: Tdust = temp
-    else: Tdust = np.zeros_like(x)
-    if setup['isink_radiation'] == 0: Gamma = 0.
-    if setup['isink_radiation'] == 1: Gamma = np.ones_like(x)*setup['alpha_rad']
-    if bowenDust:
-        kappa = pq.getKappa(Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
-        if containsTau and containsTauL:
-            Gamma = dump["blocks"][0]["data"]["alpha_rad"][filter] 
-        elif containsTau:
-            Gamma = pq.getGamma(kappa, lumAGB, massAGB, tau)
-        else:
-            Gamma = pq.getGamma(kappa, lumAGB, massAGB)
-        if setup['isink_radiation'] == 3: Gamma = Gamma + setup['alpha_rad']
+    if "Tdust" not in part: 
+        if setup['isink_radiation'] == 0: part["Tdust"] = part.temp
+        else:                             part["Tdust"] = 0.
+    if "kappa" not in part: 
+        if   setup["idust_opacity"] == 0: part["kappa"] = 0.
+        elif setup["idust_opacity"] == 1: part["kappa"] = pq.getKappa(part.Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
+    if "alpha_rad" in part: part["Gamma"] = part["alpha_rad"]
+    else:
+        if   setup['isink_radiation'] == 0: part["Gamma"] = 0.
+        elif setup['isink_radiation'] == 1: part["Gamma"] = setup['alpha_rad']
+        elif setup['isink_radiation'] == 2: part["Gamma"] = pq.getGamma(part.kappa, lumAGB, massAGB, part.tau if "tau" in part else 0.)
+        elif setup['isink_radiation'] == 3: part["Gamma"] = pq.getGamma(part.kappa, lumAGB, massAGB, part.tau if "tau" in part else 0.) + setup['alpha_rad']
 
-    cs    = pq.getSoundSpeed(p, rho, gamma)            # speed of sound                [cm/s]
+    position = np.array((part.x,  part.y,  part.z )).transpose()
+    velocity = np.array((part.vx, part.vy, part.vz)).transpose()
 
-    position = np.array((x, y, z )).transpose()
-    velocity = np.array((vx,vy,vz)).transpose()
+    part["r"]     = np.linalg.norm(position, axis=1)
+    part["theta"] = gf.calcTheta(part.x, part.y, part.z)
+    part["phi"]   = gf.calcPhi(part.x, part.y)
 
-    r     = np.linalg.norm(position, axis=1)
-    theta = gf.calcTheta(x,y,z)
-    phi   = gf.calcPhi(x,y)
-
-    speed = np.linalg.norm(velocity, axis=1)
-    mach  = speed/cs
-
-    if "iorig" in dump["blocks"][0]["data"]: iorig = dump["blocks"][0]["data"]['iorig'][filter]
+    part["speed"] = np.linalg.norm(velocity, axis=1)
 
     # output
-    data = {'position'      : position,              # [cm]
-            'velocity'      : velocity,              # [cm/s]
-            'h'             : h,                     # [cm]
-            'mass'          : mass,                  # [g]
-            'rho'           : rho,                   # [g/cm^3]
-            'u'             : u,                     # [erg/g]
-            'p'             : p,                     # [Ba]
-            'Tgas'          : temp,                  # [K]
-            'Tdust'         : Tdust,
-            'gamma'         : gamma,
-            'mu'            : mu,
-            'speed'         : speed,                 # [cm/s]
-            'mach'          : mach,
-            'r'             : r,                     # [cm]
-            'theta'         : theta,
-            'phi'           : phi,
-            'cs'            : cs,                    # [cm]
+    data = {'x'             : part.x,                # [cm]
+            'y'             : part.y,                # [cm]
+            'z'             : part.z,                # [cm]
+            'vx'            : part.vx,               # [cm/s]
+            'vy'            : part.vy,               # [cm/s]
+            'vz'            : part.vz,               # [cm/s]
+            'h'             : part.h,                # [cm]
+            'mass'          : part.mass,             # [g]
+            'rho'           : part.rho,              # [g/cm^3]
+            'u'             : part.u,                # [erg/g]
+            'p'             : part.p,                # [Ba]
+            'Tgas'          : part.temp,             # [K]
+            'Tdust'         : part.Tdust,
+            'gamma'         : part.gamma,
+            'mu'            : part.mu,
+            'speed'         : part.speed,            # [cm/s]
+            'r'             : part.r,                # [cm]
+            'theta'         : part.theta,
+            'phi'           : part.phi,
+            'cs'            : part.cs,               # [cm]
+            'divv'          : part.divv,             # [1/s]
+            'Gamma'         : part.Gamma,
             'posAGB'        : posAGB,                # [cm]
             'rAGB'          : rAGB,                  # [cm]
             'massAGB'       : massAGB,               # [g]
             'lumAGB'        : lumAGB,                # [erg/s]
             'velAGB'        : velAGB,
-            'vx'            : vx,                    # [cm/s]
-            'vy'            : vy,                    # [cm/s]
-            'vz'            : vz,                    # [cm/s]
-            'divv'          : divv,                  # [1/s]
-            'Gamma'         : Gamma
             }
 
     if not setup["single_star"]:
@@ -330,22 +297,22 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
         data['rHill'      ] = rHill                  # [cm]
 
     if setup['triple_star']:
-        data["posComp_in" ] = posComp_in               # [cm]
-        data['rComp_in'   ] = rComp_in                 # [cm]
-        data['massComp_in'] = massComp_in              # [g]
+        data["posComp_in" ] = posComp_in             # [cm]
+        data['rComp_in'   ] = rComp_in               # [cm]
+        data['massComp_in'] = massComp_in            # [g]
         data['velComp_in' ] = velComp_in
 
-    if containsTau:
-        data["tau"        ] = tau
+    if "tau" in part:
+        data["tau"        ] = part.tau
 
-    if containsTauL:
-        data["tau_lucy"       ] = tauL
+    if "tau_lucy" in part:
+        data["tau_lucy"   ] = part.tau_lucy
 
-    if bowenDust:
-        data["kappa"      ] = kappa                  # [cm^2/g]
+    if "kappa" in part:
+        data["kappa"      ] = part.kappa                  # [cm^2/g]
 
-    if "iorig" in dump["blocks"][0]["data"]:
-        data["iorig"      ] = iorig
+    if "iorig" in part:
+        data["iorig"      ] = part.iorig
 
     return data
 
@@ -395,12 +362,13 @@ def LoadDump(fileName: str) -> Dict[str, Any]:
     h     = h                     [filter] * unit_dist          # smoothing length              [cm]
     rho   = pq.getRho(h, dump["quantities"]["hfact"], mass)     # density                       [g/cm^3]
 
-    position = np.array((x, y, z )).transpose()
-    velocity = np.array((vx,vy,vz)).transpose()
-
     # output
-    data = {'position'      : position,              # [cm]
-            'velocity'      : velocity,              # [cm/s]
+    data = {'x'             : x,                     # [cm]
+            'y'             : y,                     # [cm]
+            'z'             : z,                     # [cm]
+            'vx'            : vx,                    # [cm/s]
+            'vy'            : vy,                    # [cm/s]
+            'vz'            : vz,                    # [cm/s]
             'u'             : u,                     # [erg/g]
             'rho'           : rho,                   # [g/cm^3]
             }
@@ -421,16 +389,13 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
         Dict[str, Any]: _description_
     """
 
-    position = dump['position'].transpose()
-    velocity = dump['velocity'].transpose()
-
-    x     = position[0]
-    y     = position[1]
-    z     = position[2]
+    x     = dump['x']
+    y     = dump['y']
+    z     = dump['z']
     mass  = dump['mass']
-    vx    = velocity[0]
-    vy    = velocity[1]
-    vz    = velocity[2]
+    vx    = dump['vx']
+    vy    = dump['vy']
+    vz    = dump['vz']
     u     = dump['u']
     rho   = dump['rho']
     gamma = dump['gamma']
@@ -472,17 +437,17 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
 
-    position = np.array((x, y, z )).transpose()
     velocity = np.array((vx,vy,vz)).transpose()
 
     speed = np.linalg.norm(velocity, axis=1)
-    mach  = speed/cs
-
-
 
     # output
-    data = {'position'      : position,      # [cm]
-            'velocity'      : velocity,      # [cm/s]
+    data = {'x'             : x,             # [cm]
+            'y'             : y,             # [cm]
+            'z'             : z,             # [cm]
+            'vx'            : vx,            # [cm/s]
+            'vy'            : vy,            # [cm/s]
+            'vz'            : vz,            # [cm/s]
             'h'             : h,             # [cm]
             'mass'          : mass,          # [g]
             'rho'           : rho,           # [g/cm^3]
@@ -492,7 +457,6 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
             'mu'            : mu,
             'speed'         : speed,         # [cm/s]
             # 'press'         : p,             # ?
-            'mach'          : mach,
             'r'             : r,             # [cm]
             'phi'           : phi,
             'theta'         : theta,

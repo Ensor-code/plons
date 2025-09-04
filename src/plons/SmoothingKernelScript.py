@@ -47,7 +47,7 @@ Get a parameter in a certain point (not one that exists), using the PHANTOM smoo
     'param' is the string of the parameters
 '''
 def getParamSmoothingKernel(closest_points, W_list, param):
-    param_list = param[closest_points]
+    param_list = np.array(param)[closest_points]
     par =  param_list*W_list
     par_final = np.sum(par, axis = 1)
     return par_final
@@ -165,7 +165,8 @@ Get the smoothed values for the params, using the smoothing kernel with neighbou
 def getSmoothingKernelledPix(neighbours, data, params, pixCoord):
 
     # define all nearest neighbours
-    tree = cKDTree(data['position'])
+    position = np.array((data['x'], data['y'], data['z'])).transpose()
+    tree = cKDTree(position)
 
     # for every pixel in the spherical slice (sphere), get its "neighbor" nearest neighbours
     (distances, closest_points) = tree.query(pixCoord, neighbours)
@@ -177,8 +178,7 @@ def getSmoothingKernelledPix(neighbours, data, params, pixCoord):
                           - of every closest neighbour of that point
                           - the x, y, z values of th position of the closest neighbour
     '''
-    # position_closest_points = data['position'][closest_points]
-    h_closest_points        = data['h'       ][closest_points]
+    h_closest_points        = np.array(data['h'])[closest_points]
 
     # Get the smoothing kernel W_ab for all nearest neighbours for every pixel in 'sphere'
     
