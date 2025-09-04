@@ -167,12 +167,12 @@ def customRanges(observables, zoomin):
             limits["Tdust"][10] = [0, 2000]
             limits["Tdust"][20] = [0, 2000]
 
-        if "tauL" in observables:
-            limits["tauL"][1]  = [0, 0.05]
-            limits["tauL"][2]  = [0, 0.05]
-            limits["tauL"][5]  = [0, 0.05]
-            limits["tauL"][10] = [0, 0.05]
-            limits["tauL"][20] = [0, 0.05]
+        if "tau_lucy" in observables:
+            limits["tau_lucy"][1]  = [0, 0.05]
+            limits["tau_lucy"][2]  = [0, 0.05]
+            limits["tau_lucy"][5]  = [0, 0.05]
+            limits["tau_lucy"][10] = [0, 0.05]
+            limits["tau_lucy"][20] = [0, 0.05]
 
         if "kappa" in observables:
             limits["kappa"][1]  = [0., 3.]

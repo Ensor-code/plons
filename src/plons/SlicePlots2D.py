@@ -22,37 +22,37 @@ velocity_vec    = True
 
 
 # colormap per parameter
-cm =   {'rho':   plt.colormaps['inferno'],
-        'speed': plt.colormaps['CMRmap'],
-        #'Tgas': plt.colormaps['RdYlGn'],
-        'Tgas':  plt.colormaps['hot'], #nipy_spectral
-        'tau':   plt.colormaps['viridis_r'],
-        'tauL':  plt.colormaps['viridis'],
-        'kappa': plt.colormaps['Spectral_r'],
-        'Tdust': plt.colormaps['Spectral_r'],
-        'Gamma': plt.colormaps['Spectral_r']
+cm =   {'rho':      plt.colormaps['inferno'],
+        'speed':    plt.colormaps['CMRmap'],
+        #'Tgas':    plt.colormaps['RdYlGn'],
+        'Tgas':     plt.colormaps['hot'], #nipy_spectral
+        'tau':      plt.colormaps['viridis_r'],
+        'tau_lucy': plt.colormaps['viridis'],
+        'kappa':    plt.colormaps['Spectral_r'],
+        'Tdust':    plt.colormaps['Spectral_r'],
+        'Gamma':    plt.colormaps['Spectral_r']
         }
 
 # label name per parameter
-name = {'rho':   r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
-        'speed': r'$v$ [km/s]',
-        'Tgas':  r'$\log \, T$ [K]',
-        'tau':   r'$\tau$ [/]',
-        'tauL':  r'$\tau_L$ [/]',
-        'kappa': r'$\kappa$ [g/cm$^3$]',
-        'Tdust': r'$T_{\rm eq}$ [K]',
-        'Gamma': r'$\Gamma$ [/]'
+name = {'rho':      r'$\log \, \rho$ [g$\,$cm$^{-3}$]',
+        'speed':    r'$v$ [km/s]',
+        'Tgas':     r'$\log \, T$ [K]',
+        'tau':      r'$\tau$ [/]',
+        'tau_lucy': r'$\tau_L$ [/]',
+        'kappa':    r'$\kappa$ [g/cm$^3$]',
+        'Tdust':    r'$T_{\rm eq}$ [K]',
+        'Gamma':    r'$\Gamma$ [/]'
         }
 
 # label name per parameter
-log =  {'rho':   True,
-        'speed': False,
-        'Tgas':  True,
-        'tau':   False,
-        'tauL':  False,
-        'kappa': False,
-        'Tdust': False,
-        'Gamma': False
+log =  {'rho':      True,
+        'speed':    False,
+        'Tgas':     True,
+        'tau':      False,
+        'tau_lucy': False,
+        'kappa':    False,
+        'Tdust':    False,
+        'Gamma':    False
         }
 
 '''

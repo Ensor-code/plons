@@ -339,7 +339,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
         data["tau"        ] = tau
 
     if containsTauL:
-        data["tauL"       ] = tauL
+        data["tau_lucy"       ] = tauL
 
     if bowenDust:
         data["kappa"      ] = kappa                  # [cm^2/g]
@@ -437,7 +437,7 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     mu    = dump['mu']
     temp  = dump['Tgas']
     if "tau"   in dump: tau   = dump['tau']
-    if "tauL"  in dump: tauL   = dump['tauL']
+    if "tau_lucy"  in dump: tauL   = dump['tau_lucy']
     if "kappa" in dump: kappa = dump['kappa']
     if "Gamma_E" in dump: Gamma = dump['Gamma_E']
     if "Tdust" in dump: Tdust = dump['Tdust']
@@ -447,27 +447,27 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
     phi   = dump['phi']
 
     filter = (r > factor * setup['sma_ini'] * cgs.au) & (r < bound * cgs.au)
-    x     = x                           [filter]             # cm
-    y     = y                           [filter]
-    z     = z                           [filter]
-    mass  = mass                        [filter]             # g
-    vx    = vx                          [filter]             # cm/s
-    vy    = vy                          [filter]
-    vz    = vz                          [filter]
-    u     = u                           [filter]             # erg/g
-    rho   = rho                         [filter]             # g/cm^3
-    gamma = gamma                       [filter]
-    mu    = mu                          [filter]
-    temp  = temp                        [filter]             # K
-    if "tau"   in dump: tau   = tau     [filter]
-    if "tauL"  in dump: tauL  = tauL    [filter]
-    if "kappa" in dump: kappa = kappa   [filter]             # cm^2/g
-    if "Gamma_E" in dump: Gamma = Gamma [filter]
-    if "Tdust" in dump: Tdust = Tdust   [filter]
-    h     = h                           [filter]             # cm
-    r     = r                           [filter]
-    theta = theta                       [filter]
-    phi   = phi                         [filter]
+    x     = x                            [filter]             # cm
+    y     = y                            [filter]
+    z     = z                            [filter]
+    mass  = mass                         [filter]             # g
+    vx    = vx                           [filter]             # cm/s
+    vy    = vy                           [filter]
+    vz    = vz                           [filter]
+    u     = u                            [filter]             # erg/g
+    rho   = rho                          [filter]             # g/cm^3
+    gamma = gamma                        [filter]
+    mu    = mu                           [filter]
+    temp  = temp                         [filter]             # K
+    if "tau"   in dump: tau   = tau      [filter]
+    if "tau_lucy"  in dump: tauL  = tauL [filter]
+    if "kappa" in dump: kappa = kappa    [filter]             # cm^2/g
+    if "Gamma_E" in dump: Gamma = Gamma  [filter]
+    if "Tdust" in dump: Tdust = Tdust    [filter]
+    h     = h                            [filter]             # cm
+    r     = r                            [filter]
+    theta = theta                        [filter]
+    phi   = phi                          [filter]
 
     p     = pq.getPressure(rho, u, setup['gamma'])              # pressure                      [Ba = 1e-1 Pa]
     cs    = pq.getSoundSpeed(p, rho, setup['gamma'])            # speed of sound                [cm/s]
@@ -498,11 +498,11 @@ def LoadDump_outer(factor: float, bound: float, setup: Dict[str, Any], dump: Dic
             'theta'         : theta,
             'cs'            : cs             # [cm]
             }
-    if "tau"     in dump: data["tau"]     = tau
-    if "tauL"    in dump: data["tauL"]    = tauL
-    if "kappa"   in dump: data["kappa"]   = kappa
-    if "Gamma_E" in dump: data["Gamma_E"] = Gamma
-    if "Tdust"   in dump: data["Tdust"]   = Tdust
+    if "tau"      in dump: data["tau"]      = tau
+    if "tau_lucy" in dump: data["tau_lucy"] = tauL
+    if "kappa"    in dump: data["kappa"]    = kappa
+    if "Gamma_E"  in dump: data["Gamma_E"]  = Gamma
+    if "Tdust"    in dump: data["Tdust"]    = Tdust
 
     return data
 

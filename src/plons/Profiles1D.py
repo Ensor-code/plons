@@ -153,7 +153,7 @@ def referenceY(whichPlots, data1D, dumpData):
             references['tau_max' ] = 1.1*max(max(dumpData['tau']), max(data1D['tau']))
         elif plot == 'tau_lucy':
             references['tauL_min'] = 0.
-            references['tauL_max'] = 1.1*max(max(dumpData['tauL']), max(data1D['tau_lucy']))
+            references['tauL_max'] = 1.1*max(max(dumpData['tau_lucy']), max(data1D['tau_lucy']))
     return references
     
 # Plots the 3D SPH data
@@ -231,7 +231,7 @@ def plot3D (dumpData, setup, references, whichPlot, ax1, ax2=None, second=False)
         ax1.set_ylim([references['tau_min'], references['tau_max']])
 
     if whichPlot == 'tau_lucy':
-        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tauL'], 'r.', label=r'$\tau_{L{\rm, SPH}}$')
+        ax1.plot(dumpData[references['x_axis']]/references['x_ref'], dumpData['tau_lucy'], 'r.', label=r'$\tau_{L{\rm, SPH}}$')
         ax1.set_ylim([references['tauL_min'], references['tauL_max']])
 
     if whichPlot == 'alpha':
