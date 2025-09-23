@@ -34,7 +34,7 @@ def getTerminalVelocity(setup, dump):
         sma     = setup['sma_ini']
     outerBound  = int(round( setup['bound']  ))
     position = np.array((dump['x'], dump['y'], dump['z'])).transpose()
-    r           = gf.getRadiusCoordinate(position,dump['posAGB'])/cgs.au  # radius [AU] from AGB, not barycentre!
+    r           = gf.getRadiusCoordinate(position,dump._params['posAGB'])/cgs.au  # radius [AU] from AGB, not barycentre!
 
     # Prepare for binning.
     rmin = min( r )     # minimum radius in the data set [AU]
@@ -440,9 +440,9 @@ def main_terminalVelocity(setup, dump, sinkData, outputloc, run):
             f.write('Hill radius    (Rhill):    '+str(round(dump['rHill'        ]/cgs.au          , 2))+' au  \n')
             f.write('\n')
             f.write('Capture radius / a:        '+str(round(setup['Rcap'        ]/setup['sma_ini']       , 2))+'  \n')
-            f.write('Hill radius    / a:        '+str(round((dump['rHill']/cgs.au)/setup['sma_ini']      , 2))+'  \n')
+            f.write('Hill radius    / a:        '+str(round((dump._params['rHill']/cgs.au)/setup['sma_ini']      , 2))+'  \n')
             f.write('\n')
-            f.write('Rhill / Rcapt:             '+str(round((dump['rHill']/cgs.au)/setup['Rcap'   ]      , 2))+'  \n')
+            f.write('Rhill / Rcapt:             '+str(round((dump._params['rHill']/cgs.au)/setup['Rcap'   ]      , 2))+'  \n')
 
             f.write('\n')
             if setup['ecc'] == 0:

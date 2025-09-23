@@ -136,7 +136,7 @@ def getPixels(shape, n, r, data, bound):
         pixCoord = []
         for i in range(len(pix)):
             # for j in range(len(pix_y)):
-            pixCoord.append([data['posAGB'][0], data['posAGB'][1], pix[i]])
+            pixCoord.append([data._params['posAGB'][0], data._params['posAGB'][1], pix[i]])
 
         pixCoord = np.array(pixCoord)
 

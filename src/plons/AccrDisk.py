@@ -16,11 +16,11 @@ calculate new radii after change coordinate center to position second sink parti
 
 def calc_position(x,y,dumpData):
     # translation with rcomp:
-    tr_x = x - dumpData['posComp'][0]
-    tr_y = y - dumpData['posComp'][1]
+    tr_x = x - dumpData._params['posComp'][0]
+    tr_y = y - dumpData._params['posComp'][1]
 
     # rotation
-    theta   = - (gf.calcPhi([dumpData['posAGB'][0]],[dumpData['posAGB'][1]])-np.pi)
+    theta   = - (gf.calcPhi([dumpData._params['posAGB'][0]],[dumpData._params['posAGB'][1]])-np.pi)
     # print('theta rotation is ',theta)
     # print('Orbital phase is ',np.round(2*np.pi-theta,3))
     print('Orbital phase is ', np.round((2*np.pi-theta)/np.pi,3), ' pi')
@@ -36,12 +36,12 @@ Calculate velocities with velocity of companion as (0,0,0)
 '''
 def calc_velocities(vx,vy,vz,dumpData):
     #Translatie
-    tr_vx = vx - dumpData['velComp'][0]/cgs.kms
-    tr_vy = vy - dumpData['velComp'][1]/cgs.kms
-    vz = vz - dumpData['velComp'][2]/cgs.kms
+    tr_vx = vx - dumpData._params['velComp'][0]/cgs.kms
+    tr_vy = vy - dumpData._params['velComp'][1]/cgs.kms
+    vz = vz - dumpData._params['velComp'][2]/cgs.kms
 
     # rotation
-    theta   = - (gf.calcPhi([dumpData['posAGB'][0]],[dumpData['posAGB'][1]])-np.pi)
+    theta   = - (gf.calcPhi([dumpData._params['posAGB'][0]],[dumpData._params['posAGB'][1]])-np.pi)
     vx = tr_vx * np.cos(theta) - tr_vy * np.sin(theta)
     vy = tr_vx * np.sin(theta) + tr_vy * np.cos(theta)
     return (vx,vy,vz)
@@ -72,7 +72,7 @@ def getRadTanVelocity(x,y,v_x,v_y):
 Calculate keplerian velocity from companion mass and radius
 '''
 def kepler_vt(r,dumpData):
-    kep_vt = np.sqrt(cgs.G * dumpData['massComp'] / (r*cgs.au))/cgs.kms
+    kep_vt = np.sqrt(cgs.G * dumpData._params['massComp'] / (r*cgs.au))/cgs.kms
     return kep_vt
 
 def loadDataForSmoothing(run,dump):
@@ -379,9 +379,9 @@ theta = 90 --> z-line through point on y-axis (through sink particle companion)
 
 def getRhoOnZline(dumpData,r,theta,bound,n_grid):
     #getSmoothingKernelledPix uses old position! so adapt rx and ry here (translation, and rotation by extra theta)
-    theta_new = theta + (gf.calcPhi([dumpData['posAGB'][0]],[dumpData['posAGB'][1]])[0]-np.pi)
-    rx = dumpData['posComp'][0] + r * np.cos(theta_new)
-    ry = dumpData['posComp'][1] + r * np.sin(theta_new)
+    theta_new = theta + (gf.calcPhi([dumpData._params['posAGB'][0]],[dumpData._params['posAGB'][1]])[0]-np.pi)
+    rx = dumpData._params['posComp'][0] + r * np.cos(theta_new)
+    ry = dumpData._params['posComp'][1] + r * np.sin(theta_new)
 
     pixCoord = getPixCoord(bound,n_grid,rx,ry)
 
@@ -694,7 +694,7 @@ dump                 dumpNumber, used to save under correct name
 '''
 def testPositionAndTheta(dumpData,run,dump):
     print('test if coordinate transformation is correct')
-    x_AGB, y_AGB, r_AGB = calc_position([dumpData['posAGB'][0]],[dumpData['posAGB'][1]],dumpData)
+    x_AGB, y_AGB, r_AGB = calc_position([dumpData._params['posAGB'][0]],[dumpData._params['posAGB'][1]],dumpData)
     if x_AGB>0 or np.abs(y_AGB/cgs.au)>0.1:
         print('!INCORRECT COORDINATE TRANSFORMATION!')
         print(x_AGB/cgs.au,y_AGB/cgs.au)

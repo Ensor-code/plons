@@ -28,7 +28,7 @@ def SlicePlots(run, loc, dumpData, setup, number = -1, zoomin = [1, 5, 10],
                nneighb = 10, n_grid = 200, n_grid_vec = 25, printout=False):
     theta=0
     if not setup["single_star"]:
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1])
     
     if printout: print('     Calculating the smoothing kernels. This may take a while, please wait...')
     smooth = {}

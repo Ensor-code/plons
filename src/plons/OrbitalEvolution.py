@@ -30,20 +30,20 @@ def plot_orbit(data, setup,loc):
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     fig.set_size_inches(7, 7)
 
-    xc = data['posComp'].transpose()[0]
-    xa = data['posAGB' ].transpose()[0]
-    yc = data['posComp'].transpose()[1]
-    ya = data['posAGB' ].transpose()[1]
-    #zc = data['posComp'].transpose()[2]
-    #za = data['posAGB' ].transpose()[2]
+    xc = data._params['posComp'].transpose()[0]
+    xa = data._params['posAGB' ].transpose()[0]
+    yc = data._params['posComp'].transpose()[1]
+    ya = data._params['posAGB' ].transpose()[1]
+    #zc = data._params['posComp'].transpose()[2]
+    #za = data._params['posAGB' ].transpose()[2]
 
     M1   = data['massComp']
     M2   = data['massAGB' ]
 
     if setup['triple_star']==True:
-        xc_in = data['posComp_in'].transpose()[0]
-        yc_in = data['posComp_in'].transpose()[1]
-        #zc_in = data['posComp_in'].transpose()[2]
+        xc_in = data._params['posComp_in'].transpose()[0]
+        yc_in = data._params['posComp_in'].transpose()[1]
+        #zc_in = data._params['posComp_in'].transpose()[2]
         M_in  = data['massComp_in']
         #CoM
         xCOM_in = (M_in*xc_in + M2 * xa)/(M_in+M2)
@@ -117,8 +117,8 @@ uses sinkData = data
 def plotEccentricity(data, setup, loc):
 
     #data from sink files (so about evolution)
-    r1     = data['posAGB' ]
-    v1     = data['velAGB' ]
+    r1     = data._params['posAGB' ]
+    v1     = data._params['velAGB']
     M1     = data['massAGB' ]
     r2     = data['posComp' ]
     v2     = data['velComp' ]
@@ -171,7 +171,7 @@ def orbSep_apa_per(data, setup):
     #data from sink files (so about evolution)
     time   = data['time'   ]
     rc     = data['rComp'  ]
-    rAGB   = data['rAGB' ]
+    rAGB   = data._params['rAGB']
 
     #input value
     ecc    = setup['ecc'   ]
@@ -261,7 +261,7 @@ def plotEstimate_a_Per(sinkData,setup,loc):
         ind.append(i)
     
     # Estimate period using the estimate of a [au], and the masses of the AGB and companion [gram] at these times t
-    est_p     = pq.getPeriod(sinkData['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
+    est_p     = pq.getPeriod(sinkData._params['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
 
     # Make plot of orbital period, and add linear line for visualisation
     fig_p, ((ax_p))= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
@@ -363,10 +363,10 @@ def BHLMassAccrRate(setup,data):
 
     alphaBHL = 0.75
     Mdot     = setup['Mdot'] * cgs.Msun / cgs.year                               # [g/s]
-    orbSep   = (data['rComp'][:index_tmax] + data['rAGB'][:index_tmax])                                    # cm   ?
+    orbSep   = (data['rComp'][:index_tmax] + data._params['rAGB'][:index_tmax])                                    # cm   ?
     G        = cgs.G                                                             # [cm^3 g^-1 s^-1]
     Mc       = data['massComp'][:index_tmax]                                                  # [g]
-    Md       = data['massAGB'][:index_tmax]
+    Md       = data._params['massAGB'][:index_tmax]
     vorbp    = data['v_orbAGB_t'][:index_tmax]                                                # [cm/s]  ?
     # vorbc    = data['v_orbComp_t']#/cgs.kms                                     # [cm/s]
 
@@ -589,10 +589,10 @@ def plotMassAccrEff(setup, sinkData, loc):
 def plot_vw_vorb(setup,sinkData,loc):
     fig, ((ax))= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     t    = sinkData['time'][1:]
-    orbSep   = (sinkData['rComp'] + sinkData['rAGB'])                                    # cm   ?
+    orbSep   = (sinkData['rComp'] + sinkData._params['rAGB'])                                    # cm   ?
     G        = cgs.G                                                             # [cm^3 g^-1 s^-1]
     Mc       = sinkData['massComp']                                                  # [g]
-    Md       = sinkData['massAGB']
+    Md       = sinkData._params['massAGB']
     sma      = setup['sma_ini']        *cgs.au                               # [cm]  
     v_rel       = np.sqrt(G * (Mc + Md)*(2/orbSep - 1/sma))
     vorbp    = sinkData['v_orbAGB_t']                                                # [cm/s]  ?
@@ -697,7 +697,7 @@ def plotOrbRad(setup,sinkData, run, loc):
 
     ax.set_ylabel('$r$ [au]', fontsize = 12)
     ax.set_title('orbital radii', fontsize = 15)
-    ra   = sinkData['rAGB'][1:] /cgs.au
+    ra   = sinkData._params['rAGB'][1:] /cgs.au
     t    = sinkData['time'][1:]
 
     ax.plot(t, ra, label ='r AGB', c='gold')
@@ -951,7 +951,7 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
         info = {}
         info['TotMaC']         = sinkData['maccrComp'][-1] # the total mass accreted by the companion
         info['TotMaA']         = sinkData['maccrAGB' ][-1]  # the total mass accreted by the AGB
-        info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData['massAGB'][-1] - info['TotMaA'])
+        info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData._params['massAGB'][-1] - info['TotMaA'])
 
 
         # info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
@@ -1000,7 +1000,7 @@ def orbEv_main(run,loc, sinkData, setup,dumpData):
             f.write('\n')
 
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 35 character width
-            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
+            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData._params['rAGB'], sinkData['rComp']+sinkData._params['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
                     f.write(col_format.format(*i))
         '''
 

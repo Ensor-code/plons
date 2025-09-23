@@ -28,20 +28,20 @@ def plot_orbit(data, setup,loc):
     fig, (ax)= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
     fig.set_size_inches(7, 4)
 
-    xc = data['posComp'].transpose()[0]
-    xa = data['posAGB' ].transpose()[0]
-    yc = data['posComp'].transpose()[1]
-    ya = data['posAGB' ].transpose()[1]
-    #zc = data['posComp'].transpose()[2]
-    #za = data['posAGB' ].transpose()[2]
+    xc = data._params['posComp'].transpose()[0]
+    xa = data._params['posAGB' ].transpose()[0]
+    yc = data._params['posComp'].transpose()[1]
+    ya = data._params['posAGB' ].transpose()[1]
+    #zc = data._params['posComp'].transpose()[2]
+    #za = data._params['posAGB' ].transpose()[2]
 
     M1   = data['massComp']
     M2   = data['massAGB' ]
 
     if setup['triple_star']==True:
-        xc_in = data['posComp_in'].transpose()[0]
-        yc_in = data['posComp_in'].transpose()[1]
-        #zc_in = data['posComp_in'].transpose()[2]
+        xc_in = data._params['posComp_in'].transpose()[0]
+        yc_in = data._params['posComp_in'].transpose()[1]
+        #zc_in = data._params['posComp_in'].transpose()[2]
         M_in  = data['massComp_in']
         #CoM
         xCOM_in = (M_in*xc_in + M2 * xa)/(M_in+M2)
@@ -93,8 +93,8 @@ def orbSep_apa_per(data, setup):
 
     #data from sink files (so about evolution)
     time   = data['time'   ]
-    rc     = data['rComp'  ]
-    rAGB   = data['rAGB' ]
+    rc     = data._params['rComp']
+    rAGB   = data._params['rAGB']
 
     #input value
     ecc    = setup['ecc'   ]
@@ -182,7 +182,7 @@ def plotEstimate_a_Per(sinkData,setup,loc):
         ind.append(i)
 
     # Estimate period using the estimate of a [au], and the masses of the AGB and companion [gram] at these times t
-    est_p     = pq.getPeriod(sinkData['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
+    est_p     = pq.getPeriod(sinkData._params['massAGB'][ind], sinkData['massComp'][ind], est_a/cgs.au )/cgs.year
 
     # Make plot of orbital period, and add linear line for visualisation
     fig_p, ((ax_p))= plt.subplots(1, 1,  gridspec_kw={'height_ratios':[1],'width_ratios': [1]})
@@ -427,7 +427,7 @@ def plotOrbRad(setup,sinkData, run, loc):
     ax.set_ylabel('$r$ [au]', fontsize = 12)
     #ax.set_title('orbital radii', fontsize = 15)
     ax.set_title('(b)', y=0.9,x=0.95, fontweight='bold', ha='right', fontsize=16)
-    ra   = sinkData['rAGB'][1:] /cgs.au
+    ra   = sinkData._params['rAGB'][1:] /cgs.au
     t    = sinkData['time'][1:]
 
     ax.plot(t, ra, label ='r AGB', c='greenyellow')
@@ -444,7 +444,7 @@ def plotOrbRad(setup,sinkData, run, loc):
         rCOM_in = (Mc_in*rc_in + Ma *ra )/(Mc_in+Ma)
         ax.plot(t, rCOM_in+rc_out, label = 'Orb sep outer',c='navy')
 
-        #ax.plot(sinkData['time'], sinkData['rAGB']+sinkData['rComp'], label = 'Orb sep')
+        #ax.plot(sinkData['time'], sinkData._params['rAGB']+sinkData['rComp'], label = 'Orb sep')
     else:
         ax.plot(t, sinkData['rComp'][1:]/cgs.au, label= 'r comp', c='crimson')
         ax.plot(t, ra +sinkData['rComp'][1:]/cgs.au, label = 'Orb sep', c='navy')
@@ -498,7 +498,7 @@ def plotOrbRadSeperate(setup,sinkData, run, loc):
     else:
         fig, axs= plt.subplots(3, 1,  gridspec_kw={'height_ratios':[1,1,1],'width_ratios': [1]})
 
-    ra   = sinkData['rAGB'][1:] /cgs.au
+    ra   = sinkData._params['rAGB'][1:] /cgs.au
     t    = sinkData['time'][1:]
 
     if setup['triple_star']==True:
@@ -616,7 +616,7 @@ def orbEv_main(run,loc, sinkData, setup):
         info = {}
         info['TotMaC']         = sinkData['maccrComp'][-1] # the total mass accreted by the companion
         info['TotMaA']         = sinkData['maccrAGB' ][-1]  # the total mass accreted by the AGB
-        info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData['massAGB'][-1] - info['TotMaA'])
+        info['MassLostAGB']    = sinkData['massAGB'  ][0] - (sinkData._params['massAGB'][-1] - info['TotMaA'])
         info['RatioMaC_MLAGB'] = info['TotMaC']/ info['MassLostAGB']
         if setup['triple_star']==True:
             info['TotMaC_in']         = sinkData['maccrComp_in'][-1] # the total mass accreted by the inner companion
@@ -660,7 +660,7 @@ def orbEv_main(run,loc, sinkData, setup):
             f.write('\n')
 
             col_format = "{:<35}" * 7 + "\n"   # 7 left-justfied columns with 35 character width
-            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData['rAGB'], sinkData['rComp']+sinkData['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
+            for i in zip(sinkData['time'], sinkData['maccrComp'],sinkData['rComp'],sinkData._params['rAGB'], sinkData['rComp']+sinkData._params['rAGB'], sinkData['v_orbComp_t'][1:],sinkData['v_orbAGB_t'][1:]):
                     f.write(col_format.format(*i))
         '''
 

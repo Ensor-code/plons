@@ -33,7 +33,7 @@ def makeMovie(prefix, loc, outputloc, model, firstframe,lastframe):
 
     X, Y = np.meshgrid(x, y)
     Z    = np.zeros_like(X)
-    theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+    theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1])
     X_rot, Y_rot, Z_rot = sk.rotateMeshAroundZ(theta, X, Y, Z)
     smooth_rot = sk.smoothMesh(X_rot, Y_rot, Z_rot, dumpData, ['rho'])
 
@@ -57,13 +57,13 @@ def makeMovie(prefix, loc, outputloc, model, firstframe,lastframe):
     def animate(frame):
         dump = os.path.join(loc,prefix+f"_%05i"%frame)
         dumpData  = plons.LoadFullDump(dump, setup)
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1])
         X_rot, Y_rot, Z_rot = sk.rotateMeshAroundZ(theta, X, Y, Z)
         smooth_rot = sk.smoothMesh(X_rot, Y_rot, Z_rot, dumpData, ['rho'])
 
         mesh.set_array(np.log10(smooth_rot["rho"]+1e-99))
-        circleAGB.center = -np.linalg.norm(dumpData['posAGB'])/cgs.au, 0, 0
-        circleComp.center = np.linalg.norm(dumpData['posComp'])/cgs.au, 0, 0
+        circleAGB.center = -np.linalg.norm(dumpData._params['posAGB'])/cgs.au, 0, 0
+        circleComp.center = np.linalg.norm(dumpData._params['posComp'])/cgs.au, 0, 0
         print(frame, end="\r")
 
     anim = ani.FuncAnimation(fig, animate, frames=range(firstframe, lastframe+1), interval=100)

@@ -43,6 +43,8 @@ def plotSlice(ax: plt.Axes,
     else:
         obs = smooth[observable]
     axPlot = ax.pcolormesh(X/cgs.au, Y/cgs.au, obs, cmap=cmap, vmin=clim[0], vmax = clim[1])
+    ax.set_xlim(X.min()/cgs.au, X.max()/cgs.au)
+    ax.set_ylim(Y.min()/cgs.au, Y.max()/cgs.au)
 
     if cbar == True:
         cbar = plt.colorbar(axPlot, ax = ax, location='right', fraction=0.0471, pad=0.01)
@@ -69,19 +71,19 @@ def plotSink(ax: plt.Axes,
     Returns:
         matplotlib.patches.Circle: Circle objects of the sink particles
     """
-    if rotate: circleAGB = plt.Circle((-np.linalg.norm(dumpData['posAGB'])/cgs.au, 0.), setup["wind_inject_radius"], transform=ax.transData._b, color="black", zorder=10)
-    else: circleAGB = plt.Circle(dumpData['posAGB']/cgs.au, setup["wind_inject_radius"], color="black", zorder=10)
-    ax.add_artist(circleAGB)
+    if rotate: circleAGB = plt.Circle((-np.linalg.norm(dumpData._params['posAGB'])/cgs.au, 0.), setup["wind_inject_radius"], transform=ax.transData._b, color="black", zorder=10)
+    else: circleAGB = plt.Circle(dumpData._params['posAGB']/cgs.au, setup["wind_inject_radius"], color="black", zorder=10)
+    ax.add_patch(circleAGB)
     
     if not setup['single_star']:
-        if rotate: circleComp = plt.Circle((np.linalg.norm(dumpData['posComp'])/cgs.au, 0.), setup["rAccrComp"], transform=ax.transData._b, color="black", zorder=10)
-        else: circleComp = plt.Circle(dumpData['posComp']/cgs.au, setup["rAccrComp"], color="black", zorder=10)
-        ax.add_artist(circleComp)
+        if rotate: circleComp = plt.Circle((np.linalg.norm(dumpData._params['posComp'])/cgs.au, 0.), setup["rAccrComp"], transform=ax.transData._b, color="black", zorder=10)
+        else: circleComp = plt.Circle(dumpData._params['posComp']/cgs.au, setup["rAccrComp"], color="black", zorder=10)
+        ax.add_patch(circleComp)
 
         if setup['triple_star']:
-            if rotate: circleComp_in = plt.Circle((np.linalg.norm(dumpData['posComp_in'])/cgs.au, 0.), setup["rAccrComp_in"], transform=ax.transData._b, color="black", zorder=10)
-            else: circleComp_in = plt.Circle(dumpData['posComp_in']/cgs.au, setup["rAccrComp_in"], color="black", zorder=10)
-            ax.add_artist(circleComp_in)
+            if rotate: circleComp_in = plt.Circle((np.linalg.norm(dumpData._params['posComp_in'])/cgs.au, 0.), setup["rAccrComp_in"], transform=ax.transData._b, color="black", zorder=10)
+            else: circleComp_in = plt.Circle(dumpData._params['posComp_in']/cgs.au, setup["rAccrComp_in"], color="black", zorder=10)
+            ax.add_patch(circleComp_in)
             return circleAGB, circleComp, circleComp_in
         return circleAGB, circleComp
     return circleAGB
@@ -123,7 +125,7 @@ def SlicePlot2D(ax: plt.Axes,
     Z    = np.zeros_like(X)
     
     if rotate:
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1]) # Calculate the angle around which to rotate
+        theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1]) # Calculate the angle around which to rotate
         X_rot, Y_rot, Z_rot = sk.rotateMeshAroundZ(theta, X, Y, Z)                        # Rotate the mesh grid before computing the smoothed data. In this way the image will be constructed in the rotated frame
         smooth = sk.smoothMesh(X_rot, Y_rot, Z_rot, dumpData, [observable])               # Smooth the data with the rotated mesh
     else:

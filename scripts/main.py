@@ -166,7 +166,7 @@ def LoadData_cgs(run, loc, userSettings, bound = None, factor = -1, number = -1,
         dumpData['maccrComp'] = sinkData['maccrComp'  ][-1]
         dumpData['v_orbAGB' ] = sinkData['v_orbAGB_t' ][-1]
         dumpData['v_orbComp'] = sinkData['v_orbComp_t'][-1]
-        dumpData['sma_fi'   ] = dumpData['rAGB'] + dumpData['rComp']        # [cm]
+        dumpData['sma_fi'   ] = dumpData._params['rAGB'] + dumpData._params['rComp']        # [cm]
 
     if setup['triple_star']:
         dumpData['maccrComp_in'] = sinkData['maccrComp_in'  ][-1]

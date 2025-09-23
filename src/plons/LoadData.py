@@ -165,7 +165,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     # reading the dumpfile
     part, sinks = sa.read_phantom(fileName)
     part.calc_density()
-    # for key in part._params: print(key, part._params[key])
+
     unit_dist = part._params["udist"]
     unit_mass = part._params["umass"]
     unit_time = part._params["utime"]
@@ -282,25 +282,27 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
             'cs'            : part.cs,               # [cm]
             'divv'          : part.divv,             # [1/s]
             'Gamma'         : part.Gamma,
-            'posAGB'        : posAGB,                # [cm]
-            'rAGB'          : rAGB,                  # [cm]
-            'massAGB'       : massAGB,               # [g]
-            'lumAGB'        : lumAGB,                # [erg/s]
-            'velAGB'        : velAGB,
             }
 
+    part._params['posAGB'        ] = posAGB,                # [cm]
+    part._params['posAGB'        ] = np.array(part._params['posAGB'])[0] # to convert from list to array
+    part._params['rAGB'          ] = rAGB,                  # [cm]
+    part._params['massAGB'       ] = massAGB,               # [g]
+    part._params['lumAGB'        ] = lumAGB,                # [erg/s]
+    part._params['velAGB'        ] = velAGB,
+
     if not setup["single_star"]:
-        data['posComp'    ] = posComp                # [cm]
-        data['rComp'      ] = rComp                  # [cm]
-        data['massComp'   ] = massComp               # [g]
-        data['velComp'    ] = velComp
-        data['rHill'      ] = rHill                  # [cm]
+        part._params['posComp'    ] = posComp                # [cm]
+        part._params['rComp'      ] = rComp                  # [cm]
+        part._params['massComp'   ] = massComp               # [g]
+        part._params['velComp'    ] = velComp
+        part._params['rHill'      ] = rHill                  # [cm]
 
     if setup['triple_star']:
-        data["posComp_in" ] = posComp_in             # [cm]
-        data['rComp_in'   ] = rComp_in               # [cm]
-        data['massComp_in'] = massComp_in            # [g]
-        data['velComp_in' ] = velComp_in
+        part._params['posComp_in' ] = posComp_in             # [cm]
+        part._params['rComp_in'   ] = rComp_in               # [cm]
+        part._params['massComp_in'] = massComp_in            # [g]
+        part._params['velComp_in' ] = velComp_in
 
     if "tau" in part:
         data["tau"        ] = part.tau
@@ -314,7 +316,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
     if "iorig" in part:
         data["iorig"      ] = part.iorig
 
-    return data
+    return part
 
 def LoadDump(fileName: str) -> Dict[str, Any]:
     """ Loads the dump of a phantom model, returns the position, velocity, density and internal energy

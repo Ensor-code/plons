@@ -28,8 +28,8 @@ def getParamsLine(results_line, vec1, minT, gamma, vec2 = [], dumpData = None):
         x_comp = 0.
         y_comp = 0.
         if 'posComp' in dumpData:
-            x_comp = dumpData['posComp'][0]
-            y_comp = dumpData['posComp'][1]
+            x_comp = dumpData._params['posComp'][0]
+            y_comp = dumpData._params['posComp'][1]
         R = lineCoordinates(len(indicesToKeep[0]), vec1[indicesToKeep], vec2[indicesToKeep], x_comp, y_comp)
 
     temp  = (results_line['Tgas' ][indicesToKeep])
@@ -79,7 +79,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         # calculate smoothed data around one axis
         theta = 0.
         if setup['single_star'] == False:
-            theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+            theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1])
 
         pixCoordX      = sk.getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
         results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
@@ -113,13 +113,13 @@ def radialStructPlots(run,loc, dumpData, setup):
         # ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
         # Plots
         limX = setup['wind_inject_radius']
-        posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
+        posAGB = np.hypot(dumpData._params['posAGB'][0], dumpData._params['posAGB'][1])
         X += posAGB
         posComp = posAGB
         if setup['single_star'] == False:
-            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])) / cgs.au
+            posComp = (np.hypot(dumpData._params['posComp'][0], dumpData._params['posComp'][1])) / cgs.au
             if setup['triple_star']==True:
-                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])) / cgs.au]
+                posComp = [posComp,(np.hypot(dumpData._params['posComp_in'][0],dumpData._params['posComp_in'][1])) / cgs.au]
             print('radial position companion(s): ', posComp)
 
 
@@ -170,7 +170,7 @@ def radialStructPlots(run,loc, dumpData, setup):
         #calculate smoothed data around one axis
         theta = 0.
         if setup['single_star'] == False:
-            theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+            theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1])
 
         pixCoordX      = sk.getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
         results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
@@ -206,13 +206,13 @@ def radialStructPlots(run,loc, dumpData, setup):
         #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
         # Plots
         limX = setup['wind_inject_radius']
-        posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
+        posAGB = np.hypot(dumpData._params['posAGB'][0], dumpData._params['posAGB'][1])
         X += posAGB
         posComp = posAGB
         if setup['single_star'] == False:
-            posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])+posAGB) / cgs.au
+            posComp = (np.hypot(dumpData._params['posComp'][0], dumpData._params['posComp'][1])+posAGB) / cgs.au
             if setup['triple_star']==True:
-                posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.au]
+                posComp = [posComp,(np.hypot(dumpData._params['posComp_in'][0],dumpData._params['posComp_in'][1])+posAGB) / cgs.au]
             print('radial position 2 companions: ', posComp)
         bound = setup['bound']
         # bound = 500
@@ -274,7 +274,7 @@ def plotRho_r2(run,loc, dumpData, setup):
     #calculate smoothed data around one axis
     theta = 0.
     if setup['single_star'] == False:
-        theta = pq.getPolarAngleCompanion(dumpData['posComp'][0], dumpData['posComp'][1])
+        theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1])
 
     pixCoordX      = sk.getPixels('line_x', n_grid, 'comp', dumpData,  setup['bound'] * cgs.au)
     results_line_X = sk.getSmoothingKernelledPix(20, dumpData, ['rho', 'Tgas', 'speed'], sk.rotatePixCoordAroundZ(theta, pixCoordX))
@@ -292,13 +292,13 @@ def plotRho_r2(run,loc, dumpData, setup):
     #ax1.set_title('v = '+ str(vini)+ 'km/s', fontsize = 33)#, Mdot ='+ str(Mdot)+ '$M_\odot$/yr, ecc = ' +str(ecc))
     # Plots
     limX = setup['wind_inject_radius']
-    posAGB = np.hypot(dumpData['posAGB'][0], dumpData['posAGB'][1])
+    posAGB = np.hypot(dumpData._params['posAGB'][0], dumpData._params['posAGB'][1])
     X += posAGB
     posComp = posAGB
     if setup['single_star'] == False:
-        posComp = (np.hypot(dumpData['posComp'][0], dumpData['posComp'][1])+posAGB) / cgs.au
+        posComp = (np.hypot(dumpData._params['posComp'][0], dumpData._params['posComp'][1])+posAGB) / cgs.au
         if setup['triple_star']==True:
-            posComp = [posComp,(np.hypot(dumpData['posComp_in'][0],dumpData['posComp_in'][1])+posAGB) / cgs.au]
+            posComp = [posComp,(np.hypot(dumpData._params['posComp_in'][0],dumpData._params['posComp_in'][1])+posAGB) / cgs.au]
         print('radial position 2 companions: ', posComp)
     bound = setup['bound']
     # bound = 500
