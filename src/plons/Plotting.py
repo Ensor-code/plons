@@ -4,6 +4,8 @@ import numpy        as np
 import numpy.typing as npt
 import matplotlib
 import matplotlib.pyplot   as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import warnings
 
 import plons.SmoothingKernelScript    as sk
 import plons.PhysicalQuantities       as pq
@@ -126,12 +128,43 @@ def SlicePlot2D(ax: plt.Axes,
     
     if rotate:
         theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1]) # Calculate the angle around which to rotate
-        X_rot, Y_rot, Z_rot = sk.rotateMeshAroundZ(theta, X, Y, Z)                        # Rotate the mesh grid before computing the smoothed data. In this way the image will be constructed in the rotated frame
-        smooth = sk.smoothMesh(X_rot, Y_rot, Z_rot, dumpData, [observable])               # Smooth the data with the rotated mesh
-    else:
-        smooth = sk.smoothMesh(X, Y, Z, dumpData, [observable])
+
+    if logplot:
+        clim = (10**clim[0], 10**clim[1])
+
+    # Change only the x and y data from cm to au. Nessessary for the rendering
+    dumpData.x = dumpData.x / cgs.au
+    dumpData.y = dumpData.y / cgs.au
+    dumpData.z = dumpData.z / cgs.au
+    dumpData.h = dumpData.h / cgs.au
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ax = dumpData.render(
+            observable,
+            ax=ax,
+            rotation=(-180/np.pi*theta, 0, 0) if rotate else (0, 0, 0),
+            rot_origin=[0, 0, 0],
+            xlim=xlim,
+            ylim=ylim,
+            log_scale=logplot,
+            cmap=cmap,
+            cbar_ax=cax,
+            vmin=clim[0], vmax=clim[1],
+            xsec=0,
+            normalize=True
+            )
     
-    cbaraxPlot = plotSlice(ax, X, Y, smooth, observable, logplot=logplot, cmap=cmap, clim = clim, cbar=cbar)
+    # revert the changes to the dumpData so that other plots are not affected
+    dumpData.x = dumpData.x * cgs.au
+    dumpData.y = dumpData.y * cgs.au
+    dumpData.z = dumpData.z * cgs.au
+    dumpData.h = dumpData.h * cgs.au
+
+    cbar = ax.get_images()[0].colorbar
+
     plotSink(ax, dumpData, setup, rotate)
 
-    return cbaraxPlot
+    return cbar
