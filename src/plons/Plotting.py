@@ -93,7 +93,7 @@ def plotSink(ax: plt.Axes,
 def SlicePlot2D(ax: plt.Axes,
                 dumpData: Dict[str, Any],
                 setup: Dict[str, Any],
-                n: int = 200,
+                n: int = 512,
                 xlim: tuple[float, float] = (-30, 30),
                 ylim: tuple[float, float] = (-30, 30),
                 rotate: bool = False,
@@ -116,15 +116,11 @@ def SlicePlot2D(ax: plt.Axes,
         logplot (bool, optional): plot in log scale?. Defaults to True.
         cmap (matplotlib.colors.Colormap, optional): colormap to use. Defaults to plt.colormaps['inferno'].
         clim (tuple[float, float], optional): limits of the colormap. Defaults to (-17, -14).
-        cbar (bool, optional): Should a colorbar be plotted? Defaults to True.
+        cbar (bool, optional): Should a colorbar be plotted? Defaults to True. If 'top', the colorbar is plotted on the top of the axis, if False, no colorbar is plotted.
 
     Returns:
         matplotlib.colorbar.Colorbar: the colorbar in the plot
     """
-    x = np.linspace(xlim[0], xlim[1], n)*cgs.au
-    y = np.linspace(ylim[0], ylim[1], n)*cgs.au
-    X, Y = np.meshgrid(x, y)
-    Z    = np.zeros_like(X)
     
     if rotate:
         theta = pq.getPolarAngleCompanion(dumpData._params['posComp'][0], dumpData._params['posComp'][1]) # Calculate the angle around which to rotate
@@ -139,7 +135,10 @@ def SlicePlot2D(ax: plt.Axes,
     dumpData.h = dumpData.h / cgs.au
 
     divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
+    if cbar == 'top':
+        cax = divider.append_axes("top", size="5%", pad=0.05)
+    elif cbar == True:
+        cax = divider.append_axes("right", size="5%", pad=0.05)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ax = dumpData.render(
@@ -148,13 +147,31 @@ def SlicePlot2D(ax: plt.Axes,
             rotation=(-180/np.pi*theta, 0, 0) if rotate else (0, 0, 0),
             rot_origin=[0, 0, 0],
             xlim=xlim,
+            x_pixels=n,
+            y_pixels=n,
             ylim=ylim,
             log_scale=logplot,
             cmap=cmap,
-            cbar_ax=cax,
+            cbar_ax=cax if cbar else None,
+            cbar_kws={
+                "orientation": "horizontal" if cbar == 'top' else 'vertical',
+                'label': f"log({observable})" if logplot else observable
+                },
             vmin=clim[0], vmax=clim[1],
             xsec=0,
             normalize=True
+            )
+        
+        if observable == "speed":
+            ax = dumpData.arrowplot(
+                ("vx", "vy", "vz"),
+                ax=ax,
+                rotation=(-180/np.pi*theta, 0, 0) if rotate else (0, 0, 0),
+                rot_origin=[0, 0, 0],
+                xlim=xlim,
+                ylim=ylim,
+                x_arrows=25, y_arrows=25,
+                normalize=True,
             )
     
     # revert the changes to the dumpData so that other plots are not affected
@@ -163,8 +180,13 @@ def SlicePlot2D(ax: plt.Axes,
     dumpData.z = dumpData.z * cgs.au
     dumpData.h = dumpData.h * cgs.au
 
-    cbar = ax.get_images()[0].colorbar
+    colorbar = ax.get_images()[0].colorbar
+    if cbar == 'top':
+        colorbar.ax.xaxis.set_label_position('top')
+        colorbar.ax.xaxis.set_ticks_position('top')
+    if cbar == False:
+        colorbar.remove()
 
     plotSink(ax, dumpData, setup, rotate)
 
-    return cbar
+    return colorbar
