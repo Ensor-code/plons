@@ -61,7 +61,8 @@ def plotSlice(ax: plt.Axes,
 def plotSink(ax: plt.Axes,
              dumpData: Dict[str, Any],
              setup: Dict[str, Any],
-             rotate: bool = False) -> matplotlib.patches.Circle:
+             rotate: bool = False,
+             plane: str = "xy") -> matplotlib.patches.Circle:
     """Plot the sink particles on the axis
 
     Args:
@@ -69,22 +70,26 @@ def plotSink(ax: plt.Axes,
         dumpData (Dict[str, Any]): Data of the dump file
         setup (Dict[str, Any]): Setup of the simulation
         rotate (bool, optional): Should the sinks be rotated. Defaults to False.
+        plane (str, optional): Plane to plot the sinks on. Defaults to "xy".
 
     Returns:
         matplotlib.patches.Circle: Circle objects of the sink particles
     """
-    if rotate: circleAGB = plt.Circle((-np.linalg.norm(dumpData._params['posAGB'])/cgs.au, 0.), setup["wind_inject_radius"], transform=ax.transData._b, color="black", zorder=10)
-    else: circleAGB = plt.Circle(dumpData._params['posAGB']/cgs.au, setup["wind_inject_radius"], color="black", zorder=10)
+    if rotate: plotAGB = (-np.linalg.norm(dumpData._params['posAGB'])/cgs.au, 0.)
+    else: plotAGB = dumpData._params['posAGB'][:2]/cgs.au if plane == "xy" else dumpData._params['posAGB'][[0,2]]/cgs.au
+    circleAGB = plt.Circle(plotAGB, setup["wind_inject_radius"], color="black", zorder=10)
     ax.add_patch(circleAGB)
     
     if not setup['single_star']:
-        if rotate: circleComp = plt.Circle((np.linalg.norm(dumpData._params['posComp'])/cgs.au, 0.), setup["rAccrComp"], transform=ax.transData._b, color="black", zorder=10)
-        else: circleComp = plt.Circle(dumpData._params['posComp']/cgs.au, setup["rAccrComp"], color="black", zorder=10)
+        if rotate: plotComp = (np.linalg.norm(dumpData._params['posComp'])/cgs.au, 0.)
+        else: plotComp = dumpData._params['posComp'][:2]/cgs.au if plane == "xy" else dumpData._params['posComp'][[0,2]]/cgs.au
+        circleComp = plt.Circle(plotComp, setup["rAccrComp"], color="black", zorder=10)
         ax.add_patch(circleComp)
 
         if setup['triple_star']:
-            if rotate: circleComp_in = plt.Circle((np.linalg.norm(dumpData._params['posComp_in'])/cgs.au, 0.), setup["rAccrComp_in"], transform=ax.transData._b, color="black", zorder=10)
-            else: circleComp_in = plt.Circle(dumpData._params['posComp_in']/cgs.au, setup["rAccrComp_in"], color="black", zorder=10)
+            if rotate: plotComp_in = (np.linalg.norm(dumpData._params['posComp_in'])/cgs.au, 0.)
+            else: plotComp_in = dumpData._params['posComp_in'][:2]/cgs.au if plane == "xy" else dumpData._params['posComp_in'][[0,2]]/cgs.au
+            circleComp_in = plt.Circle(plotComp_in, setup["rAccrComp_in"], color="black", zorder=10)
             ax.add_patch(circleComp_in)
             return circleAGB, circleComp, circleComp_in
         return circleAGB, circleComp
@@ -97,8 +102,11 @@ def SlicePlot2D(ax: plt.Axes,
                 xlim: tuple[float, float] = (-30, 30),
                 ylim: tuple[float, float] = (-30, 30),
                 rotate: bool = False,
+                plane: str = "xy",
                 observable: str = "rho",
                 logplot: bool = True,
+                quiver: bool = False,
+                n_arrows: int = 25,
                 cmap: matplotlib.colors.Colormap = plt.colormaps['inferno'],
                 clim: tuple[float, float] = (-17, -14),
                 cbar = True) -> matplotlib.colorbar.Colorbar:
@@ -112,8 +120,10 @@ def SlicePlot2D(ax: plt.Axes,
         xlim (tuple[float, float], optional): xlimits for the plot. Defaults to (-30, 30).
         ylim (tuple[float, float], optional): ylimits for the plot. Defaults to (-30, 30).
         rotate (bool, optional): should the binary be rotated to lay on the x-axis. Defaults to False.
+        plane (str, optional): plane to plot the slice in. Defaults to "xy".
         observable (str, optional): property to plot. Defaults to "rho".
         logplot (bool, optional): plot in log scale?. Defaults to True.
+        quiver (bool, optional): Should a quiver plot be added? Defaults to False.
         cmap (matplotlib.colors.Colormap, optional): colormap to use. Defaults to plt.colormaps['inferno'].
         clim (tuple[float, float], optional): limits of the colormap. Defaults to (-17, -14).
         cbar (bool, optional): Should a colorbar be plotted? Defaults to True. If 'top', the colorbar is plotted on the top of the axis, if False, no colorbar is plotted.
@@ -144,7 +154,7 @@ def SlicePlot2D(ax: plt.Axes,
         ax = dumpData.render(
             observable,
             ax=ax,
-            rotation=(-180/np.pi*theta, 0, 0) if rotate else (0, 0, 0),
+            rotation=(-180/np.pi*theta if rotate else 0, 0, 90 if plane == "xz" else 0),
             rot_origin=[0, 0, 0],
             xlim=xlim,
             x_pixels=n,
@@ -162,7 +172,7 @@ def SlicePlot2D(ax: plt.Axes,
             normalize=True
             )
         
-        if observable == "speed":
+        if quiver:
             ax = dumpData.arrowplot(
                 ("vx", "vy", "vz"),
                 ax=ax,
@@ -170,8 +180,9 @@ def SlicePlot2D(ax: plt.Axes,
                 rot_origin=[0, 0, 0],
                 xlim=xlim,
                 ylim=ylim,
-                x_arrows=25, y_arrows=25,
-                normalize=True,
+                x_arrows=n_arrows, y_arrows=n_arrows,
+                qkey=False,
+                normalize=True
             )
     
     # revert the changes to the dumpData so that other plots are not affected
@@ -187,6 +198,6 @@ def SlicePlot2D(ax: plt.Axes,
     if cbar == False:
         colorbar.remove()
 
-    plotSink(ax, dumpData, setup, rotate)
+    plotSink(ax, dumpData, setup, rotate, plane)
 
     return colorbar
