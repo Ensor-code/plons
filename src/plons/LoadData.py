@@ -259,31 +259,6 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
 
     part["speed"] = np.linalg.norm(velocity, axis=1)
 
-    # output
-    data = {'x'             : part.x,                # [cm]
-            'y'             : part.y,                # [cm]
-            'z'             : part.z,                # [cm]
-            'vx'            : part.vx,               # [cm/s]
-            'vy'            : part.vy,               # [cm/s]
-            'vz'            : part.vz,               # [cm/s]
-            'h'             : part.h,                # [cm]
-            'mass'          : part.mass,             # [g]
-            'rho'           : part.rho,              # [g/cm^3]
-            'u'             : part.u,                # [erg/g]
-            'p'             : part.p,                # [Ba]
-            'Tgas'          : part.temp,             # [K]
-            'Tdust'         : part.Tdust,
-            'gamma'         : part.gamma,
-            'mu'            : part.mu,
-            'speed'         : part.speed,            # [cm/s]
-            'r'             : part.r,                # [cm]
-            'theta'         : part.theta,
-            'phi'           : part.phi,
-            'cs'            : part.cs,               # [cm]
-            'divv'          : part.divv,             # [1/s]
-            'Gamma'         : part.Gamma,
-            }
-
     part._params['posAGB'        ] = posAGB,                # [cm]
     part._params['posAGB'        ] = np.array(part._params['posAGB'])[0] # to convert from list to array
     part._params['rAGB'          ] = rAGB,                  # [cm]
@@ -303,18 +278,6 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
         part._params['rComp_in'   ] = rComp_in               # [cm]
         part._params['massComp_in'] = massComp_in            # [g]
         part._params['velComp_in' ] = velComp_in
-
-    if "tau" in part:
-        data["tau"        ] = part.tau
-
-    if "tau_lucy" in part:
-        data["tau_lucy"   ] = part.tau_lucy
-
-    if "kappa" in part:
-        data["kappa"      ] = part.kappa                  # [cm^2/g]
-
-    if "iorig" in part:
-        data["iorig"      ] = part.iorig
 
     return part
 
