@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plons"
-version = "0.0.27"
+version = "0.0.28"
 description = "PLOtting tool for Nice Simulations"
 readme = "README.md"
 authors = [{ name = "Jolien Malfait",  email = "jolien.malfait@kuleuven.be" },
@@ -36,7 +36,7 @@ dev = ["black", "bumpver", "pip-tools", "pytest"]
 Homepage = "https://github.com/Ensor-code/plons"
 
 [tool.bumpver]
-current_version = "0.0.27"
+current_version = "0.0.28"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message  = "Bump version {old_version} -> {new_version}"
 commit          = true
