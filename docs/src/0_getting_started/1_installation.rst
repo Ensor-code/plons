@@ -12,8 +12,9 @@ The easiest way to install plons is via a package installer like pip or conda. U
 .. code-block:: shell
     
     conda install -c ensor plons
+    pip install sarracen
 
-In this way you will have the most recent stable version.
+In this way you will have the most recent stable version. For the conda installation, make sure to include the sarracen installation, as it is not included in the conda package.
 
 An other way to install plons is using the `GitHub <https://github.com/ensor-code/plons>`_ repository. Clone the repository, enter the directory, and install the package using:
 

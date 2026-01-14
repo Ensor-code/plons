@@ -11,17 +11,20 @@ about:
 source:
   path: ../
 
+build:
+  noarch: python
+  script: "{{ PYTHON }} -m pip install --no-deps ."
+
 requirements:
-  build:
-    - "python>=3.7,<3.11"
+  host:
+    - "python>=3.7,<=3.13"
     - setuptools
     - wheel
     - pip
 
   run:
-    - "python>=3.7,<3.11"
+    - "python>=3.7,<=3.13"
     - matplotlib
     - healpy
     - scipy
     - numpy>=1.17
-    - numba
