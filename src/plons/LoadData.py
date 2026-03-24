@@ -24,7 +24,6 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
         Dict[str, Any]: a dictionary containing the info from the setup files
         (!! check units, they are not all in SI or cgs)
     """
-
     # load the prefix.in & prefix.setup file
     setup = {}
     try:
@@ -119,6 +118,146 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
 
         setup["period"] = period
         setup["Rcap"] = Rcap
+    else:
+        setup["sma_ini"] = 0.
+
+    return setup
+
+def LoadSetup_pulsations(dir: str, prefix: str) -> Dict[str, Any]:
+    """ Load the prefix.in and prefix.setup files to get general information about the phantom model
+
+    Args:
+        dir (str): directory of the simulation
+        prefix (str): prefix used for the files
+
+    Returns:
+        Dict[str, Any]: a dictionary containing the info from the setup files
+        (!! check units, they are not all in SI or cgs)
+    """
+
+    # load the prefix.in & prefix.setup file
+    setup = {}
+    try:
+        with open(os.path.join(dir,'%s.setup'%prefix), 'r') as f:
+            lines = f.readlines()
+            for string in lines:
+                line = string.split()
+                if len(line) != 0:
+                    if line[0] != '#':
+                        stringName = line[0]
+
+                        # Floats
+                        if stringName == 'primary_mass': stringName = 'massAGB_ini'
+                        elif stringName == 'secondary_mass': stringName = 'massComp_ini'
+                        elif stringName == 'semi_major_axis': stringName = 'sma_ini'
+                        elif stringName == 'binary2_a' : stringName = 'sma_in_ini'
+                        elif stringName == 'wind_gamma' or stringName == "temp_exponent": stringName = 'gamma'
+                        elif stringName == 'eccentricity': stringName = 'ecc'
+                        elif stringName == 'binary2_e' : stringName = 'ecc_in'
+                        elif stringName == 'secondary_racc': stringName = 'rAccrComp'
+                        elif stringName == 'accr2b' : stringName = 'rAccrComp_in'
+                        elif stringName == 'racc2b' : stringName = 'rAccrComp_in'
+
+                        setup[stringName] = float(line[2])
+
+                        if stringName == 'q2':
+                            stringName = 'massComp_in_ini'
+                            setup[stringName] = float(line[2])*setup['massAGB_ini']
+
+                        # Boolean
+                        if stringName == 'icompanion_star':
+                            stringName = 'single_star'
+                            if int(line[2]) == 0: setup[stringName] = True
+                            else: setup[stringName] = False
+                            stringName = 'triple_star'
+                            if int(line[2]) == 2: setup[stringName] = True
+                            else: setup[stringName] = False
+
+    except FileNotFoundError:
+        print('')
+        print(" ERROR: No %s.setup file found!"%prefix)
+        print('')
+        exit()
+
+    try:
+        with open(os.path.join(dir,'%s.in'%prefix), 'r') as f:
+            lines = f.readlines()
+            for string in lines:
+                line = string.split()
+                if len(line) == 0:
+                    continue
+                if line[0] == '#':
+                    continue
+
+                stringName = line[0]
+                val = line[2]
+
+                # Explicit string keys
+                if stringName in ('logfile', 'dumpfile', 'twallmax', 'dtwallmax'):
+                    setup[stringName] = str(val)
+
+                # Explicit int keys
+                elif stringName in ('n_profile_points', 'n_shells_total', 'iboundary_spheres',
+                                    'iwind_resolution', 'N_particles', 'iwind',
+                                    'enable_nonradial', 'n_modes',
+                                    'nfulldump', 'iverbose', 'nmax', 'nout', 'nmaxdumps',
+                                    'idamp', 'ieos', 'ipdv_heating', 'ishock_heating',
+                                    'icooling', 'isink_potential', 'iexternalforce',
+                                    'irealvisc', 'idust_opacity', 'isink_radiation',
+                                    'n_shells'):
+                    setup[stringName] = int(float(val))
+
+                # Explicit bool keys (T/F)
+                elif stringName in ('use_fibonacci', 'reinject_enabled',
+                                    'var_boundary', 'update_L', 'gw'):
+                    setup[stringName] = (val == 'T')
+
+                # Explicit float keys with renaming
+                elif stringName == 'pulsation_period':
+                    setup['pulsation_period'] = float(val)
+                elif stringName == 'piston_velocity':
+                    setup['v_piston'] = float(val)
+                elif stringName == 'r_min_on_rstar':
+                    setup['r_min'] = float(val)
+                elif stringName == 'reinject_period_days':
+                    setup['reinject_period_days'] = float(val)
+                elif stringName == 'injection_fraction':
+                    setup['injection_fraction'] = float(val)
+
+                # Generic fallback: try float, skip if unparseable
+                else:
+                    try:
+                        setup[stringName] = float(val)
+                    except ValueError:
+                        pass  # silently skip unrecognised string values
+
+    except FileNotFoundError:
+        print('')
+        print(f" ERROR: No {prefix}.in file found in {dir}!")
+        print('')
+        exit()
+
+    
+    # Additional Parameters
+    massAGB_ini = setup["massAGB_ini"]
+    v_piston = setup["v_piston"]
+    if setup["single_star"] == False:
+        massComp_ini = setup["massComp_ini"]
+        sma = setup["sma_ini"]
+        period = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_ini * cgs.Msun, sma)           # [s]
+        #v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                           # [km/s]
+        # Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au         # [au]
+        if setup['triple_star']==True:
+            massComp_in_ini = setup["massComp_in_ini"]
+            sma_in = setup["sma_in_ini"]
+            period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun, massComp_ini * cgs.Msun, sma)  # [s]
+            period_in = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_in_ini * cgs.Msun, sma_in)           # [s]
+            # Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au            # [au]
+            setup["period_in"] = period_in
+            # setup["Rcap_in"] = Rcap_in
+
+        setup["period"] = period
+        # setup["Rcap"] = Rcap
     else:
         setup["sma_ini"] = 0.
 
@@ -242,7 +381,7 @@ def LoadFullDump(fileName: str, setup: Dict[str, Any]) -> Dict[str, Any]:
         else:                             part["Tdust"] = 0.
     if "kappa" not in part: 
         if   setup["idust_opacity"] == 0: part["kappa"] = 0.
-        elif setup["idust_opacity"] == 1: part["kappa"] = pq.getKappa(part.Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'])
+        elif setup["idust_opacity"] == 1: part["kappa"] = pq.getKappa(part.Tdust, setup['kappa_gas'], setup['bowen_delta'], setup['bowen_Tcond'], setup['bowen_kmax'], lumAGB, massAGB)
     if "alpha_rad" in part: part["Gamma"] = part["alpha_rad"]
     else:
         if   setup['isink_radiation'] == 0: part["Gamma"] = 0.
@@ -582,8 +721,6 @@ def LoadSink(dir: str, prefix: str, icompanion_star: int = 0) -> Dict[str, Any]:
                 Jy3    = np.append(Jy3, Jy3e)
                 Jz3    = np.append(Jz3, Jz3e)
                 maccr3 = np.append(maccr3, maccr3e)
-
-
 
 
     # AGB star

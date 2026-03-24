@@ -31,9 +31,15 @@ def getRho(hi, hfact, pmassi):
 '''
 Returns the opacity, given the equilibrium temperature in [K] in cm^2/g
 '''
-def getKappa(Teq, kappa_gas = 2e-4, bowen_delta = 60., bowen_Tcond = 1500., bowen_max   = 2.7991):
+def getKappa(Teq, kappa_gas = 2e-4, bowen_delta = 60., bowen_Tcond = 1500., bowen_max   = 2.7991, lumAGB = 0., massAGB = 0.):
+    if bowen_max < 0:
+        bowen_max = calcKappaMax(lumAGB, massAGB)
     kappa = bowen_max/(1+np.exp((Teq-bowen_Tcond)/bowen_delta))+kappa_gas
     return kappa
+
+def calcKappaMax(lumAGB, massAGB):
+    kappa_max = 0.95*(4*np.pi*cgs.c*cgs.G*massAGB)/(lumAGB)
+    return kappa_max
 
 '''
 Returns the Eddington factor, the opacity in [cm^2/g], the luminocity [erg/s] and mass [g] of the AGB star, optional optical depth
