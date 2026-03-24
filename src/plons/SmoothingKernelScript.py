@@ -1,6 +1,5 @@
 import healpy               as hp
 import numpy                as np
-import numba                as nb
 
 from scipy.spatial import cKDTree
 
@@ -9,7 +8,6 @@ from scipy.spatial import cKDTree
 Gives the function f which is used by the function 'smoothingKernelPhantom'
 From: Price, D. J., Wurster, J., Tricco, T. S., et al. 2018, PASA, 35, e031; Eq. 17
 '''
-@nb.njit()
 def get_f(d):
     f = np.zeros_like(d)
     
@@ -35,7 +33,6 @@ Smoothing kernel from phantom from the phantom paper Price 2018 (Sect. 2.1.5, 2.
 RETURNS:
      np.array with the values of the smoothing kernel W_ab for every closest neighbour b 
 '''
-@nb.njit()
 def smoothingKernelPhantom(dist,h_list):
     d = np.abs(dist/h_list)
     W_ab = (Cnorm/hfact**3)*get_f(d)
@@ -245,7 +242,6 @@ def convertToMesh(r, data_params, params, n=None):
 
     return X, Y, Z, data_params
 
-@nb.njit()
 def rotatePixCoordAroundZ(theta, pixCoord):
     n = len(pixCoord)
     x = pixCoord[:, 0]
@@ -263,7 +259,6 @@ def rotatePixCoordAroundZ(theta, pixCoord):
 
     return rotatedArray
 
-@nb.njit()
 def rotateMeshAroundZ(theta, X, Y, Z):
     X_rot = X * np.cos(theta) - Y * np.sin(theta)
     Y_rot = X * np.sin(theta) + Y * np.cos(theta)
