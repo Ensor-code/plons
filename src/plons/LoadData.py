@@ -164,7 +164,6 @@ def LoadSetup_pulsations(dir: str, prefix: str) -> Dict[str, Any]:
                             stringName = 'massComp_in_ini'
                             setup[stringName] = float(line[2])*setup['massAGB_ini']
 
-                        # Boolean
                         if stringName == 'icompanion_star':
                             stringName = 'single_star'
                             if int(line[2]) == 0: setup[stringName] = True
@@ -192,44 +191,10 @@ def LoadSetup_pulsations(dir: str, prefix: str) -> Dict[str, Any]:
                 stringName = line[0]
                 val = line[2]
 
-                # Explicit string keys
-                if stringName in ('logfile', 'dumpfile', 'twallmax', 'dtwallmax'):
-                    setup[stringName] = str(val)
-
-                # Explicit int keys
-                elif stringName in ('n_profile_points', 'n_shells_total', 'iboundary_spheres',
-                                    'iwind_resolution', 'N_particles', 'iwind',
-                                    'enable_nonradial', 'n_modes',
-                                    'nfulldump', 'iverbose', 'nmax', 'nout', 'nmaxdumps',
-                                    'idamp', 'ieos', 'ipdv_heating', 'ishock_heating',
-                                    'icooling', 'isink_potential', 'iexternalforce',
-                                    'irealvisc', 'idust_opacity', 'isink_radiation',
-                                    'n_shells'):
-                    setup[stringName] = int(float(val))
-
-                # Explicit bool keys (T/F)
-                elif stringName in ('use_fibonacci', 'reinject_enabled',
-                                    'var_boundary', 'update_L', 'gw'):
-                    setup[stringName] = (val == 'T')
-
-                # Explicit float keys with renaming
-                elif stringName == 'pulsation_period':
-                    setup['pulsation_period'] = float(val)
-                elif stringName == 'piston_velocity':
-                    setup['v_piston'] = float(val)
-                elif stringName == 'r_min_on_rstar':
-                    setup['r_min'] = float(val)
-                elif stringName == 'reinject_period_days':
-                    setup['reinject_period_days'] = float(val)
-                elif stringName == 'injection_fraction':
-                    setup['injection_fraction'] = float(val)
-
-                # Generic fallback: try float, skip if unparseable
-                else:
-                    try:
-                        setup[stringName] = float(val)
-                    except ValueError:
-                        pass  # silently skip unrecognised string values
+                try:
+                    setup[stringName] = float(val)
+                except ValueError:
+                    pass  
 
     except FileNotFoundError:
         print('')
@@ -237,27 +202,26 @@ def LoadSetup_pulsations(dir: str, prefix: str) -> Dict[str, Any]:
         print('')
         exit()
 
-    
     # Additional Parameters
     massAGB_ini = setup["massAGB_ini"]
-    v_piston = setup["v_piston"]
+    v_ini = setup['piston_velocity'] # Not really correct ...
     if setup["single_star"] == False:
         massComp_ini = setup["massComp_ini"]
         sma = setup["sma_ini"]
         period = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_ini * cgs.Msun, sma)           # [s]
         #v_orb = pq.getOrbitalVelocity(period, sma) * cgs.cms_kms()                           # [km/s]
-        # Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au         # [au]
+        Rcap = pq.getCaptureRadius(massComp_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au         # [au]
         if setup['triple_star']==True:
             massComp_in_ini = setup["massComp_in_ini"]
             sma_in = setup["sma_in_ini"]
             period = pq.getPeriod((massAGB_ini+massComp_in_ini) * cgs.Msun, massComp_ini * cgs.Msun, sma)  # [s]
             period_in = pq.getPeriod(massAGB_ini * cgs.Msun, massComp_in_ini * cgs.Msun, sma_in)           # [s]
-            # Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au            # [au]
+            Rcap_in = pq.getCaptureRadius(massComp_in_ini * cgs.Msun, v_ini * cgs.kms) / cgs.au            # [au]
             setup["period_in"] = period_in
-            # setup["Rcap_in"] = Rcap_in
+            setup["Rcap_in"] = Rcap_in
 
         setup["period"] = period
-        # setup["Rcap"] = Rcap
+        setup["Rcap"] = Rcap
     else:
         setup["sma_ini"] = 0.
 
