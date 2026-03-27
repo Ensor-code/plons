@@ -10,6 +10,7 @@ import warnings
 import plons.SmoothingKernelScript    as sk
 import plons.PhysicalQuantities       as pq
 import plons.ConversionFactors_cgs    as cgs
+import plons.PhysicalQuantities       as pq
 
 def plotSlice(ax: plt.Axes,
               X: npt.NDArray[np.single],
@@ -106,6 +107,7 @@ def SlicePlot2D(ax: plt.Axes,
                 observable: str = "rho",
                 logplot: bool = True,
                 quiver: bool = False,
+                roche_lobe: bool = False,
                 n_arrows: int = 25,
                 cmap: matplotlib.colors.Colormap = plt.colormaps['inferno'],
                 clim: tuple[float, float] = (-17, -14),
@@ -201,3 +203,34 @@ def SlicePlot2D(ax: plt.Axes,
     plotSink(ax, dumpData, setup, rotate, plane)
 
     return colorbar
+
+
+def plotRocheLobes(ax: plt.Axes,
+              X: npt.NDArray[np.single],
+              Y: npt.NDArray[np.single],
+              dumpData: Dict[str, Any],
+              ) -> matplotlib.colorbar.Colorbar:
+    """Plot the roche lobes on the axis
+
+    Args:
+        ax (plt.Axes): axis of figure on which you want to plot the slice
+        X (npt.NDArray[np.single]): X values in meshgrid which you want to plot
+        Y (npt.NDArray[np.single]): Y values in meshgrid which you want to plot
+        dumpData (Dict[str, Any]): Data of the dump file
+    """
+    
+    L1_pos, phi_L1 = pq.getRocheLobes(dumpData)
+    
+    M_AGB  = dumpData._params['massAGB'][0]
+    M_comp = dumpData._params['massComp']
+    pos_AGB  = np.array(dumpData._params['posAGB'])
+    pos_comp = np.array(dumpData._params['posComp'])
+    a = np.linalg.norm(pos_AGB - pos_comp)
+    omega = np.sqrt(cgs.G * (M_AGB + M_comp) / a**3)
+    
+    PHI  = pq.potential(X, Y, M_AGB, M_comp, pos_AGB, pos_comp, omega)
+    
+    ax.contour(X/cgs.au, Y/cgs.au, PHI, levels=[phi_L1], colors='white', linewidths=1)
+    
+    return ax
+   

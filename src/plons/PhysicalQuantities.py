@@ -1,5 +1,6 @@
 import math                     as math
 import numpy                    as np
+from scipy.optimize import brentq
 
 #import plons scripts
 import plons.ConversionFactors_cgs    as cgs
@@ -119,7 +120,54 @@ def getPolarAngleCompanion(x, y):
         theta = 2.*np.pi - theta
 
     return theta
+
+'''
+Calculates the potential at a given point
+'''
+def potential(X, Y, M1, M2, pos_AGB, pos_comp, omega):
+        G = cgs.G
+        r1 = np.sqrt((X - pos_AGB[0])**2 + (Y - pos_AGB[1])**2)
+        r2 = np.sqrt((X - pos_comp[0])**2 + (Y - pos_comp[1])**2)
+        return -G * M1 / r1 - G * M2 / r2 - 0.5 * omega**2 * (X**2 + Y**2)
+        
+'''
+Calculates the Roche lobes of the primary and secondary by finding phi(L_1)
+'''
+def getRocheLobes(dumpData):
     
     
+    M_AGB  = dumpData._params['massAGB'][0]
+    M_comp = dumpData._params['massComp']
+    pos_AGB  = np.array(dumpData._params['posAGB'])
+    pos_comp = np.array(dumpData._params['posComp'])
+    r_AGB  = np.linalg.norm(pos_AGB)
+    r_comp = np.linalg.norm(pos_comp)
+    a = np.linalg.norm(pos_AGB - pos_comp)
+    omega = np.sqrt(cgs.G * (M_AGB + M_comp) / a**3)
+    
+    def dphi_dx(r):
+        '''
+        Calculates the derivative of the potential to find the saddle point
+        '''
+        
+        dr1 = r - r_AGB
+        dr2 = r - (-r_comp)
+        
+        return cgs.G * M_AGB/dr1**2 * np.sign(dr1) + cgs.G*M_comp/dr2**2 * np.sign(dr2) - omega**2 * r
 
+    def calculate_roche_lobes():
+        '''
+        Solve for the saddle point 
+        '''
+        x_lo = -r_comp * 0.99
+        x_hi =  r_AGB  * 0.99
 
+        L1_r      = brentq(dphi_dx, x_lo, x_hi)
+        unit_vec  = (pos_comp - pos_AGB) / a
+        frac      = (r_AGB - L1_r) / a
+        L1_pos = pos_AGB + frac * unit_vec * a
+        phi_L1    = potential(L1_pos[0], L1_pos[1], M_AGB, M_comp, pos_AGB, pos_comp, omega)
+        
+        return L1_pos, phi_L1     
+    
+    return calculate_roche_lobes()
