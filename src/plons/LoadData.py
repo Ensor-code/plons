@@ -89,6 +89,7 @@ def LoadSetup(dir: str, prefix: str) -> Dict[str, Any]:
                             elif stringName == 'outer_boundary': stringName = 'bound'
                             elif stringName == 'wind_mass_rate': stringName = 'Mdot'
                             if line[2]=='F': line[2] = 0
+                            elif line[2]=='T': line[2] = 1
                             setup[stringName] = float(line[2])
 
     except FileNotFoundError:
