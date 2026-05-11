@@ -95,14 +95,18 @@ def loadDataForSmoothing(run,dump):
 
     return dumpData,setup
 
-def calcSmoothVtVrRho(zoom, dumpData,setup):
+def calcSmoothVtVrRho(zoom, dumpData, setup):
     # setup for sliceplots
     nneighb = 150
     n_grid  = 600           #determines resolution
 
     observables = {'vr','vt','rho'}
 
-    bound = (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom
+    try:
+        bound = (setup['bound']) * cgs.au * np.sqrt(2.) / 2. / zoom
+    except KeyError:
+        bound = setup['sma_ini'] * 2 * cgs.au * np.sqrt(2.) / 2. / zoom
+
     x = np.linspace(-bound, bound, n_grid)
     y = np.linspace(-bound, bound, n_grid)
     X, Y = np.meshgrid(x, y)
